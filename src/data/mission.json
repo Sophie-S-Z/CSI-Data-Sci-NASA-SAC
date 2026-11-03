@@ -1,0 +1,49 @@
+{
+  "name": "Mars transit",
+  "note": "Notional scenario. The vehicle layout, shelter location, and procedure numbers are team-written for the demo. They are not NASA documents.",
+  "phases": [
+    { "id": "cruise",  "label": "Mars transit",  "startDay": 0,   "endDay": 180 },
+    { "id": "surface", "label": "Mars surface",  "startDay": 180, "endDay": 680 },
+    { "id": "cruise",  "label": "Return transit","startDay": 680, "endDay": 860 }
+  ],
+  "crew": [
+    { "id": "A", "role": "Crew A", "name": "You", "isUser": true },
+    { "id": "B", "role": "Crew B", "name": "Commander" },
+    { "id": "C", "role": "Crew C", "name": "CMO" },
+    { "id": "D", "role": "Crew D", "name": "Engineer" }
+  ],
+  "replay": { "startDay": 88, "endDay": 95, "demoStart": { "day": 94, "hhmm": "06:20" } },
+  "sensors": [
+    { "id": "S1", "label": "Galley",        "shielding": 1.00 },
+    { "id": "S2", "label": "Crew quarters", "shielding": 1.05 },
+    { "id": "S3", "label": "Lab, port",     "shielding": 0.95 },
+    { "id": "S4", "label": "Lab, starboard","shielding": 1.10 },
+    { "id": "S5", "label": "Node aft",      "shielding": 0.70 },
+    { "id": "S6", "label": "Storage, core", "shielding": 0.65 }
+  ],
+  "dosimeter": { "id": "PD-A", "label": "Personal dosimeter, Crew A", "cabinFactor": 1.0 },
+  "schedule": [
+    { "start": "00:00", "end": "06:00", "label": "Sleep",        "kind": "sleep" },
+    { "start": "06:00", "end": "07:00", "label": "Post-sleep",   "kind": "ops" },
+    { "start": "07:00", "end": "07:30", "label": "Health check", "kind": "health" },
+    { "start": "07:30", "end": "14:00", "label": "Payload ops",  "kind": "ops" },
+    { "start": "14:00", "end": "15:30", "label": "Exercise",     "kind": "exercise" },
+    { "start": "15:30", "end": "18:30", "label": "Maintenance",  "kind": "ops" },
+    { "start": "18:30", "end": "21:30", "label": "Off duty",     "kind": "off" },
+    { "start": "21:30", "end": "24:00", "label": "Sleep",        "kind": "sleep" }
+  ],
+  "faults": [
+    { "sensor": "S3", "type": "spike",   "day": 94, "start": "13:52", "minutes": 4, "valueMSvPerHour": 0.31 },
+    { "sensor": "S5", "type": "missing", "day": 92, "start": "10:15", "minutes": 7 }
+  ],
+  "spe": {
+    "label": "Simulated SPE dose profile",
+    "onset": { "day": 94, "hhmm": "13:58" },
+    "riseMinutes": 152,
+    "riseExponent": 0.77,
+    "peakExcessMSvPerHour": 5.94,
+    "decayTauMinutes": 128,
+    "source": "team",
+    "basis": "Team-set rise and decay profile. A DONKI SEP record starts it. The peak is a team value. The screen labels it Simulated."
+  }
+}

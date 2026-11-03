@@ -1,0 +1,50 @@
+{
+  "zeitlin2013": {
+    "short": "Zeitlin et al., Science 2013",
+    "citation": "Zeitlin C. et al. Measurements of energetic particle radiation in transit to Mars on the Mars Science Laboratory. Science 340:1080-1084 (2013).",
+    "url": "https://doi.org/10.1126/science.1235989",
+    "evidence": "Measured. One instrument (MSL RAD) inside the cruise stage, 253 days."
+  },
+  "hassler2014": {
+    "short": "Hassler et al., Science 2014",
+    "citation": "Hassler D.M. et al. Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. Science 343:1244797 (2014).",
+    "url": "https://doi.org/10.1126/science.1244797",
+    "evidence": "Measured on the surface, one instrument (RAD). The full-mission value is a model estimate."
+  },
+  "std3001": {
+    "short": "NASA-STD-3001 Vol 1 Rev B, 2022",
+    "citation": "NASA Space Flight Human-System Standard, Volume 1: Crew Health, Rev B (2022). Radiation Technical Brief.",
+    "url": "https://www.nasa.gov/ochmo/human-spaceflight-standards/",
+    "evidence": "Standard. The career limit uses a cancer-risk model only."
+  },
+  "std3001appF": {
+    "short": "NASA-STD-3001 Vol 2, Appendix F",
+    "citation": "NASA Space Flight Human-System Standard, Volume 2: Human Factors, Habitability, and Environmental Health, Appendix F (display and alert classes).",
+    "url": "https://www.nasa.gov/ochmo/human-spaceflight-standards/",
+    "evidence": "Standard. Alert class names only."
+  },
+  "noaaScale": {
+    "short": "NOAA Space Weather Scales",
+    "citation": "NOAA Space Weather Prediction Center. Space Weather Scales: Solar Radiation Storms (S1 = 10 pfu of protons at 10 MeV or more).",
+    "url": "https://www.swpc.noaa.gov/noaa-scales-explanation",
+    "evidence": "Operational definition. Check against the DONKI SEP definition before the pitch."
+  },
+  "donki": {
+    "short": "NASA DONKI",
+    "citation": "NASA CCMC Space Weather Database Of Notifications, Knowledge, Information (DONKI): FLR, CME, and SEP records.",
+    "url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+    "evidence": "Event catalog near Earth. It does not measure dose at the vehicle."
+  },
+  "berger2024": {
+    "short": "Berger et al., Nature 2024",
+    "citation": "Berger T. et al. Artemis I radiation measurements. Nature (2024).",
+    "url": "",
+    "evidence": "Measured in phantoms on Orion. Validate: add the DOI before the pitch."
+  },
+  "team": {
+    "short": "Team value for demo",
+    "citation": "CSI team value for the Space Apps 2026 demo. Not a NASA flight rule. See PRD CSI-HM-PRD-001 Rev C, section 07.",
+    "url": "",
+    "evidence": "Team value for demo."
+  }
+}
