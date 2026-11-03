@@ -1,4 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
+import { WarningOctagon, Warning, Question, Info, CheckCircle, Circle } from '@phosphor-icons/react';
 import rules from '../data/rules.json';
 import sources from '../data/sources.json';
 import mission from '../data/mission.json';
@@ -14,6 +15,8 @@ export interface Ui {
   openProcedure: () => void;
   go: (tab: Tab) => void;
   toast: (msg: string) => void;
+  openCommand: () => void;
+  theme: string;
 }
 export const UiContext = createContext<Ui | null>(null);
 export function useUi(): Ui {
@@ -29,10 +32,18 @@ export const LEVEL_WORD: Record<Level | 'clear' | 'nominal', string> = {
   warning: 'Warning', caution: 'Caution', verify: 'Verify', advisory: 'Advisory', clear: 'Clear', nominal: 'Nominal',
 };
 
+const ICONS = { warning: WarningOctagon, caution: Warning, verify: Question, advisory: Info, clear: CheckCircle, nominal: Circle } as const;
+
+/** Level icon. Each level has its own shape, so color is never the only signal (NFR-05). */
+export function LevelIcon({ level, size = 16 }: { level: Level | 'clear' | 'nominal'; size?: number }) {
+  const I = ICONS[level];
+  return <I size={size} weight={level === 'nominal' ? 'fill' : 'bold'} aria-hidden="true" />;
+}
+
 export function Chip({ level, children }: { level: Level | 'clear' | 'nominal'; children?: ReactNode }) {
   return (
     <span className={`chip ${level}`}>
-      <span className="ico" aria-hidden="true">{LEVEL_ICON[level]}</span>
+      <LevelIcon level={level} size={14} />
       {children ?? LEVEL_WORD[level]}
     </span>
   );

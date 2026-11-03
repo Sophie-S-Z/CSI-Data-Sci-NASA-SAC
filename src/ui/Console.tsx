@@ -1,4 +1,7 @@
-import { useMemo, useState } from 'react';
+import { Suspense, lazy, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import gsap from 'gsap';
+import { ArrowUpRight, ShieldCheck } from '@phosphor-icons/react';
 import rules from '../data/rules.json';
 import mission from '../data/mission.json';
 import { RULES, LINK_LABEL, LINK_DELAY_MIN, LEVEL_RANK, type Alert, type World } from '../engine/world';
@@ -6,7 +9,13 @@ import { SENSORS, SHELTER_FACTOR, gcrDoseMSv, MISSION_END_MIN } from '../engine/
 import { REPLAY, REPLAY_PROVENANCE } from '../engine/donki';
 import { at, dayOf, hhmm, stamp, duration, MIN_PER_DAY } from '../engine/time';
 import { fmt } from '../engine/units';
-import { Chip, Src, useUi, LEVEL_ICON } from './common';
+import { Chip, Src, useUi, LevelIcon } from './common';
+import { NumberTicker } from './fx/NumberTicker';
+import { useDrawIn } from './fx/useDrawIn';
+import { Segmented } from './Segmented';
+import { DUR, EASE_OUT, prefersReducedMotion } from './motion';
+
+const MissionView = lazy(() => import('./MissionView'));
 import { LiveDonki } from './LiveDonki';
 
 const TH = rules.thresholds;
@@ -21,6 +30,7 @@ export function ConsoleView() {
       </div>
       <div className="col">
         <div className="area-budget"><BudgetPanel /></div>
+        <div className="area-mission"><MissionPanel /></div>
         <div className="area-weather"><WeatherPanel /></div>
       </div>
     </div>
@@ -73,11 +83,33 @@ function AlertPanel() {
   const main = shown[0];
   const rest = shown.slice(1);
   const suppressed = active.filter((a) => a.suppressed);
+  const root = useRef<HTMLElement>(null);
+  const stateKey = main ? `${main.id}:${main.level}` : 'calm';
+
+  // The one orchestrated moment: a new Warning or Caution enters with a band wipe and the action words rise.
+  // It takes under 0.6 s and never hides the text for longer. Reduced motion skips it.
+  useLayoutEffect(() => {
+    const el = root.current;
+    if (!el || !main || prefersReducedMotion()) return;
+    if (main.level !== 'warning' && main.level !== 'caution') return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+      tl.fromTo('.alert-head', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.38 })
+        .fromTo('.alert-action .w', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.42, stagger: 0.035 }, '-=0.22')
+        .fromTo('.alert-why', { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3 }, '-=0.3')
+        .fromTo('.btn.go, .btn.go-caution', { scale: 0.96 }, { scale: 1, duration: 0.5, clearProps: 'transform' }, '-=0.35')
+        .fromTo('.go-ring', { opacity: 0.7, scale: 1 }, { opacity: 0, scale: 1.18, duration: 0.9, ease: 'power2.out' }, '<');
+    }, el);
+    return () => ctx.revert();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateKey]);
 
   if (!main) {
     return (
-      <section className="panel alert-panel" aria-labelledby="alert-h">
+      <motion.section ref={root} key="calm" className="panel alert-panel" aria-labelledby="alert-h"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: DUR.slow, ease: EASE_OUT }}>
         <div className="calm">
+          <ShieldCheck className="calm-mark" size={120} weight="thin" aria-hidden="true" />
           <div className="status"><span className="orb" aria-hidden="true" /><Chip level="nominal">Nominal</Chip></div>
           <h2 id="alert-h">Dose rate normal. No action.</h2>
           <p className="muted">
@@ -90,27 +122,31 @@ function AlertPanel() {
           )}
           {suppressed.length > 0 && <SuppressedNote alerts={suppressed} />}
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   const rule = RULES[main.ruleId];
   const inhibited = w.inhibited.has(main.ruleId);
   return (
-    <section className={`panel alert-panel level-${main.level}`} aria-labelledby="alert-h" aria-live="assertive">
+    <section ref={root} className={`panel alert-panel level-${main.level}`} aria-labelledby="alert-h" aria-live="assertive">
       <div className="alert-head">
-        <span className="lvl"><span className="ico" aria-hidden="true">{LEVEL_ICON[main.level]}</span>{main.level.toUpperCase()}</span>
+        <span className="lvl"><LevelIcon level={main.level} size={20} />{main.level.toUpperCase()}</span>
         <span>{rule.title}</span>
         <span className="evt">{main.id}{main.acked ? ' · acknowledged' : ''}</span>
       </div>
       <div className="alert-main">
-        <h2 id="alert-h" className="alert-action">{actionSentence(main, w)}</h2>
+        <h2 id="alert-h" className="alert-action" aria-label={actionSentence(main, w)}>
+          {actionSentence(main, w).split(' ').map((word, i) => <span key={`${stateKey}-${i}`} className="w" aria-hidden="true">{word} </span>)}
+        </h2>
         <p className="alert-why">{whyLine(main, w)}</p>
       </div>
       <div className="alert-buttons">
         {(main.level === 'warning' || main.level === 'caution') && (
           <button className={`btn ${main.level === 'warning' ? 'go' : 'go-caution'}`} onClick={() => { sim.act({ type: 'procStart', alertId: main.id }); openProcedure(); }}>
+            <span className="go-ring" aria-hidden="true" />
             {w.procedure ? 'Open procedure SH-1' : 'Go to procedure SH-1'}
+            <ArrowUpRight size={18} weight="bold" aria-hidden="true" />
           </button>
         )}
         <button className="btn" disabled={main.acked} onClick={() => { sim.act({ type: 'ack', alertId: main.id }); toast(`${main.id} acknowledged`); }}>
@@ -138,7 +174,13 @@ function AlertPanel() {
       </p>
       {(rest.length > 0 || suppressed.length > 0) && (
         <div className="secondary-alerts">
-          {rest.map((a) => <MiniAlert key={a.id} a={a} />)}
+          <AnimatePresence initial={false}>
+            {rest.map((a) => (
+              <motion.div key={a.id} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: DUR.fast } }}>
+                <MiniAlert a={a} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
           {suppressed.length > 0 && <SuppressedNote alerts={suppressed} />}
         </div>
       )}
@@ -186,12 +228,13 @@ function BudgetPanel() {
     <section className="panel" aria-labelledby="budget-h">
       <header><h2 id="budget-h">Dose budget</h2><span className="aside"><span className="tag">Simulated</span></span></header>
       <div className="body">
+        <BudgetBar used={career} end={end} limit={limit} />
         <dl className="kv">
-          <div className="hl"><dt>Rate now (personal)</dt><dd>{fmt(s.personal)}<small>mSv/h</small> {rising ? '↑' : ''}</dd></div>
-          <div><dt>Mission so far</dt><dd>{fmt(w.missionDoseMSv, 1)}<small>mSv</small></dd></div>
-          <div><dt>Career used</dt><dd>{fmt(career, 1)} / <Src k="career">{limit}</Src><small>mSv</small></dd></div>
-          <div><dt>Budget left</dt><dd>{fmt(Math.max(0, left), 1)}<small>mSv</small></dd></div>
-          <div><dt>Next 24 h, unsheltered</dt><dd><Src k="projection24h">{fmt(w.projection24h(), 0)}</Src><small>mSv est.</small></dd></div>
+          <div className="hl"><dt>Rate now (personal)</dt><dd><NumberTicker value={s.personal} digits={2} /><small>mSv/h</small>{rising ? <span className="rise" aria-label="rising"> ↑</span> : null}</dd></div>
+          <div><dt>Mission so far</dt><dd><NumberTicker value={w.missionDoseMSv} /><small>mSv</small></dd></div>
+          <div><dt>Career used</dt><dd><NumberTicker value={career} /> / <Src k="career">{limit}</Src><small>mSv</small></dd></div>
+          <div><dt>Budget left</dt><dd><NumberTicker value={Math.max(0, left)} /><small>mSv</small></dd></div>
+          <div><dt>Next 24 h, unsheltered</dt><dd><Src k="projection24h"><NumberTicker value={w.projection24h()} digits={0} /></Src><small>mSv est.</small></dd></div>
           <div><dt>At mission end (day 860)</dt><dd>~{Math.round(end).toLocaleString('en-US')}<small>mSv</small></dd></div>
         </dl>
         {end > limit && (
@@ -227,6 +270,10 @@ function CareerChart({ w }: { w: World }) {
   const fut: string[] = [];
   for (let d = Math.ceil(nowD / 20) * 20; d <= maxD; d += 20) fut.push(`${xs(d)},${ys(w.careerDoseMSv + gcrDoseMSv(w.t, d * MIN_PER_DAY))}`);
   const nowPt = `${xs(nowD)},${ys(w.careerDoseMSv)}`;
+  const pastRef = useRef<SVGPolylineElement>(null);
+  const futRef = useRef<SVGPolylineElement>(null);
+  useDrawIn(pastRef, 'mount', 1100);
+  useDrawIn(futRef, 'mount', 1600);
   return (
     <figure style={{ margin: '14px 0 0' }}>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Career dose path. Now ${fmt(w.careerDoseMSv, 0)} mSv. Projected ${Math.round(w.projectedEndMSv())} mSv at day 860.`}>
@@ -237,8 +284,8 @@ function CareerChart({ w }: { w: World }) {
         <line className="chart-grid" x1={P.l} x2={W - P.r} y1={ys(1000)} y2={ys(1000)} strokeDasharray="2 3" />
         <text x={P.l - 4} y={ys(1000) + 4} textAnchor="end">1000</text>
         <text x={P.l - 4} y={ys(0) + 4} textAnchor="end">0</text>
-        <polyline className="chart-line" points={[...past, nowPt].join(' ')} />
-        <polyline className="chart-personal" points={[nowPt, ...fut].join(' ')} />
+        <polyline ref={pastRef} className="chart-line" points={[...past, nowPt].join(' ')} />
+        <polyline ref={futRef} className="chart-personal" points={[nowPt, ...fut].join(' ')} />
         <circle cx={xs(nowD)} cy={ys(w.careerDoseMSv)} r={4} fill="var(--text)" />
       </svg>
       <figcaption className="legend">
@@ -247,6 +294,48 @@ function CareerChart({ w }: { w: World }) {
         <span>Limits: <Src k="career">600 NASA</Src>, <Src k="intlCareer">1000 ESA / CSA / Roscosmos</Src></span>
       </figcaption>
     </figure>
+  );
+}
+
+/** Career budget as one bar: used now, the GCR projection to mission end, and the NASA limit mark. */
+function BudgetBar({ used, end, limit }: { used: number; end: number; limit: number }) {
+  const max = Math.max(1100, end * 1.05);
+  const pct = (v: number) => `${(v / max) * 100}%`;
+  return (
+    <div className="bbar" role="img" aria-label={`Career dose ${Math.round(used)} of ${limit} mSv. Projected ${Math.round(end)} mSv at mission end.`}>
+      <div className="bbar-track">
+        <motion.span className="bbar-proj" initial={{ scaleX: 0 }} animate={{ scaleX: end / max }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }} />
+        <motion.span className="bbar-used" initial={{ scaleX: 0 }} animate={{ scaleX: used / max }} transition={{ duration: 0.9, ease: EASE_OUT }} />
+        <span className="bbar-limit" style={{ left: pct(limit) }}><span>{limit}</span></span>
+      </div>
+      <div className="bbar-legend"><span><i className="u" />Used</span><span><i className="p" />Projected to day 860</span></div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------- mission (three.js)
+
+function MissionPanel() {
+  const { sim, theme } = useUi();
+  const w = sim.world;
+  const day = Math.round((w.t / MIN_PER_DAY) * 100) / 100;
+  const warn = w.activeAlerts.some((a) => a.level === 'warning');
+  const sepActive = REPLAY.some((r) => r.kind === 'SEP' && r.t <= w.t && (r.tEnd ?? Infinity) > w.t);
+  const caution = w.activeAlerts.some((a) => a.level === 'caution');
+  const storm = warn ? 'hit' : sepActive || caution ? 'watch' : 'none';
+  return (
+    <section className="panel mission" aria-labelledby="mv-h">
+      <header>
+        <h2 id="mv-h">Where you are</h2>
+        <span className="aside">{storm === 'hit' ? <Chip level="warning">Protons at the vehicle</Chip> : storm === 'watch' ? <Chip level="caution">Solar event</Chip> : <span className="num">Day {Math.floor(day)} of 180 out</span>}</span>
+      </header>
+      <Suspense fallback={<div className="mv mv-skeleton" aria-hidden="true" />}>
+        <MissionView day={day} storm={storm} theme={theme} />
+      </Suspense>
+      <p className="mv-caption">
+        Drag to turn the view. The dashed line is your signal path to Earth ({LINK_LABEL[w.link].toLowerCase()}). Simplified, coplanar orbits.
+      </p>
+    </section>
   );
 }
 
@@ -309,6 +398,8 @@ function RateChart({ w }: { w: World }) {
   const ticks: number[] = [];
   for (let t = Math.ceil(t0 / 60) * 60; t <= t1; t += 120) ticks.push(t);
   const shelters = w.shelterIntervals.filter((iv) => (iv.end ?? t1) > t0);
+  const meanRef = useRef<SVGPolylineElement>(null);
+  useDrawIn(meanRef, 'mount', 1000);
   return (
     <figure style={{ margin: 0 }}>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Cabin dose rate, last 8 hours. Now ${fmt(w.current.mean)} mSv/h.`}>
@@ -321,7 +412,7 @@ function RateChart({ w }: { w: World }) {
         <text x={P.l + 6} y={ys(3 * B) - 5} textAnchor="start">3×B caution</text>
         <text x={P.l + 6} y={ys(10 * B) - 5} textAnchor="start">10×B warning</text>
         <polygon className="chart-area" points={area} />
-        <polyline className="chart-line" points={mean} />
+        <polyline ref={meanRef} className="chart-line" points={mean} />
         <polyline className="chart-personal" points={pers} />
         {ticks.map((t) => <text key={t} x={xs(t)} y={H - 6} textAnchor="middle">{hhmm(t)}</text>)}
         <text x={P.l - 6} y={H - P.b + 14} textAnchor="end">mSv/h</text>
@@ -350,10 +441,8 @@ function WeatherPanel() {
       <header>
         <h2 id="wx-h">Solar events</h2>
         <span className="aside">
-          <span className="seg" role="group" aria-label="Data source">
-            <button aria-pressed={tab === 'replay'} onClick={() => setTab('replay')}>Replay</button>
-            <button aria-pressed={tab === 'live'} onClick={() => setTab('live')}>Live DONKI</button>
-          </span>
+          <Segmented<'replay' | 'live'> size="sm" label="Data source" value={tab} onChange={setTab}
+            options={[{ value: 'replay', label: 'Replay' }, { value: 'live', label: 'Live DONKI' }]} />
         </span>
       </header>
       <div className="body">
@@ -365,12 +454,12 @@ function WeatherPanel() {
             {seen.length === 0 ? <p className="muted">No solar events in the last 3 days.</p> : (
               <ul className="feed">
                 {seen.map((r) => (
-                  <li key={r.id}>
+                  <motion.li key={r.id} layout initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: DUR.slow, ease: EASE_OUT }}>
                     <span className="k">{r.kind}</span>
                     <span>{r.summary}{r.kind === 'SEP' && r.tEnd && w.t < r.tEnd ? <> <Chip level="caution">Active</Chip></> : null}</span>
                     <span />
                     <span className="when">{stamp(r.t)} · {r.id}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             )}
