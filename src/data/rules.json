@@ -1,0 +1,180 @@
+{
+  "version": "PRD Rev C, approved 3 Nov 2026",
+  "note": "Thresholds are team values for a Mars cruise. They are not NASA flight rules. Edit this file to change a rule. No code change is necessary.",
+  "units": {
+    "storedAs": "mGy (absorbed dose) from each sensor",
+    "shownAs": "mSv (dose equivalent)",
+    "mSvPerMGy": 3.83,
+    "factorBasis": "MSL RAD cruise: 1.84 mSv/d over 0.481 mGy/d. One factor for the whole demo. It overstates the SPE dose, because SPE protons have a lower quality factor than GCR.",
+    "source": "zeitlin2013"
+  },
+  "baselines": {
+    "cruise": {
+      "mSvPerDay": 1.84,
+      "mSvPerHour": 0.0767,
+      "source": "zeitlin2013",
+      "evidence": "Measured, 1 instrument, ±0.33 mSv/d"
+    },
+    "surface": {
+      "mSvPerDay": 0.64,
+      "mSvPerHour": 0.0267,
+      "source": "hassler2014",
+      "evidence": "Measured, 1 instrument, ±0.12 mSv/d"
+    }
+  },
+  "limits": {
+    "career": {
+      "mSv": 600,
+      "label": "NASA career limit",
+      "source": "std3001"
+    },
+    "singleSpe": {
+      "mSv": 250,
+      "label": "NASA limit for one SPE",
+      "source": "std3001"
+    },
+    "intlCareer": {
+      "mSv": 1000,
+      "label": "ESA / CSA / Roscosmos career limit",
+      "source": "std3001"
+    },
+    "shelterGoal": {
+      "mSv": 150,
+      "label": "Orion shelter design goal for a large event",
+      "source": "berger2024"
+    }
+  },
+  "thresholds": {
+    "advisoryMultiple": {
+      "x": 2,
+      "label": "2 × B",
+      "source": "team"
+    },
+    "verifyMultiple": {
+      "x": 3,
+      "label": "3 × B",
+      "source": "team"
+    },
+    "cautionMultiple": {
+      "x": 3,
+      "label": "3 × B",
+      "source": "team"
+    },
+    "warningMultiple": {
+      "x": 10,
+      "label": "10 × B",
+      "source": "team"
+    },
+    "projection24hMSv": {
+      "value": 50,
+      "label": "50 mSv in 24 h, unsheltered",
+      "basis": "20% of the 250 mSv NASA limit for one SPE",
+      "source": "team"
+    },
+    "flareAdvisoryClass": {
+      "value": "M1",
+      "source": "donki"
+    },
+    "cmeAdvisoryKms": {
+      "value": 500,
+      "source": "donki"
+    },
+    "flareCautionClass": {
+      "value": "X1",
+      "source": "donki"
+    },
+    "cmeCautionKms": {
+      "value": 1000,
+      "source": "donki"
+    },
+    "sepCaution": {
+      "label": "≥10 MeV protons at ≥10 pfu (NOAA S1)",
+      "source": "noaaScale"
+    },
+    "dosimeterMismatchPct": {
+      "value": 25,
+      "source": "team"
+    },
+    "shelterFactor": {
+      "value": 0.25,
+      "label": "Shelter keeps 25% of the cabin dose rate",
+      "basis": "Team value. Validate against Orion and Artemis I data.",
+      "source": "team"
+    },
+    "priorCareerMSv": {
+      "value": 15.4,
+      "label": "Career dose before this mission",
+      "source": "team"
+    },
+    "budgetEventAdvisoryPct": {
+      "value": 5,
+      "source": "team"
+    }
+  },
+  "timing": {
+    "warningSustainMin": 5,
+    "cautionSustainMin": 10,
+    "verifyMismatchMin": 10,
+    "missingDataMin": 5,
+    "warningClearMin": 120,
+    "cautionClearMin": 60,
+    "donkiLookbackMin": 1440,
+    "verifySingleSensorMin": 2,
+    "verifyClearMin": 10,
+    "cautionFlareWindowMin": 720,
+    "note": "donkiLookbackMin: how long a flare or CME record keeps an Advisory. cautionFlareWindowMin: how long an X-class flare with a fast CME keeps a Caution. A record that one event used does not start a second event. Team values."
+  },
+  "rules": [
+    {
+      "id": "R-A1",
+      "level": "advisory",
+      "title": "Solar activity, no dose rise",
+      "triggers": [
+        "DONKI logs a flare of class M1 or higher.",
+        "DONKI logs a CME at 500 km/s or faster.",
+        "All sensors stay below 2 × B (0.15 mSv/h)."
+      ],
+      "action": "Read at the next daily review. No timeline change.",
+      "basis": "M-class and stronger flares and fast CMEs come before most large proton events. The dose at the vehicle is still normal.",
+      "source": "team"
+    },
+    {
+      "id": "R-V1",
+      "level": "verify",
+      "title": "Sensor does not agree",
+      "triggers": [
+        "1 sensor reads at or above 3 × B (0.23 mSv/h) and the other sensors do not agree.",
+        "The personal dosimeter and the cabin mean differ by more than 25% for 10 min.",
+        "A sensor sends no data for 5 min."
+      ],
+      "action": "Check the sensor. Read the personal dosimeter. No shelter action.",
+      "basis": "One sensor alone is often a fault, not an event. This rule stops a single bad sensor from giving a Caution or a Warning.",
+      "source": "team"
+    },
+    {
+      "id": "R-C1",
+      "level": "caution",
+      "title": "Solar particle event likely",
+      "triggers": [
+        "DONKI logs an SEP event (≥10 MeV at ≥10 pfu, NOAA S1).",
+        "DONKI logs a flare of class X1 or higher with a linked CME at 1,000 km/s or faster.",
+        "2 or more sensors read at or above 3 × B (0.23 mSv/h) for 10 min."
+      ],
+      "action": "Finish or safe the task within 30 min. Stage the shelter. Put the vest within reach.",
+      "basis": "Fast CMEs drive the largest proton events. Two sensors that agree give a real rise, not a fault. 30 min is enough to safe most tasks.",
+      "source": "team"
+    },
+    {
+      "id": "R-W1",
+      "level": "warning",
+      "title": "Solar particle event",
+      "triggers": [
+        "2 or more sensors read at or above 10 × B (0.77 mSv/h) for 5 min.",
+        "The projected unsheltered dose for the next 24 h is 50 mSv or more."
+      ],
+      "action": "Go to the shelter now. Start procedure SH-1.",
+      "basis": "50 mSv is 20% of the 250 mSv NASA limit for one SPE. A Warning at that point keeps the event far below the limit.",
+      "source": "team"
+    }
+  ]
+}
