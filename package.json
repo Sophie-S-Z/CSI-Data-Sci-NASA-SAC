@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "story": "vite-node scripts/print-story.ts"
+    "story": "vite-node scripts/print-story.ts",
+    "fetch-donki": "node scripts/fetch-donki.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.1.0",

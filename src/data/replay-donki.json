@@ -3,13 +3,13 @@
   "provenance": "Synthetic records in the DONKI JSON schema, placed on mission time for the demo. Dependency DP-5: replace them with one real DONKI SEP event. Run `npm run fetch-donki -- <start> <end>` with an api.nasa.gov key.",
   "flares": [
     { "flrID": "SIM-FLR-090-0315", "day": 90, "hhmm": "03:15", "classType": "M1.4", "sourceLocation": "N14E32", "linkedEvents": [] },
-    { "flrID": "SIM-FLR-094-0640", "day": 94, "hhmm": "06:40", "classType": "X2.1", "sourceLocation": "S09W18", "linkedEvents": ["SIM-CME-094-0652", "SIM-SEP-094-1330"] }
+    { "flrID": "SIM-FLR-094-0640", "day": 94, "hhmm": "06:40", "classType": "X2.1", "sourceLocation": "S09W18", "linkedEvents": ["SIM-CME-094-0640", "SIM-SEP-094-1330"] }
   ],
   "cmes": [
     { "activityID": "SIM-CME-091-1820", "day": 91, "hhmm": "18:20", "speed": 640, "type": "C", "linkedEvents": [] },
-    { "activityID": "SIM-CME-094-0652", "day": 94, "hhmm": "06:40", "speed": 1800, "type": "R", "linkedEvents": ["SIM-FLR-094-0640"] }
+    { "activityID": "SIM-CME-094-0640", "day": 94, "hhmm": "06:40", "speed": 1800, "type": "R", "linkedEvents": ["SIM-FLR-094-0640"] }
   ],
   "seps": [
-    { "sepID": "SIM-SEP-094-1330", "day": 94, "hhmm": "13:30", "endDay": 95, "endHhmm": "01:00", "endNote": "DONKI SEP records have no end time. The end is a team value for the clear rule.", "instruments": ["GOES-P: Proton 10 MeV"], "linkedEvents": ["SIM-FLR-094-0640", "SIM-CME-094-0652"] }
+    { "sepID": "SIM-SEP-094-1330", "day": 94, "hhmm": "13:30", "endDay": 95, "endHhmm": "01:00", "endNote": "DONKI SEP records have no end time. The end is a team value for the clear rule.", "instruments": ["GOES-P: Proton 10 MeV"], "linkedEvents": ["SIM-FLR-094-0640", "SIM-CME-094-0640"] }
   ]
 }
