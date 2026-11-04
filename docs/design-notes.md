@@ -36,3 +36,17 @@ IBM Plex Sans for words and IBM Plex Mono for numbers (NFR-05). Both ship with t
 ## Trust
 
 Every threshold on the screen is a button that opens its source: the value, the citation, and the evidence level. Team values say "Team value for demo."
+
+## Motion
+
+- Motion shows cause and effect. A panel rises when it arrives. A thumb slides to the option you picked. A check mark draws when you finish a step.
+- The alarm text moves only once. A new Warning or Caution enters with a band wipe and the action words rise. This takes less than 0.6 s. After that, the alarm text does not move.
+- Breathing dots show live state only: an open procedure, and the nominal orb. They never sit on alarm text.
+- Easing is ease-out-expo. Springs have no overshoot. Durations stay between 150 and 400 ms, except one-time chart draws.
+- The OS "reduce motion" setting stops every CSS animation, and motion skips transforms. GSAP and anime.js set the end state at once.
+
+## Body systems
+
+- Body rules give Advisory or Caution only. A Warning is for radiation only, because a Warning means "go to the shelter now".
+- Body rules do not count toward the radiation alarm limit (M-3).
+- A body finding takes the visibility of its check-in. A private check-in gives a private finding.

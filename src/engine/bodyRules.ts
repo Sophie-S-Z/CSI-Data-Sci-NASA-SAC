@@ -1,0 +1,140 @@
+import bodyRules from '../data/body-rules.json';
+import type { CheckIn } from './world';
+import { dayOf } from './time';
+
+/**
+ * Body-system rules (scope change 3B). Pure functions over check-ins and
+ * simulated vitals. They give Advisory or Caution only, never Warning, and
+ * they stay apart from the radiation alarm count (M-3).
+ */
+
+export type BodyLevel = 'advisory' | 'caution';
+export type BodySystem = 'radiation' | 'vision' | 'air' | 'sleep' | 'mood' | 'heart' | 'bone' | 'blood';
+
+export interface BodyRule {
+  id: string;
+  system: BodySystem;
+  title: string;
+  level: BodyLevel;
+  text: string;
+  params: Record<string, number>;
+  source: string;
+}
+
+export const BODY_RULES = bodyRules.rules as BodyRule[];
+export const BODY_RULE = Object.fromEntries(BODY_RULES.map((r) => [r.id, r])) as Record<string, BodyRule>;
+
+export interface BodyFinding {
+  ruleId: string;
+  system: BodySystem;
+  level: BodyLevel;
+  title: string;
+  text: string;
+  /** What the rule saw, in plain words. */
+  why: string;
+  source: string;
+}
+
+export interface DatedCheckIn { t: number; c: CheckIn }
+
+export interface BodyInput {
+  /** Check-ins, oldest first. The last one is the newest. */
+  checkins: DatedCheckIn[];
+  /** The last radiation event that reached Caution or Warning. */
+  lastEvent: { t: number; doseMSv: number } | null;
+  /** Simulated daily resting heart rate, oldest first. The last value is today. */
+  hr: number[];
+  /** Simulated daily exercise minutes, oldest first. The last value is today. */
+  exercise: number[];
+}
+
+const GI = ['Nausea', 'Vomiting', 'Diarrhea'];
+const VISION = ['Blurred near vision', 'Eye pressure'];
+const CO2_SIGNS = ['Stuffy head', 'Short of breath', 'Dizzy'];
+const BLOOD = ['Bruising', 'Bleeding gums'];
+
+const hasAny = (c: CheckIn, list: string[]) => c.symptoms.some((s) => list.includes(s));
+
+function finding(id: string, why: string): BodyFinding {
+  const r = BODY_RULE[id];
+  return { ruleId: r.id, system: r.system, level: r.level, title: r.title, text: r.text, why, source: r.source };
+}
+
+/** Deterministic noise in [-0.5, 0.5]. */
+export const jitter = (i: number, k: number) => Math.sin(i * 12.9898 + k * 78.233) * 0.5;
+
+/** Simulated vitals for one mission day. A Warning adds a stress response. */
+export function simVitals(day: number, stressed: boolean): { hr: number; exercise: number } {
+  return {
+    hr: Math.round(58 + jitter(day, 3) * 4 + (stressed ? 9 : 0)),
+    exercise: Math.round(85 + jitter(day, 4) * 12 - (stressed ? 40 : 0)),
+  };
+}
+
+export function evaluateBody(input: BodyInput): BodyFinding[] {
+  const out: BodyFinding[] = [];
+  const { checkins, lastEvent, hr, exercise } = input;
+  const last = checkins[checkins.length - 1];
+
+  if (last) {
+    const c = last.c;
+    const p = BODY_RULE['B-RAD1'].params;
+    if (hasAny(c, GI) && lastEvent && lastEvent.doseMSv > p.minEventMSv && last.t - lastEvent.t <= p.windowH * 60 && last.t >= lastEvent.t) {
+      const h = Math.round((last.t - lastEvent.t) / 60);
+      out.push(finding('B-RAD1', `${c.symptoms.filter((s) => GI.includes(s)).join(', ')} ${h} h after an event dose of ${lastEvent.doseMSv.toFixed(1)} mSv.`));
+    }
+
+    if (hasAny(c, VISION)) {
+      const days = BODY_RULE['B-V2'].params.days;
+      const today = dayOf(last.t);
+      const streak = Array.from({ length: days }, (_, k) => today - k).every((d) =>
+        checkins.some((x) => dayOf(x.t) === d && hasAny(x.c, VISION)),
+      );
+      if (streak) out.push(finding('B-V2', `Vision symptoms on days ${today - days + 1} to ${today}.`));
+      else out.push(finding('B-V1', `Logged: ${c.symptoms.filter((s) => VISION.includes(s)).join(', ')}.`));
+    }
+
+    if (c.symptoms.includes('Headache') && hasAny(c, CO2_SIGNS)) {
+      out.push(finding('B-A1', `Headache with ${c.symptoms.filter((s) => CO2_SIGNS.includes(s)).join(', ').toLowerCase()}.`));
+    }
+
+    if (hasAny(c, BLOOD)) out.push(finding('B-B2', `Logged: ${c.symptoms.filter((s) => BLOOD.includes(s)).join(', ')}.`));
+  }
+
+  {
+    const { underH, nights } = BODY_RULE['B-S1'].params;
+    const recent = checkins.slice(-nights);
+    if (recent.length === nights && recent.every((x) => x.c.sleepH < underH)) {
+      out.push(finding('B-S1', `Sleep: ${recent.map((x) => `${x.c.sleepH} h`).join(', ')}.`));
+    }
+  }
+
+  {
+    const { atOrBelow, count, of } = BODY_RULE['B-M1'].params;
+    const recent = checkins.slice(-of).filter((x) => x.c.mood !== undefined);
+    const low = recent.filter((x) => (x.c.mood ?? 5) <= atOrBelow).length;
+    if (low >= count) out.push(finding('B-M1', `Mood ${atOrBelow} or lower on ${low} of the last ${recent.length} check-ins.`));
+  }
+
+  if (hr.length) {
+    const { highBpm, lowBpm } = BODY_RULE['B-H1'].params;
+    const now = hr[hr.length - 1];
+    if (now > highBpm || now < lowBpm) out.push(finding('B-H1', `Resting heart rate ${now} bpm.`));
+    else if (hr.length > 1) {
+      const prior = hr.slice(0, -1);
+      const mean = prior.reduce((a, b) => a + b, 0) / prior.length;
+      if (now - mean > BODY_RULE['B-H2'].params.riseBpm) {
+        out.push(finding('B-H2', `Resting heart rate ${now} bpm. The 7-day mean is ${Math.round(mean)} bpm.`));
+      }
+    }
+  }
+
+  if (exercise.length) {
+    const { minPerDay, count, of } = BODY_RULE['B-B1'].params;
+    const recent = exercise.slice(-of);
+    const lowDays = recent.filter((m) => m < minPerDay).length;
+    if (lowDays >= count) out.push(finding('B-B1', `Exercise under ${minPerDay} min on ${lowDays} of the last ${recent.length} days.`));
+  }
+
+  return out.sort((a, b) => (a.level === b.level ? 0 : a.level === 'caution' ? -1 : 1));
+}

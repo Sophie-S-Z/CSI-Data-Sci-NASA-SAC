@@ -46,5 +46,47 @@
     "citation": "CSI team value for the Space Apps 2026 demo. Not a NASA flight rule. See PRD CSI-HM-PRD-001 Rev C, section 07.",
     "url": "",
     "evidence": "Team value for demo."
+  },
+  "lee2020sans": {
+    "short": "Lee et al., npj Microgravity 2020",
+    "citation": "Lee A.G. et al. Spaceflight associated neuro-ocular syndrome (SANS) and the neuro-ophthalmologic effects of microgravity: a review and an update. npj Microgravity 6:7 (2020).",
+    "url": "https://doi.org/10.1038/s41526-020-0097-9",
+    "evidence": "Review. Changes in near vision are a common first sign. Diagnosis needs an eye exam."
+  },
+  "law2014co2": {
+    "short": "Law et al., JOEM 2014",
+    "citation": "Law J. et al. Relationship between carbon dioxide levels and reported headaches on the International Space Station. J Occup Environ Med 56(5):477-483 (2014).",
+    "url": "https://doi.org/10.1097/JOM.0000000000000158",
+    "evidence": "Observational, ISS crews. Headache odds rise with cabin CO2."
+  },
+  "leblanc2000bone": {
+    "short": "LeBlanc et al., J Musculoskelet Neuronal Interact 2000",
+    "citation": "LeBlanc A. et al. Bone mineral and lean tissue loss after long duration space flight. J Musculoskelet Neuronal Interact 1(2):157-160 (2000).",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/15758512/",
+    "evidence": "Measured, Mir crews. Hip bone loss of about 1 to 1.6% per month."
+  },
+  "barger2014sleep": {
+    "short": "Barger et al., Lancet Neurology 2014",
+    "citation": "Barger L.K. et al. Prevalence of sleep deficiency and use of hypnotic drugs in astronauts before, during, and after spaceflight. Lancet Neurol 13(9):904-912 (2014).",
+    "url": "https://doi.org/10.1016/S1474-4422(14)70122-X",
+    "evidence": "Observational, shuttle and ISS crews. Mean sleep under 6 h a night in flight."
+  },
+  "hrpBmed": {
+    "short": "NASA HRP, Behavioral risk (BMed)",
+    "citation": "NASA Human Research Program. Risk of Adverse Cognitive or Behavioral Conditions and Psychiatric Disorders. Evidence report.",
+    "url": "https://humanresearchroadmap.nasa.gov/",
+    "evidence": "Evidence report. Mood and sleep trends are early signs. Thresholds here are team values."
+  },
+  "iaeaArs": {
+    "short": "IAEA / WHO, acute radiation syndrome",
+    "citation": "IAEA. Medical Management of Radiation Injuries. Safety Reports Series No. 101 (2020). Prodromal signs of acute radiation syndrome.",
+    "url": "https://www.iaea.org/publications/12304/medical-management-of-radiation-injuries",
+    "evidence": "Clinical guidance. Nausea and vomiting are prodromal signs at doses far above the doses in this demo."
+  },
+  "hrpCardio": {
+    "short": "NASA HRP, Cardiovascular risk",
+    "citation": "NASA Human Research Program. Risk of Cardiovascular Adaptations Contributing to Adverse Mission Performance and Health Outcomes. Evidence report.",
+    "url": "https://humanresearchroadmap.nasa.gov/",
+    "evidence": "Evidence report. Heart rate limits here are team values for the demo."
   }
 }

@@ -50,7 +50,7 @@ The replay deck at the bottom of the screen drives the demo. "Pause on new alert
 | FR-11 Ground summary | **Ground**. Built when the link returns from a blackout. |
 | FR-12 CMO case view | **CMO** |
 | FR-13 Combined-effects note | **CMO** (infection watch, evidence "emerging") |
-| FR-14 Placeholder cards | **Other systems** |
+| FR-14 Body systems (scope change 3B) | **Body systems**. Rules B-RAD1 to B-B2 in `src/data/body-rules.json`. Advisory or Caution only. They do not count toward M-3. |
 | FR-15 Night mode | **Night** theme (no blue light) |
 | NFR-01 Offline | `vite-plugin-pwa`. Fonts ship with the app. |
 | NFR-02 Units | `src/engine/units.ts`. One factor, documented in `rules.json`. |
@@ -59,9 +59,16 @@ The replay deck at the bottom of the screen drives the demo. "Pause on new alert
 | NFR-07 Audit | Append-only, frozen log entries. Export as JSON on **Log**. |
 | NFR-08 Labels | "Replay", "Simulated dose", "Not for clinical use" in the alert bar |
 
+### Added in the UI pass
+
+- **Where you are.** A three.js view of the Sun, Earth, Mars, the vehicle, and the signal path to Earth. Protons stream from the Sun to the vehicle during a solar event. It loads on demand and draws only when something moves. Orbits are simplified and coplanar (`src/engine/orbit.ts`).
+- **Daily health check.** Four steps: sleep and mood, radiation signs, head, eyes, and air (SANS and CO2), and body and sharing. The side panel shows the body rules that a draft check-in sets off, with the source for each rule.
+- **Command menu.** Press Ctrl+K or Cmd+K, or tap **Actions**. It opens SH-1, acknowledges, changes the link, and jumps to demo beats.
+- **Motion.** motion (`motion/react`) moves the tabs, sheets, and lists. GSAP runs the one Warning or Caution entry and the number tickers. anime.js draws the chart lines. The alarm text does not move after its entry, which takes less than 0.6 s. With "reduce motion" set in the OS, the app shows every state with no movement.
+
 ## Edit the rules
 
-All thresholds, timings, and sources are in `src/data/rules.json`. The Science owner can change a value with no code change. Run `npm test` after a change. The tests check the day 94 demo story from PRD section 07.
+All radiation thresholds, timings, and sources are in `src/data/rules.json`. The body-system rules are in `src/data/body-rules.json`. The Science owner can change a value with no code change. Run `npm test` after a change. The tests check the day 94 demo story from PRD section 07.
 
 The mission, sensors, schedule, sensor faults, and the SPE dose profile are in `src/data/mission.json`.
 

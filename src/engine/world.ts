@@ -7,6 +7,7 @@ import {
 import { REPLAY, flareRank, type DonkiRecord } from './donki';
 import { at, dayOf, stamp, duration } from './time';
 import { toMSv, fmt } from './units';
+import { evaluateBody, simVitals, type BodyFinding, type BodyInput } from './bodyRules';
 
 export type Level = 'advisory' | 'verify' | 'caution' | 'warning';
 export const LEVEL_RANK: Record<Level, number> = { advisory: 1, verify: 2, caution: 3, warning: 4 };
@@ -42,7 +43,17 @@ export interface Alert {
 
 export type LogKind = 'alert' | 'clear' | 'advisory' | 'action' | 'checkin' | 'summary' | 'system' | 'visibility';
 
-export interface CheckIn { sleepH: number; symptoms: string[]; note: string }
+export interface CheckIn {
+  sleepH: number;
+  symptoms: string[];
+  note: string;
+  /** 1 (poor) to 5 (great). */
+  sleepQuality?: number;
+  /** 1 (low) to 5 (high). */
+  mood?: number;
+  /** 0 (none) to 10 (worst). */
+  pain?: number;
+}
 
 export interface GroundSummary {
   sentT: number;
@@ -482,9 +493,16 @@ export class World {
         break;
       case 'checkin': {
         const c = action.data;
-        const parts = [`Sleep ${c.sleepH} h`, c.symptoms.length ? `Symptoms: ${c.symptoms.join(', ')}` : 'No symptoms'];
+        const parts = [`Sleep ${c.sleepH} h${c.sleepQuality ? ` (quality ${c.sleepQuality}/5)` : ''}`];
+        if (c.mood) parts.push(`Mood ${c.mood}/5`);
+        if (c.pain) parts.push(`Pain ${c.pain}/10`);
+        parts.push(c.symptoms.length ? `Symptoms: ${c.symptoms.join(', ')}` : 'No symptoms');
         if (c.note.trim()) parts.push(`Note: ${c.note.trim()}`);
         this.push({ kind: 'checkin', text: `Daily check-in. ${parts.join('. ')}.`, checkin: c, visibility: action.visibility, wall });
+        // Body-system rules (3B). Advisory or Caution only. They share the check-in's visibility.
+        for (const f of this.bodyFindings()) {
+          this.push({ kind: 'advisory', level: f.level, ruleId: f.ruleId, text: `${f.title}. ${f.why} ${f.text}`, visibility: action.visibility, wall });
+        }
         break;
       }
       case 'visibility': {
@@ -560,6 +578,26 @@ export class World {
       if (first) m.set(dayOf(first.t), (m.get(dayOf(first.t)) ?? 0) + 1);
     }
     return m;
+  }
+
+  /** Inputs for the body-system rules. `draft` adds an unsaved check-in at the end. */
+  bodyInput(draft?: CheckIn): BodyInput {
+    const checkins = this.log.filter((e) => e.kind === 'checkin' && e.checkin).map((e) => ({ t: e.t, c: e.checkin! }));
+    if (draft) checkins.push({ t: this.t, c: draft });
+    const ev = [...this.alerts].reverse().find((a) => a.kind === 'radiation' && (a.peak === 'warning' || a.peak === 'caution'));
+    const today = dayOf(this.t);
+    const days = Array.from({ length: 8 }, (_, i) => today - 7 + i);
+    const vit = days.map((d) => simVitals(d, this.alertsOnDay(d).some((a) => a.peak === 'warning')));
+    return {
+      checkins,
+      lastEvent: ev ? { t: ev.openedAt, doseMSv: ev.eventDoseMSv } : null,
+      hr: vit.map((v) => v.hr),
+      exercise: vit.map((v) => v.exercise),
+    };
+  }
+
+  bodyFindings(draft?: CheckIn): BodyFinding[] {
+    return evaluateBody(this.bodyInput(draft));
   }
 
   alertsOnDay(day: number): Alert[] {

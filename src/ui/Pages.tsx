@@ -1,82 +1,183 @@
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { Minus, Plus, Check, ArrowLeft, ArrowRight, DownloadSimple, Bone, Heart, Eye, Brain, Barbell, Moon } from '@phosphor-icons/react';
+import { Segmented } from './Segmented';
+import { NumberTicker } from './fx/NumberTicker';
+import { DUR, EASE_OUT, SPRING } from './motion';
 import rules from '../data/rules.json';
 import { LINK_LABEL, VIS_LABEL, VISIBILITY_ORDER, RULES, type LinkState, type LogEntry, type Visibility } from '../engine/world';
 import { REPLAY_PROVENANCE } from '../engine/donki';
 import { dayOf, stamp, hhmm, duration } from '../engine/time';
 import { fmt } from '../engine/units';
+import { BODY_RULES, jitter, type BodyFinding, type BodySystem } from '../engine/bodyRules';
 import { Chip, Src, sources, useUi } from './common';
 
 // ---------------------------------------------------------------- check-in (FR-05 daily check, FR-10 privacy)
 
-const SYMPTOMS = ['Nausea', 'Fatigue', 'Headache', 'Skin redness', 'Vomiting', 'Poor sleep'];
+/**
+ * Check-in content. The symptom groups follow the main spaceflight risks:
+ * early radiation sickness signs, head and eyes (SANS, CO2), and the body.
+ * The notes below are team guidance for the demo. They are not a diagnosis.
+ */
+const GROUPS = [
+  { id: 'rad', title: 'Radiation signs', hint: 'Early signs after a high dose. Most days you mark none.', items: ['Nausea', 'Vomiting', 'Diarrhea', 'Fatigue', 'Skin redness', 'Fever'] },
+  { id: 'head', title: 'Head, eyes, and air', hint: 'Vision change can be a sign of SANS. A headache with a stuffy head can come from high CO2.', items: ['Headache', 'Blurred near vision', 'Eye pressure', 'Stuffy head', 'Short of breath', 'Dizzy'] },
+  { id: 'body', title: 'Body', hint: 'Back pain is common in the first weeks of weightlessness.', items: ['Back pain', 'Muscle soreness', 'Joint pain', 'Bruising', 'Bleeding gums'] },
+] as const;
+
+const SCALE5 = { sleep: ['Poor', 'Fair', 'OK', 'Good', 'Great'], mood: ['Low', 'Flat', 'Steady', 'Good', 'High'] };
 
 export function VisibilityPicker({ value, onChange, name }: { value: Visibility; onChange: (v: Visibility) => void; name: string }) {
+  return <Segmented<Visibility> label={name} value={value} onChange={onChange} options={VISIBILITY_ORDER.map((v) => ({ value: v, label: VIS_LABEL[v] }))} />;
+}
+
+function Stepper({ value, set, min, max, step, unit, label }: { value: number; set: (n: number) => void; min: number; max: number; step: number; unit: string; label: string }) {
   return (
-    <div className="seg" role="radiogroup" aria-label={name}>
-      {VISIBILITY_ORDER.map((v) => (
-        <button key={v} type="button" role="radio" aria-checked={value === v} aria-pressed={value === v} onClick={() => onChange(v)}>{VIS_LABEL[v]}</button>
-      ))}
+    <div className="stepper" role="group" aria-label={label}>
+      <button type="button" aria-label={`Less ${label.toLowerCase()}`} onClick={() => set(Math.max(min, +(value - step).toFixed(1)))}><Minus size={20} weight="bold" /></button>
+      <output aria-live="polite"><NumberTicker value={value} digits={step < 1 ? 1 : 0} /> {unit}</output>
+      <button type="button" aria-label={`More ${label.toLowerCase()}`} onClick={() => set(Math.min(max, +(value + step).toFixed(1)))}><Plus size={20} weight="bold" /></button>
     </div>
   );
 }
 
+function FindingText({ f }: { f: BodyFinding }) {
+  return (
+    <span className="finding">
+      <strong>{f.title}.</strong> {f.text}
+      <span className="finding-meta"><span className="num">{f.ruleId}</span> · <Src k={f.source}>{(sources as Record<string, { short: string }>)[f.source]?.short ?? f.source}</Src></span>
+    </span>
+  );
+}
+
+const STEPS = ['Sleep and mood', 'Radiation signs', 'Head, eyes, and air', 'Body and sharing'];
+
 export function CheckInView() {
   const { sim, toast, go } = useUi();
+  const [step, setStep] = useState(0);
+  const [dir, setDir] = useState(1);
   const [sleep, setSleep] = useState(6.5);
+  const [sleepQ, setSleepQ] = useState(3);
+  const [mood, setMood] = useState(3);
+  const [pain, setPain] = useState(0);
   const [sym, setSym] = useState<string[]>([]);
   const [note, setNote] = useState('');
   const [vis, setVis] = useState<Visibility>('cmo');
   const w = sim.world;
   const recent = w.log.filter((e) => e.kind === 'checkin').slice(-5).reverse();
+  const draft = { sleepH: sleep, symptoms: sym, note, sleepQuality: sleepQ, mood, pain };
+  const flags = w.bodyFindings(draft).filter((f) => f.system !== 'heart' && f.system !== 'bone');
+  const toggle = (x: string) => setSym((s) => (s.includes(x) ? s.filter((y) => y !== x) : [...s, x]));
+  const goStep = (n: number) => { setDir(n > step ? 1 : -1); setStep(n); };
+
+  function save() {
+    sim.act({ type: 'checkin', data: draft, visibility: vis });
+    toast(flags.some((f) => f.level === 'caution') ? 'Check-in saved. Tell the CMO now.' : `Check-in saved. Shared with: ${VIS_LABEL[vis]}`);
+    setSym([]); setNote(''); setStep(0);
+    go('console');
+  }
+
+  const group = step >= 1 && step <= 3 ? GROUPS[step - 1] : null;
 
   return (
-    <div className="two">
-      <section className="panel">
-        <header><h2>Daily health check</h2><span className="aside">About 30 s</span></header>
+    <div className="checkin-layout">
+      <section className="panel checkin">
+        <header>
+          <h2>Daily health check</h2>
+          <span className="aside num">Step {step + 1} of {STEPS.length}</span>
+        </header>
         <div className="body">
-          <div className="field">
-            <span className="lbl" id="sleep-l">Sleep last night</span>
-            <div className="stepper" role="group" aria-labelledby="sleep-l">
-              <button type="button" aria-label="Less sleep" onClick={() => setSleep((s) => Math.max(0, s - 0.5))}>−</button>
-              <output aria-live="polite">{sleep.toFixed(1)} h</output>
-              <button type="button" aria-label="More sleep" onClick={() => setSleep((s) => Math.min(12, s + 0.5))}>+</button>
-            </div>
+          <ol className="ci-steps" aria-label="Check-in steps">
+            {STEPS.map((t, i) => (
+              <li key={t}>
+                <button type="button" className={i === step ? 'on' : i < step ? 'done' : ''} aria-current={i === step ? 'step' : undefined} onClick={() => goStep(i)}>
+                  <span className="num">{i + 1}</span>{t}
+                  {i === step && <motion.span layoutId="ci-step" className="ci-step-bar" transition={SPRING} />}
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div className="ci-stage">
+            <AnimatePresence mode="wait" initial={false} custom={dir}>
+              <motion.div key={step} custom={dir}
+                initial={{ opacity: 0, x: dir * 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: dir * -16, transition: { duration: DUR.fast } }}
+                transition={{ duration: DUR.slow, ease: EASE_OUT }}>
+                {step === 0 && (
+                  <>
+                    <div className="field"><span className="lbl">Sleep last night</span><Stepper value={sleep} set={setSleep} min={0} max={12} step={0.5} unit="h" label="Sleep" /></div>
+                    <div className="field"><span className="lbl">Sleep quality</span>
+                      <Segmented<string> label="Sleep quality" value={String(sleepQ)} onChange={(v) => setSleepQ(+v)} options={SCALE5.sleep.map((l, i) => ({ value: String(i + 1), label: l }))} /></div>
+                    <div className="field"><span className="lbl">Mood now</span>
+                      <Segmented<string> label="Mood" value={String(mood)} onChange={(v) => setMood(+v)} options={SCALE5.mood.map((l, i) => ({ value: String(i + 1), label: l }))} /></div>
+                  </>
+                )}
+                {group && (
+                  <div className="field">
+                    <span className="lbl">{group.title}</span>
+                    <span className="faint" style={{ fontSize: 13.5 }}>{group.hint}</span>
+                    <div className="toggles">
+                      {group.items.map((x) => (
+                        <motion.button key={x} type="button" className="btn tog" aria-pressed={sym.includes(x)} onClick={() => toggle(x)} whileTap={{ scale: 0.97 }}>
+                          <motion.span className="tog-check" initial={false} animate={{ scale: sym.includes(x) ? 1 : 0, opacity: sym.includes(x) ? 1 : 0 }} transition={SPRING} aria-hidden="true"><Check size={16} weight="bold" /></motion.span>
+                          {x}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {step === 3 && (
+                  <>
+                    <div className="field"><span className="lbl">Pain level</span><Stepper value={pain} set={setPain} min={0} max={10} step={1} unit="of 10" label="Pain" /></div>
+                    <div className="field"><label htmlFor="note">Note (optional)</label>
+                      <textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything the CMO should know" /></div>
+                    <div className="field"><span className="lbl">Who can see this entry</span>
+                      <VisibilityPicker value={vis} onChange={setVis} name="Who can see this entry" />
+                      <span className="faint" style={{ fontSize: 13 }}>
+                        {vis === 'private' ? 'Only you. It never leaves the vehicle.' : vis === 'cmo' ? 'You and the CMO.' : vis === 'crew' ? 'The whole crew. Not the ground.' : 'The crew and the ground summary.'}
+                      </span></div>
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
-          <div className="field">
-            <span className="lbl">Symptoms now</span>
-            <div className="toggles">
-              {SYMPTOMS.map((s) => (
-                <button key={s} type="button" className="btn" aria-pressed={sym.includes(s)} onClick={() => setSym((x) => (x.includes(s) ? x.filter((y) => y !== s) : [...x, s]))}>{s}</button>
-              ))}
-            </div>
+          <div className="ci-nav">
+            <button className="btn" disabled={step === 0} onClick={() => goStep(step - 1)}><ArrowLeft size={18} aria-hidden="true" />Back</button>
+            {step < STEPS.length - 1
+              ? <button className="btn primary" onClick={() => goStep(step + 1)}>Next<ArrowRight size={18} aria-hidden="true" /></button>
+              : <button className="btn primary" onClick={save}><Check size={18} weight="bold" aria-hidden="true" />Save check-in</button>}
           </div>
-          <div className="field">
-            <label htmlFor="note">Note (optional)</label>
-            <textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything the CMO should know" />
-          </div>
-          <div className="field">
-            <span className="lbl">Who can see this entry</span>
-            <VisibilityPicker value={vis} onChange={setVis} name="Who can see this entry" />
-            <span className="faint" style={{ fontSize: 13 }}>
-              {vis === 'private' ? 'Only you. It never leaves the vehicle.' : vis === 'cmo' ? 'You and the CMO.' : vis === 'crew' ? 'The whole crew. Not the ground.' : 'The crew and the ground summary.'}
-            </span>
-          </div>
-          <button className="btn primary" onClick={() => {
-            sim.act({ type: 'checkin', data: { sleepH: sleep, symptoms: sym, note }, visibility: vis });
-            toast(`Check-in saved. Shared with: ${VIS_LABEL[vis]}`);
-            setSym([]); setNote('');
-            go('console');
-          }}>Save check-in</button>
         </div>
       </section>
-      <section className="panel">
-        <header><h2>Your recent check-ins</h2></header>
-        <div className="body">
-          {recent.length === 0 ? <p className="muted">No check-ins yet. The daily check is on your timeline at 07:00.</p> : (
-            <ul className="log">{recent.map((e) => <LogRow key={e.seq} e={e} />)}</ul>
-          )}
-        </div>
-      </section>
+      <aside className="ci-side">
+        <section className="panel">
+          <header><h2>What the tool sees</h2><span className="aside">{sym.length} marked</span></header>
+          <div className="body">
+            {flags.length === 0
+              ? <p className="muted" style={{ margin: 0 }}>No notes. Marked symptoms appear here with the next step to take.</p>
+              : (
+                <ul className="flags">
+                  <AnimatePresence initial={false}>
+                    {flags.map((f) => (
+                      <motion.li key={f.ruleId} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: DUR.fast } }}>
+                        <Chip level={f.level} />
+                        <FindingText f={f} />
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </ul>
+              )}
+            <p className="faint" style={{ fontSize: 12.5, marginBottom: 0 }}>Rules B-RAD1 to B-B2 use team values. The tool gives advice. It does not diagnose.</p>
+          </div>
+        </section>
+        <section className="panel">
+          <header><h2>Your recent check-ins</h2></header>
+          <div className="body">
+            {recent.length === 0 ? <p className="muted" style={{ margin: 0 }}>No check-ins yet. The daily check is on your timeline at 07:00.</p> : (
+              <ul className="log">{recent.map((e) => <LogRow key={e.seq} e={e} />)}</ul>
+            )}
+          </div>
+        </section>
+      </aside>
     </div>
   );
 }
@@ -133,7 +234,7 @@ export function LogView() {
       <div className="page-head">
         <h1>Event log</h1>
         <p>Append-only. Each entry has a time, the rule, the inputs, and the crew action.</p>
-        <button className="btn small" style={{ marginLeft: 'auto' }} onClick={download}>Export log as JSON</button>
+        <button className="btn small" style={{ marginLeft: 'auto' }} onClick={download}><DownloadSimple size={16} aria-hidden="true" />Export log as JSON</button>
       </div>
       <section className="panel" style={{ marginBottom: 16 }}>
         <header><h2>Alarm burden</h2><span className="aside">Metric M-3: 3 or fewer per 7 days</span></header>
@@ -147,12 +248,23 @@ export function LogView() {
           <p style={{ margin: '0 0 0 8px' }}><strong className="num">{total}</strong> Caution or Warning {total === 1 ? 'event' : 'events'} in {days.length} simulated days.</p>
         </div>
       </section>
-      <div className="filters seg" role="group" aria-label="Filter the log" style={{ width: 'max-content', maxWidth: '100%', overflowX: 'auto' }}>
-        {(['all', 'alerts', 'actions', 'checkins', 'ground'] as const).map((x) => (
-          <button key={x} aria-pressed={f === x} onClick={() => setF(x)}>{x === 'all' ? 'All' : x === 'alerts' ? 'Alerts' : x === 'actions' ? 'Actions' : x === 'checkins' ? 'Check-ins' : 'Link and summaries'}</button>
-        ))}
+      <div className="filters">
+        <Segmented<typeof f> label="Filter the log" value={f} onChange={setF}
+          options={[{ value: 'all', label: 'All' }, { value: 'alerts', label: 'Alerts' }, { value: 'actions', label: 'Actions' }, { value: 'checkins', label: 'Check-ins' }, { value: 'ground', label: 'Link and summaries' }]} />
       </div>
-      <section className="panel"><div className="body"><ul className="log">{[...rows].reverse().map((e) => <LogRow key={e.seq} e={e} />)}</ul></div></section>
+      <section className="panel"><div className="body">
+        {rows.length === 0 ? <p className="muted">No entries match this filter yet.</p> : (
+          <ul className="log">
+            <AnimatePresence initial={false}>
+              {[...rows].reverse().slice(0, 200).map((e) => (
+                <motion.div key={e.seq} layout="position" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: DUR.base, ease: EASE_OUT }}>
+                  <LogRow e={e} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </ul>
+        )}
+      </div></section>
     </>
   );
 }
@@ -255,16 +367,13 @@ export function GroundView() {
   );
 }
 
-export function LinkSwitch({ compact }: { compact?: boolean }) {
+export function LinkSwitch() {
   const { sim, toast } = useUi();
-  const w = sim.world;
-  const opts: LinkState[] = ['live', 'd5', 'd14', 'd22', 'blackout'];
   const short: Record<LinkState, string> = { live: 'Live', d5: '5 min', d14: '14 min', d22: '22 min', blackout: 'Offline' };
   return (
-    <div className="seg" role="radiogroup" aria-label="Link to Earth" style={compact ? undefined : { marginBottom: 12 }}>
-      {opts.map((o) => (
-        <button key={o} role="radio" aria-checked={w.link === o} aria-pressed={w.link === o} onClick={() => { sim.act({ type: 'link', link: o }); toast(`Link: ${LINK_LABEL[o]}`); }}>{short[o]}</button>
-      ))}
+    <div style={{ marginBottom: 12 }}>
+      <Segmented<LinkState> label="Link to Earth" value={sim.world.link} onChange={(o) => { sim.act({ type: 'link', link: o }); toast(`Link: ${LINK_LABEL[o]}`); }}
+        options={(['live', 'd5', 'd14', 'd22', 'blackout'] as LinkState[]).map((o) => ({ value: o, label: short[o] }))} />
     </div>
   );
 }
@@ -319,22 +428,87 @@ export function SourcesView() {
 
 // ---------------------------------------------------------------- systems (FR-14)
 
+/** Small sparkline for a trend card. */
+function Spark({ values, min, max, unit }: { values: number[]; min: number; max: number; unit: string }) {
+  const W = 220, H = 56;
+  const xs = (i: number) => (i / Math.max(1, values.length - 1)) * (W - 8) + 4;
+  const ys = (v: number) => H - 6 - ((v - min) / (max - min || 1)) * (H - 12);
+  const d = values.map((v, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${ys(v).toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" className="spark" role="img" aria-label={`Trend, last value ${values[values.length - 1]?.toFixed(1)} ${unit}`}>
+      <motion.path d={d} fill="none" stroke="var(--text)" strokeWidth={2} strokeLinecap="round" vectorEffect="non-scaling-stroke" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.1, ease: EASE_OUT }} />
+      
+    </svg>
+  );
+}
+
+/** Repeatable noise for the simulated trends. */
+
+const CARD_SYSTEMS: Record<string, BodySystem[]> = {
+  sleep: ['sleep'], mood: ['mood'], bone: ['bone', 'blood'], heart: ['heart'], eyes: ['vision', 'air'], muscle: ['bone'],
+};
+
+function TileRules({ system, findings }: { system: BodySystem[]; findings: BodyFinding[] }) {
+  const mine = findings.filter((f) => system.includes(f.system));
+  const rules = BODY_RULES.filter((r) => system.includes(r.system));
+  return (
+    <div className="tile-rules">
+      <AnimatePresence initial={false} mode="popLayout">
+        {mine.length === 0
+          ? <motion.p key="ok" className="tile-ok" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Chip level="nominal">In range</Chip></motion.p>
+          : mine.map((f) => (
+            <motion.div key={f.ruleId} className="tile-finding" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: DUR.base, ease: EASE_OUT }}>
+              <Chip level={f.level} />
+              <span>{f.why}</span>
+            </motion.div>
+          ))}
+      </AnimatePresence>
+      <p className="tile-rule-ids faint">Rules: {rules.map((r) => r.id).join(', ')}</p>
+    </div>
+  );
+}
+
 export function SystemsView() {
+  const { sim } = useUi();
+  const w = sim.world;
+  const day = dayOf(w.t);
+  const days = Array.from({ length: 8 }, (_, i) => day - 7 + i);
+  const checks = w.log.filter((e) => e.kind === 'checkin' && e.checkin && w.visibilityOf(e) !== 'private');
+  const sleepFor = (d: number, i: number) => checks.filter((e) => dayOf(e.t) === d).pop()?.checkin?.sleepH ?? 6.6 + jitter(i, 1) * 1.2;
+  const moodFor = (d: number, i: number) => checks.filter((e) => dayOf(e.t) === d).pop()?.checkin?.mood ?? 3.4 + jitter(i, 2);
+  const sleep = days.map(sleepFor);
+  const mood = days.map(moodFor);
+  const bone = days.map((d) => -(d / 30) * 1.1);
+  const input = w.bodyInput();
+  const hr = input.hr;
+  const exercise = input.exercise;
+  const findings = w.bodyFindings();
   const cards = [
-    { t: 'Bone', d: 'Bone loss in microgravity. About 1 to 1.5% of hip bone mass per month.' },
-    { t: 'Muscle', d: 'Muscle loss and exercise countermeasures.' },
-    { t: 'Heart', d: 'Cardiovascular changes and orthostatic intolerance.' },
-    { t: 'Eyes (SANS)', d: 'Spaceflight-associated neuro-ocular syndrome.' },
-    { t: 'Behavioral health', d: 'Isolation, confinement, sleep, and mood.' },
+    { id: 'sleep', Icon: Moon, title: 'Sleep', value: sleep[7], unit: 'h', digits: 1, data: sleep, min: 3, max: 9, note: 'From your check-ins. Days with no check-in show simulated values.', cls: 'wide' },
+    { id: 'mood', Icon: Brain, title: 'Mood', value: mood[7], unit: 'of 5', digits: 1, data: mood, min: 1, max: 5, note: 'Isolation and confinement change mood over months. Shared check-ins only.', cls: 'tall' },
+    { id: 'bone', Icon: Bone, title: 'Bone (hip)', value: bone[7], unit: '% since launch', digits: 1, data: bone, min: bone[0] - 0.4, max: bone[7] + 0.4, note: 'About 1 to 1.5% of hip bone mass per month in weightlessness. Simulated.', cls: '' },
+    { id: 'heart', Icon: Heart, title: 'Resting heart rate', value: hr[7], unit: 'bpm', digits: 0, data: hr, min: 48, max: 76, note: 'Simulated. A stress response can raise it during an event.', cls: '' },
+    { id: 'eyes', Icon: Eye, title: 'Eyes (SANS)', value: 0, unit: 'changes logged', digits: 0, data: [], min: 0, max: 1, note: 'Mark "Blurred near vision" in the check-in. The CMO sees it.', cls: '' },
+    { id: 'muscle', Icon: Barbell, title: 'Exercise', value: exercise[7], unit: 'min per day', digits: 0, data: exercise, min: 30, max: 110, note: 'From the crew timeline. Exercise protects bone and muscle.', cls: '' },
   ];
+  const vision = checks.filter((e) => e.checkin?.symptoms.some((x) => x === 'Blurred near vision' || x === 'Eye pressure')).length;
+  cards[4].value = vision;
   return (
     <>
-      <div className="page-head"><h1>Other body systems</h1><p>This build goes deep on one risk: radiation. These systems are placeholders.</p></div>
-      <div className="cards">
-        {cards.map((c) => (
-          <div key={c.t} className="card"><h3>{c.t}</h3><p>{c.d}</p><span className="tag">Not in this build</span></div>
+      <div className="page-head"><h1>Body systems</h1><p>Each card shows its rules and where its data comes from. Body rules give Advisory or Caution only. They do not count toward the radiation alarm limit.</p></div>
+      <motion.div className="bento" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05 } } }}>
+        {cards.map(({ id, Icon, title, value, unit, digits, data, min, max, note, cls }) => (
+          <motion.section key={id} className={`panel tile ${cls}`} variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: DUR.slow, ease: EASE_OUT } } }}>
+            <header><Icon size={20} aria-hidden="true" /><h2>{title}</h2><span className="aside"><span className="tag">{id === 'sleep' || id === 'mood' || id === 'eyes' ? 'Check-ins' : 'Simulated'}</span></span></header>
+            <div className="body">
+              <div className="tile-value"><NumberTicker value={value} digits={digits} /><small>{unit}</small></div>
+              {data.length > 0 && <Spark values={data} min={min} max={max} unit={unit} />}
+              <p className="tile-note">{note}</p>
+              <TileRules system={CARD_SYSTEMS[id]} findings={findings} />
+            </div>
+          </motion.section>
         ))}
-      </div>
+      </motion.div>
     </>
   );
 }
