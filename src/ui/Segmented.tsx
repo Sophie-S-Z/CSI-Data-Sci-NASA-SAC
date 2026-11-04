@@ -1,8 +1,6 @@
-import { useId, type ReactNode } from 'react';
-import { motion } from 'motion/react';
-import { SPRING } from './motion';
+import type { ReactNode } from 'react';
 
-/** Segmented control with a sliding thumb (shared layout animation). Radio semantics for screen readers. */
+/** Segmented control. Radio semantics for screen readers. The selected option fills at once. */
 export function Segmented<T extends string>({
   value, onChange, options, label, size = 'md',
 }: {
@@ -12,26 +10,20 @@ export function Segmented<T extends string>({
   label: string;
   size?: 'sm' | 'md';
 }) {
-  const id = useId();
   return (
-    <div className={`seg seg-${size}`} role="radiogroup" aria-label={label}>
-      {options.map((o) => {
-        const on = o.value === value;
-        return (
-          <button
-            key={o.value}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            aria-label={o.aria}
-            className={on ? 'on' : ''}
-            onClick={() => onChange(o.value)}
-          >
-            {on && <motion.span layoutId={`thumb-${id}`} className="seg-thumb" transition={SPRING} aria-hidden="true" />}
-            <span className="seg-label">{o.label}</span>
-          </button>
-        );
-      })}
+    <div className={`seg ${size === 'sm' ? 'sm' : ''}`} role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          role="radio"
+          aria-checked={o.value === value}
+          aria-label={o.aria}
+          onClick={() => onChange(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }

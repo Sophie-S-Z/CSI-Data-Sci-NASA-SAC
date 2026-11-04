@@ -1,21 +1,25 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { WarningOctagon, Warning, Question, Info, CheckCircle, Circle } from '@phosphor-icons/react';
+import { WarningOctagon, Warning, Question, Info, CheckCircle } from '@phosphor-icons/react';
 import rules from '../data/rules.json';
 import sources from '../data/sources.json';
 import mission from '../data/mission.json';
 import type { Level } from '../engine/world';
 import type { Sim } from './useSim';
 import { fmt } from '../engine/units';
+import { BODY_RULE } from '../engine/bodyRules';
 
-export type Tab = 'console' | 'checkin' | 'log' | 'cmo' | 'ground' | 'sources' | 'systems';
+export type Tab = 'now' | 'checkin' | 'body' | 'log' | 'mission' | 'cmo' | 'ground' | 'sources';
 
 export interface Ui {
   sim: Sim;
   openSource: (key: string) => void;
+  /** Show procedure SH-1 in place on the Now view. */
   openProcedure: () => void;
+  procOpen: boolean;
+  setProcOpen: (open: boolean) => void;
   go: (tab: Tab) => void;
-  toast: (msg: string) => void;
-  openCommand: () => void;
+  /** Record a crew action on the action line, so each tap gives a visible change. */
+  note: (msg: string) => void;
   theme: string;
 }
 export const UiContext = createContext<Ui | null>(null);
@@ -32,12 +36,12 @@ export const LEVEL_WORD: Record<Level | 'clear' | 'nominal', string> = {
   warning: 'Warning', caution: 'Caution', verify: 'Verify', advisory: 'Advisory', clear: 'Clear', nominal: 'Nominal',
 };
 
-const ICONS = { warning: WarningOctagon, caution: Warning, verify: Question, advisory: Info, clear: CheckCircle, nominal: Circle } as const;
+const ICONS = { warning: WarningOctagon, caution: Warning, verify: Question, advisory: Info, clear: CheckCircle, nominal: CheckCircle } as const;
 
 /** Level icon. Each level has its own shape, so color is never the only signal (NFR-05). */
 export function LevelIcon({ level, size = 16 }: { level: Level | 'clear' | 'nominal'; size?: number }) {
   const I = ICONS[level];
-  return <I size={size} weight={level === 'nominal' ? 'fill' : 'bold'} aria-hidden="true" />;
+  return <I size={size} weight="bold" aria-hidden="true" />;
 }
 
 export function Chip({ level, children }: { level: Level | 'clear' | 'nominal'; children?: ReactNode }) {
@@ -146,8 +150,18 @@ export function resolveSource(key: string): SourceView[] {
       }, ...resolveSource('donki')];
     case 'donki':
       return [{ title: 'NASA DONKI', value: 'FLR, CME, SEP records', basis: 'DONKI gives early notice from near Earth. It never sets a Warning by itself.', sourceKey: 'donki', evidence: sources.donki.evidence, team: false }];
-    default:
+    default: {
+      const br = BODY_RULE[key];
+      if (br) {
+        return [{
+          title: `Rule ${br.id}: ${br.title}`, value: `${br.level === 'caution' ? 'Caution' : 'Advisory'}. ${br.text}`,
+          basis: 'Body rules give Advisory or Caution only. They do not count toward the radiation alarm limit.',
+          sourceKey: s(br.source), evidence: `${sources[s(br.source)]?.evidence ?? ''} Thresholds are team values for the demo.`, team: true,
+        }];
+      }
+      if (key in sources) return [{ title: sources[s(key)].short, value: '', sourceKey: s(key), evidence: sources[s(key)].evidence, team: key === 'team' }];
       return [];
+    }
   }
 }
 

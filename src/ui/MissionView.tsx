@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { earthAt, marsAt, vehicleAt, transferAnomaly, transferPoint, R_EARTH, R_MARS, TRANSIT_DAYS } from '../engine/orbit';
-import { prefersReducedMotion } from './motion';
+function prefersReducedMotion(): boolean {
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; }
+}
 
 /**
  * Mission view (three.js). Sun, Earth, Mars, the transfer path, the vehicle, and the signal path to Earth.
@@ -13,9 +15,20 @@ export interface MissionViewProps { day: number; storm: 'none' | 'watch' | 'hit'
 
 const P_COUNT = 420;
 
+/** Read a CSS color token. The tokens use OKLCH, which THREE.Color cannot parse, so the browser paints one pixel and we read it back. */
+let probe: CanvasRenderingContext2D | null = null;
 function cssColor(name: string, fallback: string): THREE.Color {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  try { return new THREE.Color(v || fallback); } catch { return new THREE.Color(fallback); }
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+  try {
+    probe ??= document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    if (!probe) return new THREE.Color(fallback);
+    probe.clearRect(0, 0, 1, 1);
+    probe.fillStyle = fallback;
+    probe.fillStyle = v;
+    probe.fillRect(0, 0, 1, 1);
+    const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
+    return new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
+  } catch { return new THREE.Color(fallback); }
 }
 
 /** Map the orbit plane (x, y) to three.js (x, -z). */
@@ -54,6 +67,8 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
     controls.maxPolarAngle = 1.25;
     controls.update();
 
+    let props: MissionViewProps = { day, storm, theme };
+
     // ---- materials (theme aware) ----
     const mat = {
       orbit: new THREE.LineBasicMaterial({ transparent: true, opacity: 0.55 }),
@@ -74,9 +89,10 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
       mat.orbit.color = line;
       mat.pathDone.color = text;
       mat.pathNext.color = muted;
-      mat.link.color = cssColor('--advisory', '#79c7f2');
+      mat.link.color = text;
       mat.ship.color = text;
-      mat.particles.color = cssColor('--caution', '#f5c842');
+      // The stream takes the alert color: red during a Warning, yellow during a Caution.
+      mat.particles.color = cssColor(props.storm === 'hit' ? '--warning' : '--caution', '#f5c842');
     }
     applyTheme();
 
@@ -109,7 +125,6 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
     particles.visible = false;
     scene.add(particles);
 
-    let props: MissionViewProps = { day, storm, theme };
     let shipAngle = 0;
     let shipR = 1;
 
@@ -217,7 +232,7 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
 
     api.current = {
       update(p) {
-        const themeChanged = p.theme !== props.theme;
+        const themeChanged = p.theme !== props.theme || p.storm !== props.storm;
         props = p;
         if (themeChanged) applyTheme();
         place();

@@ -192,6 +192,16 @@ export class World {
     return baselineMSvH(this.t);
   }
 
+  /**
+   * Progress of the clear rule for an open Warning: minutes that all sensors stayed
+   * below 3 × B, and the minutes that the rule needs. Null when no Warning is open.
+   */
+  warningClearProgress(): { have: number; need: number } | null {
+    const a = this.openAlert('radiation');
+    if (!a || a.level !== 'warning') return null;
+    return { have: Math.min(this.belowRun, TM.warningClearMin), need: TM.warningClearMin };
+  }
+
   /** The 24 h projection: excess rate above B now, times 24 h. A high estimate. */
   projection24h(s = this.current): number {
     return Math.max(0, s.mean - s.B) * 24;
