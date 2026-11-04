@@ -1,5 +1,5 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
-import { Play, Pause, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Play, Pause, ArrowCounterClockwise, Sun, CloudMoon, Moon, SlidersHorizontal, X } from '@phosphor-icons/react';
 import { LINK_LABEL, LINK_DELAY_MIN, type LinkState } from '../engine/world';
 import { phaseAt } from '../engine/doseModel';
 import { dayOf, hhmm } from '../engine/time';
@@ -8,7 +8,7 @@ import { useSim, SPEEDS, BEATS, REPLAY_END } from './useSim';
 import { NowView } from './Now';
 import { SourceDrawer } from './Sheets';
 import { CheckInView, LogView, CmoView, GroundView, SourcesView, BodyView } from './Pages';
-import { Segmented } from './Segmented';
+import { Segmented, useSlidingThumb } from './Segmented';
 
 // The 3D view loads only when the Mission tab opens, so the crew views stay light.
 const MissionTab = lazy(() => import('./MissionTab'));
@@ -76,32 +76,12 @@ export function App() {
       <a className="skip" href="#main">Skip to the main content</a>
       <div className="app">
         <StatusBar />
-        <nav className="nav" aria-label="Views">
-          <div className="tabs">
-            {CREW_TABS.map(({ id, label }) => (
-              <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => ui.go(id)}>
-                {label}
-                {id === 'now' && tab !== 'now' && loud > 0 && <span className="pill" aria-label={`${loud} active`}>{loud}</span>}
-              </button>
-            ))}
-            <span className="group-sep" aria-hidden="true" />
-            {OTHER_TABS.map(({ id, label }) => (
-              <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => ui.go(id)}>{label}</button>
-            ))}
-          </div>
-          <div className="nav-right">
-            <label htmlFor="theme">Display</label>
-            <select id="theme" value={theme} onChange={(e) => setTheme(e.target.value as Theme)}>
-              <option value="day">Day</option>
-              <option value="dim">Dim</option>
-              <option value="night">Night (no blue)</option>
-            </select>
-          </div>
-        </nav>
+        <Nav tab={tab} loud={loud} theme={theme} setTheme={setTheme} />
         <main id="main" tabIndex={-1}>
           <p className="ack-line" aria-live="polite">
             {last ? <>Last action <span className="num">{hhmm(last.t)}</span>: <b>{last.text}</b></> : 'No crew action yet in this replay.'}
           </p>
+          <div className="view" key={tab}>
           {tab === 'now' && <NowView />}
           {tab === 'checkin' && <CheckInView />}
           {tab === 'body' && <BodyView />}
@@ -110,11 +90,45 @@ export function App() {
           {tab === 'cmo' && <CmoView />}
           {tab === 'ground' && <GroundView />}
           {tab === 'sources' && <SourcesView />}
+          </div>
         </main>
         <DemoDeck />
       </div>
       {source && <SourceDrawer k={source} onClose={closeSource} />}
     </UiContext.Provider>
+  );
+}
+
+const THEMES: { value: Theme; label: string; icon: JSX.Element }[] = [
+  { value: 'day', label: 'Day', icon: <Sun size={16} weight="bold" aria-hidden="true" /> },
+  { value: 'dim', label: 'Dim', icon: <CloudMoon size={16} weight="bold" aria-hidden="true" /> },
+  { value: 'night', label: 'Night, no blue light', icon: <Moon size={16} weight="bold" aria-hidden="true" /> },
+];
+
+function Nav({ tab, loud, theme, setTheme }: { tab: Tab; loud: number; theme: Theme; setTheme: (t: Theme) => void }) {
+  const { go } = useUi();
+  const host = useRef<HTMLDivElement>(null);
+  const thumb = useRef<HTMLSpanElement>(null);
+  useSlidingThumb(host, thumb, '[aria-current="page"]', tab);
+  const btn = ({ id, label }: { id: Tab; label: string }) => (
+    <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => go(id)}>
+      {label}
+      {id === 'now' && tab !== 'now' && loud > 0 && <span className="pill" aria-label={`${loud} active`}>{loud}</span>}
+    </button>
+  );
+  return (
+    <nav className="nav" aria-label="Views">
+      <div className="tabs" ref={host}>
+        <span ref={thumb} className="tab-thumb" aria-hidden="true" />
+        {CREW_TABS.map(btn)}
+        <span className="group-sep" aria-hidden="true" />
+        {OTHER_TABS.map(btn)}
+      </div>
+      <div className="nav-right">
+        <Segmented<Theme> size="sm" label="Display" value={theme} onChange={setTheme}
+          options={THEMES.map((t) => ({ value: t.value, aria: t.label, label: <>{t.icon}<span className="seg-txt">{t.value === 'night' ? 'Night' : t.label}</span></> }))} />
+      </div>
+    </nav>
   );
 }
 
@@ -132,8 +146,9 @@ function StatusBar() {
   return (
     <header className="status">
       <div className="brand">
-        <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true"><path d="M10 40 L32 14 L54 40" fill="none" stroke="currentColor" strokeWidth="6" strokeLinejoin="round" /><rect x="21" y="37" width="22" height="14" fill="currentColor" /></svg>
-        <span>Storm Shelter</span>
+        <svg viewBox="0 0 64 64" width="26" height="26" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="18" fill="currentColor" /><path d="M17 37 L32 21 L47 37" fill="none" stroke="var(--surface)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" /><rect x="24" y="35" width="16" height="10" rx="2" fill="var(--surface)" /></svg>
+        <span className="brand-name">Storm Shelter</span>
+        <span className="brand-sub">Simulated replay, not for clinical use</span>
       </div>
       <div className="counts" aria-label="Alert counts">
         <span className={`count warning ${nW ? 'on' : ''}`}><LevelIcon level="warning" size={15} />Warning <b>{nW}</b></span>
@@ -143,9 +158,10 @@ function StatusBar() {
       </div>
       <div className="clock">
         <span className={`link ${linkCls}`}><span className="dot" aria-hidden="true" />{LINK_LABEL[w.link]}</span>
-        <span className="labels"><span className="tag">Replay</span><span className="tag">Simulated dose</span><span className="tag">Not for clinical use</span></span>
-        <span className="phase">{phaseAt(w.t).label}</span>
-        <span className="time" aria-label="Mission time">D{String(dayOf(w.t)).padStart(3, '0')} {hhmm(w.t)}</span>
+        <span className="when">
+          <span className="phase">{phaseAt(w.t).label}</span>
+          <span className="time num" aria-label="Mission time">Day {dayOf(w.t)} <b>{hhmm(w.t)}</b></span>
+        </span>
       </div>
     </header>
   );
@@ -165,7 +181,7 @@ function DemoDeck() {
     <footer className={`deck ${open ? 'open' : ''}`} aria-label="Demo controls">
       <div className="progress" aria-hidden="true"><span style={{ width: `${progress * 100}%` }} /></div>
       <div className="deck-inner">
-        <span className="title">DEMO</span>
+        <span className="title"><SlidersHorizontal size={16} weight="bold" aria-hidden="true" />Demo</span>
         <div className="grp">
           <button className="btn sm primary" disabled={atEnd} onClick={() => sim.setPlaying(!sim.playing)} aria-pressed={sim.playing}>
             {sim.playing ? <Pause size={16} weight="fill" aria-hidden="true" /> : <Play size={16} weight="fill" aria-hidden="true" />}
@@ -191,7 +207,7 @@ function DemoDeck() {
           <label className="cb"><input type="checkbox" checked={sim.pauseOnAlert} onChange={(e) => sim.setPauseOnAlert(e.target.checked)} />Pause on new alert</label>
           <button className="btn sm ghost" onClick={sim.restart}><ArrowCounterClockwise size={16} aria-hidden="true" />Restart</button>
         </div>
-        <button className="btn sm ghost toggle" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Hide demo controls' : 'More demo controls'}</button>
+        <button className="btn sm ghost toggle" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <><X size={16} aria-hidden="true" />Hide demo controls</> : 'More demo controls'}</button>
       </div>
     </footer>
   );

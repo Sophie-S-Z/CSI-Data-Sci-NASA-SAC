@@ -39,14 +39,16 @@ Tokens use OKLCH in `src/styles/app.css`. Neutrals carry a small cool tint.
 
 | Token | Day (default) | Dim | Night |
 | --- | --- | --- | --- |
-| Page | light gray | dark gray | near black, warm |
+| Page | porcelain (cool light gray) | deep navy | near black, warm |
+| Panels | white, soft shadow, no hard border | navy, lifted by tone | warm dark |
+| Ink | deep navy | near white | amber |
 | Text | near black | near white | amber |
 | Warning | red fill, white text | red fill | red-orange fill |
 | Caution | yellow fill, dark text | yellow fill | amber fill |
 
 ## Type
 
-IBM Plex Sans for words and IBM Plex Mono for numbers (NFR-05). Plex separates l, 1, O, and 0. Both fonts ship with the app, so the screen looks the same offline. Sentence case everywhere. The action sentence is the largest text on the screen.
+IBM Plex Sans for words and numbers, with tabular figures and a slashed zero (NFR-05). IBM Plex Mono is only for rule codes and record IDs. Plex separates l, 1, O, and 0. Both fonts ship with the app, so the screen looks the same offline. Sentence case everywhere. The action sentence is the largest text on the screen.
 
 ## Layout
 
@@ -69,10 +71,33 @@ An up arrow follows each value above a limit: red above 10 × B, yellow-brown ab
 
 ## Motion
 
-Nothing moves by itself. A tap changes the screen at once. The only change over time is the replay clock and the procedure stopwatch, which update their text.
+Motion answers a tap, or marks a new alert. It never decorates.
+
+- A thumb slides under the selected tab and the selected segment (300 ms), so the eye follows the change.
+- A new view fades in over 220 ms.
+- When the alert level changes, the decision panel fades in. A Warning icon sends out three slow rings, then stops.
+- A step marked done gets a short check pop. Meters and the budget bar grow to their new value.
+- The source drawer slides in from the right.
+- With "reduce motion" set on the device, nothing moves. Every change happens at once.
 
 ## Body systems
 
 - Body rules give Advisory or Caution only. A Warning is for radiation only, because a Warning means "go to the shelter now."
 - Body rules do not count toward the radiation alarm limit (M-3).
 - A body finding takes the visibility of its check-in. A private check-in gives a private finding.
+
+## Version 4: clear instrument (November 2026)
+
+The second revamp keeps every rule above and changes the form.
+
+| Before | Now | Why |
+| --- | --- | --- |
+| Boxed panels with hard borders | White panels with soft shadows and 20 px corners | Less ink. The content, not the frame, holds the eye. |
+| Red band on top of the decision panel | The top half of the panel fills with red (Warning) or yellow (Caution) | One loud element, seen from across the module. |
+| Square buttons | Rounded buttons. The main action is a large white pill on the alert color | A clear target for a gloved hand. |
+| Monospace numbers everywhere | Sans numbers with tabular figures. Large hero number for the dose rate | Easier to read at a glance. |
+| Tab underline and a theme drop-down | A tab bar with a sliding thumb, and an icon switch for Day, Dim, and Night | Fewer steps. The choice is visible. |
+| Demo controls in a bar across the page | A floating dock at the bottom | The demo tools stay out of the crew view. |
+| Timeline first on the Now view | The decision first, the timeline last | The first thing on screen answers "what do I do now?" |
+
+Inspiration came from the crew displays of current crewed vehicles (dark navy, few large touch targets), from health apps that show one large number with a calm label, and from tools with precise, quick motion. No layout, asset, or name comes from those products.
