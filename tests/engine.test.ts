@@ -169,3 +169,20 @@ describe('persistence', () => {
     expect(copy.log.length).toBe(w.log.length);
   });
 });
+
+describe('warning clear progress', () => {
+  it('is null with no Warning, and counts toward 2 h during a Warning', () => {
+    const w = new World(undefined, clock);
+    w.advanceTo(at(94, '10:00'));
+    expect(w.warningClearProgress()).toBeNull();
+    w.advanceTo(at(94, '14:20'));
+    const p = w.warningClearProgress()!;
+    expect(p.need).toBe(rules.timing.warningClearMin);
+    expect(p.have).toBe(0);
+    while (w.openAlert('radiation')?.level === 'warning') {
+      const q = w.warningClearProgress()!;
+      expect(q.have).toBeLessThanOrEqual(q.need);
+      w.step();
+    }
+  });
+});

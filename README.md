@@ -22,15 +22,15 @@ The build is a static site. It works from any folder and from GitHub Pages. Afte
 
 ## The 2-minute demo
 
-The replay deck at the bottom of the screen drives the demo. "Pause on new alert" stops the replay when a Caution or Warning starts.
+The demo controls at the bottom of the screen drive the replay. "Pause on new alert" stops the replay when a Caution or Warning starts.
 
 | Time | Beat | Do this |
 | --- | --- | --- |
-| 0:15 | Normal day | Tap **Normal day**. Tap the **Health chk** block on the timeline. Save a check-in. |
+| 0:15 | Normal day | Tap **Normal day**. Tap the heart block at 07:00 on your timeline row. Save a check-in. |
 | 0:30 | Event | Tap **Solar flare**. The DONKI replay gives a Caution (rule R-C1). Tap **Dose rise**, then **Play**. Rule R-W1 gives a Warning at 14:13. |
 | 0:55 | Action | Tap **Go to procedure SH-1**. Tap **Done** on each step. Step 3 moves you into the shelter and records metric M-1. |
 | 1:20 | Budget | Tap **All clear**. The budget shows the dose that the shelter saved (estimate) and the waiver projection. |
-| 1:35 | Earth | Set the link to **Offline**, save a private check-in, then set the link to **Live**. Open **Ground**. The private entry is not in the summary. |
+| 1:35 | Earth | Set the link to **Offline**, save a private health check, then set the link to **Live**. Open **Ground**. The private entry is not in the summary. |
 | 1:50 | Close | Open **Log**. The alarm-burden card shows 1 Caution or Warning event in 8 simulated days. |
 
 ## What is in this build
@@ -39,32 +39,38 @@ The replay deck at the bottom of the screen drives the demo. "Pause on new alert
 | --- | --- |
 | FR-01 Dose-rate monitor, 4 alert rules | `src/engine/world.ts`, `src/data/rules.json` |
 | FR-02 Solar event watch (DONKI never sets Warning) | `src/engine/donki.ts`, Solar events panel, Live DONKI tab |
-| FR-03 Shelter procedure SH-1 | Procedure sheet. 1 tap from the Warning. |
+| FR-03 Shelter procedure SH-1 | Opens in place in the alert panel. 1 tap from the Warning. |
 | FR-04 Dose budget and waiver state | Dose budget panel and career chart |
-| FR-05 Timeline band | Crew timeline (top of Console) |
+| FR-05 Timeline band | Crew timeline (top of the Now view) |
 | FR-06 Source panel | Tap any underlined value or a **Source** button |
 | FR-07 Delay switch | Link control in the replay deck and on **Ground** |
 | FR-08 Replay mode, labels | Replay deck. "Replay" and "Simulated" tags. |
 | FR-09 Alert counter | Alert bar, and the alarm-burden card on **Log** |
-| FR-10 Privacy control | Check-in "Who can see this entry", and the selector on each log entry |
+| FR-10 Privacy control | Health check "Who can see this entry", and the selector on each log entry |
 | FR-11 Ground summary | **Ground**. Built when the link returns from a blackout. |
 | FR-12 CMO case view | **CMO** |
 | FR-13 Combined-effects note | **CMO** (infection watch, evidence "emerging") |
-| FR-14 Body systems (scope change 3B) | **Body systems**. Rules B-RAD1 to B-B2 in `src/data/body-rules.json`. Advisory or Caution only. They do not count toward M-3. |
-| FR-15 Night mode | **Night** theme (no blue light) |
+| FR-14 Body systems (scope change 3B) | **Body**. Rules B-RAD1 to B-B2 in `src/data/body-rules.json`. Advisory or Caution only. They do not count toward M-3. |
+| FR-15 Night mode | **Display: Night** (no blue light) |
 | NFR-01 Offline | `vite-plugin-pwa`. Fonts ship with the app. |
 | NFR-02 Units | `src/engine/units.ts`. One factor, documented in `rules.json`. |
-| NFR-04 Gloved touch | 44 to 60 px targets. No drag or hover controls. |
+| NFR-04 Gloved touch | 40 to 60 px targets, 48 px for crew actions. No drag or hover controls. |
 | NFR-05 Display rules | Red only for Warning, yellow only for Caution, each with an icon and a word |
 | NFR-07 Audit | Append-only, frozen log entries. Export as JSON on **Log**. |
-| NFR-08 Labels | "Replay", "Simulated dose", "Not for clinical use" in the alert bar |
+| NFR-08 Labels | "Replay", "Simulated dose", "Not for clinical use" in the status bar |
 
-### Added in the UI pass
+### Interface (redesign, November 2026)
 
-- **Where you are.** A three.js view of the Sun, Earth, Mars, the vehicle, and the signal path to Earth. Protons stream from the Sun to the vehicle during a solar event. It loads on demand and draws only when something moves. Orbits are simplified and coplanar (`src/engine/orbit.ts`).
-- **Daily health check.** Four steps: sleep and mood, radiation signs, head, eyes, and air (SANS and CO2), and body and sharing. The side panel shows the body rules that a draft check-in sets off, with the source for each rule.
-- **Command menu.** Press Ctrl+K or Cmd+K, or tap **Actions**. It opens SH-1, acknowledges, changes the link, and jumps to demo beats.
-- **Motion.** motion (`motion/react`) moves the tabs, sheets, and lists. GSAP runs the one Warning or Caution entry and the number tickers. anime.js draws the chart lines. The alarm text does not move after its entry, which takes less than 0.6 s. With "reduce motion" set in the OS, the app shows every state with no movement.
+The interface copies the crew tools that astronauts already use: the iPV procedure viewer and the OSTPV timeline. See `docs/design-notes.md` for the rules and the reasons.
+
+- **Now view.** The crew timeline is on top. The decision panel is the only loud element. It gives one action in large type and one button to procedure SH-1. Dose budget, dose rate, sensors, a flat position drawing, and DONKI events support it.
+- **Procedure in place.** SH-1 opens inside the alert panel, not in a pop-up. The alert band and the action sentence stay in view.
+- **Clear rule progress.** In the shelter, the panel shows how long the sensors stayed below 3 × B, against the 2 h that the clear rule needs.
+- **One-page health check.** Sleep, mood, symptoms in three groups, pain, a note, and who can see the entry. The side panel shows the rules that the draft sets off.
+- **Body view.** One table row for each challenge risk, with the latest value, an 8-day trend, the data source, and the rule state.
+- **Action line.** Each crew action shows at the top of the page with its mission time, so each tap gives a visible change.
+- **Themes.** Day (default), Dim, and Night (no blue light).
+- **No decorative motion.** Nothing moves by itself. The app has no animation library and no 3D library.
 
 ## Edit the rules
 
