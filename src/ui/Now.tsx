@@ -21,7 +21,6 @@ const TH = rules.thresholds;
 export function NowView() {
   return (
     <div className="now">
-      <div className="tl-wrap"><TimelineBand /></div>
       <div className="stack now-main">
         <Decision />
         <DoseRate />
@@ -31,6 +30,7 @@ export function NowView() {
         <Situation />
         <SolarEvents />
       </div>
+      <div className="tl-wrap"><TimelineBand /></div>
     </div>
   );
 }
@@ -92,7 +92,8 @@ function Decision() {
     const next = nextBlock(w);
     return (
       <section className="decision lv-nominal" aria-labelledby="dec-h">
-        <div className="band"><span className="lvl"><LevelIcon level="nominal" />NOMINAL</span><span className="evt">Checked {hhmm(w.t)}</span></div>
+        <div className="hero" key="nominal">
+        <div className="band"><span className="lvl"><LevelIcon level="nominal" size={18} />Nominal</span><span className="evt">Checked {hhmm(w.t)}</span></div>
         <div className="decide">
           <h2 id="dec-h">Dose rate normal. No action.</h2>
           <p className="why">
@@ -107,6 +108,7 @@ function Decision() {
             </div>
           )}
         </div>
+        </div>
         {suppressed.length > 0 && <div className="more-alerts"><SuppressedNote alerts={suppressed} /></div>}
       </section>
     );
@@ -120,10 +122,11 @@ function Decision() {
 
   return (
     <section className={`decision lv-${main.level}`} aria-labelledby="dec-h" aria-live="assertive">
+      <div className="hero" key={main.level}>
       <div className="band">
-        <span className="lvl"><LevelIcon level={main.level} size={18} />{LEVEL_WORD[main.level].toUpperCase()}</span>
-        <span>{rule.title}</span>
-        <span className="evt">{main.id} · since {hhmm(main.changedAt)}{main.acked ? ' · acknowledged' : ''}</span>
+        <span className="lvl"><span className="lvl-ico"><LevelIcon level={main.level} size={18} /></span>{LEVEL_WORD[main.level]}</span>
+        <span className="rule-title">{rule.title}</span>
+        <span className="evt">{main.id}, since {hhmm(main.changedAt)}{main.acked ? ', acknowledged' : ''}</span>
       </div>
       <div className="decide">
         <h2 id="dec-h">{actionSentence(main, w)}</h2>
@@ -142,8 +145,9 @@ function Decision() {
           )}
           {showProc && <button className="btn" onClick={() => setProcOpen(false)}>Show alert details</button>}
           <span className="spacer" />
-          <button className="btn ghost sm" onClick={() => openSource(main.ruleId)}>Why this alert: rule {main.ruleId}</button>
+          <button className="btn ghost sm why-btn" onClick={() => openSource(main.ruleId)}>Why this alert: rule {main.ruleId}</button>
         </div>
+      </div>
       </div>
       {showProc ? <Procedure /> : (
         <>
@@ -303,8 +307,12 @@ function Budget() {
     <section className="region" aria-labelledby="budget-h">
       <div className="rh"><h2 id="budget-h">Dose budget</h2><span className="aside"><span className="tag">Simulated</span></span></div>
       <div className="rb">
+        <div className={`stat ${s.personal >= TH.warningMultiple.x * s.B ? 'w' : s.personal >= TH.cautionMultiple.x * s.B ? 'c' : ''}`}>
+          <span className="stat-lbl">Your dose rate now</span>
+          <span className="stat-val num">{fmt(s.personal)}<small>mSv/h</small>{rateMark(s.personal, s.B)}</span>
+          <span className="stat-sub">{fmt(s.personal / s.B, 1)} × your cruise baseline</span>
+        </div>
         <dl className="kv">
-          <div className="big"><dt>Rate now, personal</dt><dd>{fmt(s.personal)}<small>mSv/h</small>{rateMark(s.personal, s.B)}</dd></div>
           {ev && ev.eventDoseMSv > 0.05 && (
             <div><dt>This event so far</dt><dd>{fmt(ev.eventDoseMSv, 1)} / <Src k="singleSpe">250</Src><small>mSv</small></dd></div>
           )}
@@ -603,7 +611,7 @@ function TimelineBand() {
               </div>
             </div>
           ))}
-          <div className="tl-now" style={{ left: `calc(14px + 128px + (100% - 28px - 128px) * ${(w.t - d0) / MIN_PER_DAY})` }} aria-hidden="true" />
+          <div className="tl-now" style={{ left: `calc(22px + 136px + (100% - 44px - 136px) * ${(w.t - d0) / MIN_PER_DAY})` }} aria-hidden="true" />
         </div>
       </div>
     </section>
