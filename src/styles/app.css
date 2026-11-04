@@ -534,3 +534,14 @@ main:focus { outline: none; }
   .now > .tl-wrap { order: 3; }
 }
 .blk.health { justify-content: center; padding: 0; }
+
+/* ---------- Mission tab (3D view, three.js) ---------- */
+.mv { position: relative; height: min(62vh, 560px); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--inset); cursor: grab; touch-action: pan-y; }
+.mv:active { cursor: grabbing; }
+.mv canvas { display: block; width: 100% !important; height: 100% !important; }
+.mv[data-nowebgl] { cursor: default; display: grid; place-items: center; }
+.mv[data-nowebgl]::after { content: 'The 3D view needs WebGL. The rest of the tool works without it.'; color: var(--muted); font-size: 13.5px; padding: 16px; text-align: center; }
+.mv-labels { position: absolute; inset: 0; pointer-events: none; }
+.mv-label { position: absolute; transform: translate(-50%, -150%); font-size: 12px; color: var(--muted); background: var(--surface); padding: 0 5px; border-radius: 3px; white-space: nowrap; }
+.mv-label.me { color: var(--text); font-weight: 600; border: 1px solid var(--line); }
+@media (max-width: 720px) { .mv { height: 320px; } }

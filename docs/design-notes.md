@@ -12,7 +12,7 @@ These come from the research briefs in the project folder and from four people w
 
 | Principle | Source | What it changed |
 | --- | --- | --- |
-| Delete parts before you improve them. "The best part is no part." | Elon Musk's engineering steps | We deleted the 3D view, the command menu, three animation libraries, number tickers, card grids, and the 4-step check-in wizard. |
+| Delete parts before you improve them. "The best part is no part." | Elon Musk's engineering steps | We moved the 3D view off the main screen. We deleted the command menu, three animation libraries, number tickers, card grids, and the 4-step check-in wizard. |
 | One screen does one job. Say no to the rest. | Steve Jobs | The Now view answers one question: "What is my radiation risk now, and what do I do?" One element is loud. |
 | Show how the answer was made. Do not fool yourself. | Richard Feynman | Each alert shows the rule, the inputs, the data quality, and the source. Simulated values say "Simulated." Estimates say "estimate." |
 | See the whole system before you build a part. | Nikola Tesla | The flat drawing shows the Sun, the event path, the vehicle, and the signal path to Earth in one view. The timeline shows the whole crew day. |
@@ -24,7 +24,7 @@ These come from the research briefs in the project folder and from four people w
 | --- | --- |
 | Dark "AI dashboard" theme as the default | Most competing teams use it. ISS crew tools (iPV, OSTPV) use dark text on a light page. Dim and Night stay for low light. |
 | Entry animations, ticking numbers, drawn chart lines | A number that moves is hard to read. A crew member under stress needs the value now. |
-| 3D solar system view (three.js) | Drag-to-turn adds no fact. A flat drawing gives the same facts at a glance and loads at once offline. |
+| 3D solar system view (three.js) on the main screen | Drag-to-turn adds no fact for the crew. The Now view uses a flat drawing that loads at once offline. The 3D view moved to its own Mission tab for the pitch video. It loads only when that tab opens. |
 | Command menu (Ctrl+K) | Crews use touch and gloves. Every action is a visible button. |
 | Pop-up procedure sheet | The procedure opens in the alert panel. The action sentence stays in view. |
 | 4-step check-in wizard | One page is faster. A normal day takes about 30 s. |
@@ -52,7 +52,7 @@ IBM Plex Sans for words and IBM Plex Mono for numbers (NFR-05). Plex separates l
 
 - Desktop: the crew timeline is on top, as in OSTPV. The decision and the dose rate are on the left. The budget, the position drawing, and DONKI events are on the right.
 - Phone: the decision first, then the dose rate, the budget, the drawing, the events, and the timeline. The demo controls fold to one row.
-- Crew views (Now, Health check, Body, Log) come first in the tab bar. Views for other people (CMO, Ground, Rules and sources) come after a divider.
+- Crew views (Now, Health check, Body, Log) come first in the tab bar. Views for other people (Mission, CMO, Ground, Rules and sources) come after a divider.
 
 ## Decision panel
 

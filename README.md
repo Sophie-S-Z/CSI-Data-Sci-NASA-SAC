@@ -70,7 +70,8 @@ The interface copies the crew tools that astronauts already use: the iPV procedu
 - **Body view.** One table row for each challenge risk, with the latest value, an 8-day trend, the data source, and the rule state.
 - **Action line.** Each crew action shows at the top of the page with its mission time, so each tap gives a visible change.
 - **Themes.** Day (default), Dim, and Night (no blue light).
-- **No decorative motion.** Nothing moves by itself. The app has no animation library and no 3D library.
+- **No decorative motion.** Nothing moves by itself on the crew views. The app has no animation library.
+- **Mission tab.** A 3D view (three.js) shows the Sun, Earth, Mars, the vehicle, and the particle stream in the alert color. It loads only when you open the tab, so the crew views stay light. The Now view keeps the flat drawing.
 
 ## Edit the rules
 

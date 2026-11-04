@@ -8,7 +8,7 @@ import type { Sim } from './useSim';
 import { fmt } from '../engine/units';
 import { BODY_RULE } from '../engine/bodyRules';
 
-export type Tab = 'now' | 'checkin' | 'body' | 'log' | 'cmo' | 'ground' | 'sources';
+export type Tab = 'now' | 'checkin' | 'body' | 'log' | 'mission' | 'cmo' | 'ground' | 'sources';
 
 export interface Ui {
   sim: Sim;
@@ -20,6 +20,7 @@ export interface Ui {
   go: (tab: Tab) => void;
   /** Record a crew action on the action line, so each tap gives a visible change. */
   note: (msg: string) => void;
+  theme: string;
 }
 export const UiContext = createContext<Ui | null>(null);
 export function useUi(): Ui {

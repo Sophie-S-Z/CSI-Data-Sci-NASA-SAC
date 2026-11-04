@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { Play, Pause, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { LINK_LABEL, LINK_DELAY_MIN, type LinkState } from '../engine/world';
 import { phaseAt } from '../engine/doseModel';
@@ -9,6 +9,9 @@ import { NowView } from './Now';
 import { SourceDrawer } from './Sheets';
 import { CheckInView, LogView, CmoView, GroundView, SourcesView, BodyView } from './Pages';
 import { Segmented } from './Segmented';
+
+// The 3D view loads only when the Mission tab opens, so the crew views stay light.
+const MissionTab = lazy(() => import('./MissionTab'));
 
 type Theme = 'day' | 'dim' | 'night';
 const THEME_KEY = 'storm-shelter.theme.v2';
@@ -21,6 +24,7 @@ const CREW_TABS: { id: Tab; label: string }[] = [
   { id: 'log', label: 'Log' },
 ];
 const OTHER_TABS: { id: Tab; label: string }[] = [
+  { id: 'mission', label: 'Mission' },
   { id: 'cmo', label: 'CMO' },
   { id: 'ground', label: 'Ground' },
   { id: 'sources', label: 'Rules and sources' },
@@ -62,7 +66,8 @@ export function App() {
     setProcOpen,
     go: (t) => { setTab(t); window.scrollTo({ top: 0 }); },
     note: (text) => setLast({ t: sim.world.t, text }),
-  }), [sim, procOpen]);
+    theme,
+  }), [sim, procOpen, theme]);
 
   const loud = sim.world.activeAlerts.filter((a) => !a.suppressed && (a.level === 'warning' || a.level === 'caution')).length;
 
@@ -101,6 +106,7 @@ export function App() {
           {tab === 'checkin' && <CheckInView />}
           {tab === 'body' && <BodyView />}
           {tab === 'log' && <LogView />}
+          {tab === 'mission' && <Suspense fallback={<p className="muted">Loading the 3D view.</p>}><MissionTab /></Suspense>}
           {tab === 'cmo' && <CmoView />}
           {tab === 'ground' && <GroundView />}
           {tab === 'sources' && <SourcesView />}
