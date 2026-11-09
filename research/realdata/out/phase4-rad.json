@@ -1,0 +1,467 @@
+{
+ "cruise_2012": {
+  "split": "tune",
+  "phase": "cruise",
+  "start": "2011-12-06T00:00:00",
+  "days_with_data": 120.5,
+  "days_scored": 117.2,
+  "gcr_E_uGy_day_median": 443.1,
+  "gcr_B_uGy_day_median": 345.0,
+  "events": [
+   {
+    "onset_utc": "2012-01-27T19:00:00",
+    "cross2_utc": "2012-01-27T19:15:00",
+    "peak_utc": "2012-01-27T21:45:00",
+    "peak_ratio": 9.1,
+    "peak_uGy_h": 142.1,
+    "rise_h": 2.75,
+    "duration_h": 54.5,
+    "event_excess_uGy": 1529.6,
+    "decay_efold_h": 15.3
+   },
+   {
+    "onset_utc": "2012-03-07T08:30:00",
+    "cross2_utc": "2012-03-07T08:30:00",
+    "peak_utc": "2012-03-08T17:00:00",
+    "peak_ratio": 35.76,
+    "peak_uGy_h": 671.5,
+    "rise_h": 32.5,
+    "duration_h": 63.25,
+    "event_excess_uGy": 9422.5,
+    "decay_efold_h": 8.9
+   },
+   {
+    "onset_utc": "2012-05-17T02:30:00",
+    "cross2_utc": "2012-05-17T02:30:00",
+    "peak_utc": "2012-05-17T04:00:00",
+    "peak_ratio": 9.26,
+    "peak_uGy_h": 181.8,
+    "rise_h": 1.5,
+    "duration_h": 25.5,
+    "event_excess_uGy": 1107.9,
+    "decay_efold_h": 6.3
+   }
+  ],
+  "policies": {
+   "current": {
+    "entries": 1,
+    "false_entries": 0,
+    "false_per_100d": 0.0,
+    "entries_per_100d": 0.85,
+    "shelter_h_per_100d": 39.9,
+    "missed": 2,
+    "events": [
+     {
+      "onset": "2012-01-27T19:00:00",
+      "entered_before_peak": false,
+      "lead_vs_2xB_min": null,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 0.0
+     },
+     {
+      "onset": "2012-03-07T08:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -1050,
+      "lead_vs_10xB_min": -15,
+      "dose_avoided_pct": 63.9
+     },
+     {
+      "onset": "2012-05-17T02:30:00",
+      "entered_before_peak": false,
+      "lead_vs_2xB_min": null,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 0.0
+     }
+    ]
+   },
+   "lowe": {
+    "entries": 4,
+    "false_entries": 1,
+    "false_per_100d": 0.85,
+    "entries_per_100d": 3.41,
+    "shelter_h_per_100d": 192.3,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2012-01-27T19:00:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 0,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.7
+     },
+     {
+      "onset": "2012-03-07T08:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 225,
+      "lead_vs_10xB_min": 1260,
+      "dose_avoided_pct": 75.0
+     },
+     {
+      "onset": "2012-05-17T02:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.0
+     }
+    ]
+   },
+   "lowe2": {
+    "entries": 4,
+    "false_entries": 1,
+    "false_per_100d": 0.85,
+    "entries_per_100d": 3.41,
+    "shelter_h_per_100d": 218.6,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2012-01-27T19:00:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 0,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.9
+     },
+     {
+      "onset": "2012-03-07T08:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 225,
+      "lead_vs_10xB_min": 1260,
+      "dose_avoided_pct": 75.0
+     },
+     {
+      "onset": "2012-05-17T02:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.0
+     }
+    ]
+   },
+   "layered2": {
+    "entries": 3,
+    "false_entries": 0,
+    "false_per_100d": 0.0,
+    "entries_per_100d": 2.56,
+    "shelter_h_per_100d": 151.0,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2012-01-27T19:00:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.6
+     },
+     {
+      "onset": "2012-03-07T08:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": 1020,
+      "dose_avoided_pct": 75.0
+     },
+     {
+      "onset": "2012-05-17T02:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.0
+     }
+    ]
+   }
+  },
+  "idea_c": [
+   {
+    "onset": "2012-01-27T19:00:00",
+    "peak_ratio": 9.1,
+    "-4h": 45.3,
+    "-1h": 45.3,
+    "+0h": 45.4,
+    "+0.5h": 46.2,
+    "+1h": 47.7,
+    "+2h": 52.5,
+    "+4h": 64.6
+   },
+   {
+    "onset": "2012-03-07T08:30:00",
+    "peak_ratio": 35.76,
+    "-4h": 28.2,
+    "-1h": 28.2,
+    "+0h": 28.2,
+    "+0.5h": 28.2,
+    "+1h": 28.3,
+    "+2h": 28.7,
+    "+4h": 29.6
+   },
+   {
+    "onset": "2012-05-17T02:30:00",
+    "peak_ratio": 9.26,
+    "-4h": 50.7,
+    "-1h": 50.7,
+    "+0h": 50.7,
+    "+0.5h": 53.7,
+    "+1h": 58.7,
+    "+2h": 69.5,
+    "+4h": 85.1
+   }
+  ]
+ },
+ "surface_2017": {
+  "split": "tune",
+  "phase": "surface",
+  "start": "2017-07-08T00:00:00",
+  "days_with_data": 120.1,
+  "days_scored": 117.0,
+  "gcr_E_uGy_day_median": 271.5,
+  "gcr_B_uGy_day_median": 256.1,
+  "events": [
+   {
+    "onset_utc": "2017-09-10T19:30:00",
+    "cross2_utc": "2017-09-10T21:30:00",
+    "peak_utc": "2017-09-10T23:45:00",
+    "peak_ratio": 2.14,
+    "peak_uGy_h": 24.2,
+    "rise_h": 4.25,
+    "duration_h": 29.5,
+    "event_excess_uGy": 245.0,
+    "decay_efold_h": 16.2
+   }
+  ],
+  "policies": {
+   "current": {
+    "entries": 0,
+    "false_entries": 0,
+    "false_per_100d": 0.0,
+    "entries_per_100d": 0.0,
+    "shelter_h_per_100d": 0.0,
+    "missed": 1,
+    "events": [
+     {
+      "onset": "2017-09-10T19:30:00",
+      "entered_before_peak": false,
+      "lead_vs_2xB_min": null,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 0.0
+     }
+    ]
+   },
+   "lowe": {
+    "entries": 5,
+    "false_entries": 4,
+    "false_per_100d": 3.42,
+    "entries_per_100d": 4.27,
+    "shelter_h_per_100d": 35.3,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2017-09-10T19:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 195,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 75.0
+     }
+    ]
+   },
+   "lowe2": {
+    "entries": 3,
+    "false_entries": 2,
+    "false_per_100d": 1.71,
+    "entries_per_100d": 2.56,
+    "shelter_h_per_100d": 34.2,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2017-09-10T19:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 180,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 75.0
+     }
+    ]
+   },
+   "layered2": {
+    "entries": 1,
+    "false_entries": 0,
+    "false_per_100d": 0.0,
+    "entries_per_100d": 0.85,
+    "shelter_h_per_100d": 27.8,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2017-09-10T19:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 69.0
+     }
+    ]
+   }
+  },
+  "idea_c": [
+   {
+    "onset": "2017-09-10T19:30:00",
+    "peak_ratio": 2.14,
+    "-4h": 64.9,
+    "-1h": 67.0,
+    "+0h": 69.9,
+    "+0.5h": 71.8,
+    "+1h": 73.6,
+    "+2h": 77.3,
+    "+4h": 85.1
+   }
+  ]
+ },
+ "surface_2024": {
+  "split": "test",
+  "phase": "surface",
+  "start": "2023-09-16T00:00:00",
+  "days_with_data": 316.6,
+  "days_scored": 312.3,
+  "gcr_E_uGy_day_median": 167.1,
+  "gcr_B_uGy_day_median": 175.0,
+  "events": [
+   {
+    "onset_utc": "2024-05-20T05:15:00",
+    "cross2_utc": "2024-05-20T05:30:00",
+    "peak_utc": "2024-05-20T06:15:00",
+    "peak_ratio": 68.35,
+    "peak_uGy_h": 349.7,
+    "rise_h": 1.0,
+    "duration_h": 66.75,
+    "event_excess_uGy": 1826.6,
+    "decay_efold_h": 15.1
+   },
+   {
+    "onset_utc": "2024-07-23T02:30:00",
+    "cross2_utc": "2024-07-23T02:30:00",
+    "peak_utc": "2024-07-23T03:15:00",
+    "peak_ratio": 2.14,
+    "peak_uGy_h": 14.6,
+    "rise_h": 0.75,
+    "duration_h": 12.0,
+    "event_excess_uGy": 51.0,
+    "decay_efold_h": 7.3
+   }
+  ],
+  "policies": {
+   "current": {
+    "entries": 1,
+    "false_entries": 0,
+    "false_per_100d": 0.0,
+    "entries_per_100d": 0.32,
+    "shelter_h_per_100d": 7.1,
+    "missed": 1,
+    "events": [
+     {
+      "onset": "2024-05-20T05:15:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": -15,
+      "dose_avoided_pct": 65.6
+     },
+     {
+      "onset": "2024-07-23T02:30:00",
+      "entered_before_peak": false,
+      "lead_vs_2xB_min": null,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 0.0
+     }
+    ]
+   },
+   "lowe": {
+    "entries": 5,
+    "false_entries": 3,
+    "false_per_100d": 0.96,
+    "entries_per_100d": 1.6,
+    "shelter_h_per_100d": 29.5,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2024-05-20T05:15:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 0,
+      "lead_vs_10xB_min": 0,
+      "dose_avoided_pct": 75.0
+     },
+     {
+      "onset": "2024-07-23T02:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 75,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 75.0
+     }
+    ]
+   },
+   "lowe2": {
+    "entries": 5,
+    "false_entries": 3,
+    "false_per_100d": 0.96,
+    "entries_per_100d": 1.6,
+    "shelter_h_per_100d": 29.0,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2024-05-20T05:15:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 0,
+      "lead_vs_10xB_min": 0,
+      "dose_avoided_pct": 75.0
+     },
+     {
+      "onset": "2024-07-23T02:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 60,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 75.0
+     }
+    ]
+   },
+   "layered2": {
+    "entries": 2,
+    "false_entries": 0,
+    "false_per_100d": 0.0,
+    "entries_per_100d": 0.64,
+    "shelter_h_per_100d": 25.4,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2024-05-20T05:15:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": -15,
+      "dose_avoided_pct": 74.1
+     },
+     {
+      "onset": "2024-07-23T02:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -45,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 67.3
+     }
+    ]
+   }
+  },
+  "idea_c": [
+   {
+    "onset": "2024-05-20T05:15:00",
+    "peak_ratio": 68.35,
+    "-4h": 29.6,
+    "-1h": 29.6,
+    "+0h": 29.7,
+    "+0.5h": 33.2,
+    "+1h": 40.2,
+    "+2h": 51.6,
+    "+4h": 64.7
+   },
+   {
+    "onset": "2024-07-23T02:30:00",
+    "peak_ratio": 2.14,
+    "-4h": 75.8,
+    "-1h": 75.8,
+    "+0h": 75.8,
+    "+0.5h": 80.8,
+    "+1h": 86.4,
+    "+2h": 97.4,
+    "+4h": 100.0
+   }
+  ]
+ }
+}

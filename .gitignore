@@ -4,3 +4,7 @@ dev-dist
 *.log
 .DS_Store
 screenshots/tmp
+__pycache__/
+research/realdata/raw/
+research/realdata/data/l1_*.csv
+research/realdata/data/goesr_p10_*.csv

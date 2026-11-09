@@ -1,67 +1,9 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { WarningOctagon, Warning, Question, Info, CheckCircle } from '@phosphor-icons/react';
 import rules from '../data/rules.json';
 import sources from '../data/sources.json';
 import mission from '../data/mission.json';
-import type { Level } from '../engine/world';
-import type { Sim } from './useSim';
+import cabin from '../data/cabin-rules.json';
 import { fmt } from '../engine/units';
 import { BODY_RULE } from '../engine/bodyRules';
-
-export type Tab = 'now' | 'checkin' | 'body' | 'log' | 'mission' | 'cmo' | 'ground' | 'sources';
-
-export interface Ui {
-  sim: Sim;
-  openSource: (key: string) => void;
-  /** Show procedure SH-1 in place on the Now view. */
-  openProcedure: () => void;
-  procOpen: boolean;
-  setProcOpen: (open: boolean) => void;
-  go: (tab: Tab) => void;
-  /** Record a crew action on the action line, so each tap gives a visible change. */
-  note: (msg: string) => void;
-  theme: string;
-}
-export const UiContext = createContext<Ui | null>(null);
-export function useUi(): Ui {
-  const u = useContext(UiContext);
-  if (!u) throw new Error('UiContext missing');
-  return u;
-}
-
-export const LEVEL_ICON: Record<Level | 'clear' | 'nominal', string> = {
-  warning: '■', caution: '!', verify: '?', advisory: 'i', clear: '✓', nominal: '●',
-};
-export const LEVEL_WORD: Record<Level | 'clear' | 'nominal', string> = {
-  warning: 'Warning', caution: 'Caution', verify: 'Verify', advisory: 'Advisory', clear: 'Clear', nominal: 'Nominal',
-};
-
-const ICONS = { warning: WarningOctagon, caution: Warning, verify: Question, advisory: Info, clear: CheckCircle, nominal: CheckCircle } as const;
-
-/** Level icon. Each level has its own shape, so color is never the only signal (NFR-05). */
-export function LevelIcon({ level, size = 16 }: { level: Level | 'clear' | 'nominal'; size?: number }) {
-  const I = ICONS[level];
-  return <I size={size} weight="bold" aria-hidden="true" />;
-}
-
-export function Chip({ level, children }: { level: Level | 'clear' | 'nominal'; children?: ReactNode }) {
-  return (
-    <span className={`chip ${level}`}>
-      <LevelIcon level={level} size={14} />
-      {children ?? LEVEL_WORD[level]}
-    </span>
-  );
-}
-
-/** A value with a tap target that opens its source (FR-06, US-04). */
-export function Src({ k, children, label }: { k: string; children: ReactNode; label?: string }) {
-  const { openSource } = useUi();
-  return (
-    <button type="button" className="linkish" onClick={() => openSource(k)} aria-label={label ?? `Show source for ${k}`}>
-      {children}
-    </button>
-  );
-}
 
 type SourceKey = keyof typeof sources;
 export interface SourceView {
@@ -144,10 +86,21 @@ export function resolveSource(key: string): SourceView[] {
       return [{ title: TH.priorCareerMSv.label, value: `${TH.priorCareerMSv.value} mSv`, sourceKey: 'team', evidence: 'Team value for demo.', team: true }];
     case 'speModel':
       return [{
-        title: mission.spe.label, value: `Peak ${mission.spe.peakExcessMSvPerHour} mSv/h above B`,
-        basis: mission.spe.basis, formula: `Rise: peak × (t / ${mission.spe.riseMinutes} min)^${mission.spe.riseExponent}. Decay: peak × e^(−t / ${mission.spe.decayTauMinutes} min).`,
-        sourceKey: 'team', evidence: 'Simulated. Team value for demo.', team: true,
-      }, ...resolveSource('donki')];
+        title: mission.spe.label, value: 'Measured dose-rate ratio, applied to the cruise baseline B',
+        basis: mission.spe.basis, formula: 'Cabin SPE rate = (RAD E rate ÷ fitted RAD background − 1) × B × sensor shielding.',
+        sourceKey: 'rad2012', evidence: sources.rad2012.evidence, team: false,
+      }, ...resolveSource('lowe2025')];
+    case 'cabinCo2':
+      return [{ title: 'CO2 limit, 1-hour average', value: `≤ ${cabin.limits.co2HourMmHg.max} mmHg [${cabin.limits.co2HourMmHg.req}]`, sourceKey: 'ochmoCo2', evidence: sources.ochmoCo2.evidence, team: false },
+        { title: 'CO2, 7-day average', value: `< ${cabin.limits.co2WeekMmHg.max} mmHg keeps headache risk under 1%`, sourceKey: 'ochmoCo2', evidence: sources.ochmoCo2.evidence, team: false }];
+    case 'cabinTemp':
+      return [{ title: 'Temperature', value: `Health ${cabin.limits.tempHealthC.min} to ${cabin.limits.tempHealthC.max} °C [V2 6012]. Comfort ${cabin.limits.tempComfortC.min} to ${cabin.limits.tempComfortC.max} °C [V2 6013].`, sourceKey: 'ochmoEclss', evidence: sources.ochmoEclss.evidence, team: false }];
+    case 'cabinRh':
+      return [{ title: 'Relative humidity', value: `Health ${cabin.limits.rhHealthPct.min} to ${cabin.limits.rhHealthPct.max}% [V2 6012]. Comfort ${cabin.limits.rhComfortPct.min} to ${cabin.limits.rhComfortPct.max}% [V2 6013].`, sourceKey: 'ochmoEclss', evidence: sources.ochmoEclss.evidence, team: false }];
+    case 'cabinO2':
+      return [{ title: 'Oxygen partial pressure', value: `Normoxia target ${cabin.limits.ppO2TargetMmHg.min} to ${cabin.limits.ppO2TargetMmHg.max} mmHg`, sourceKey: 'ochmoEclss', evidence: sources.ochmoEclss.evidence, team: false }];
+    case 'cabinP':
+      return [{ title: 'Total pressure', value: `${cabin.limits.totalKPa.min} to ${cabin.limits.totalKPa.max} kPa for indefinite exposure [V2 6006]`, sourceKey: 'ochmoEclss', evidence: sources.ochmoEclss.evidence, team: false }];
     case 'donki':
       return [{ title: 'NASA DONKI', value: 'FLR, CME, SEP records', basis: 'DONKI gives early notice from near Earth. It never sets a Warning by itself.', sourceKey: 'donki', evidence: sources.donki.evidence, team: false }];
     default: {
@@ -166,3 +119,4 @@ export function resolveSource(key: string): SourceView[] {
 }
 
 export { sources };
+

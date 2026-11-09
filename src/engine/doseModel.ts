@@ -1,12 +1,14 @@
 import mission from '../data/mission.json';
 import rules from '../data/rules.json';
+import rad from '../data/real/rad-replay.json';
 import { at, dayOf } from './time';
 import { toMGy } from './units';
 
 /**
- * Simulated dosimeter stream (PRD section 09, "The dose model").
- * Two parts: a GCR baseline for the mission phase, and an SPE part that a DONKI SEP record starts.
- * Sensors report absorbed dose rate in mGy/h. All values here are labeled "Simulated" on screen.
+ * Dosimeter stream (PRD section 09, "The dose model").
+ * Two parts: a GCR baseline for the mission phase, and an SPE part from measured
+ * MSL RAD data (5 to 11 March 2012, cruise to Mars). Sensor layout and noise are simulated.
+ * Sensors report absorbed dose rate in mGy/h.
  */
 
 export type PhaseId = 'cruise' | 'surface';
@@ -26,15 +28,25 @@ export function baselineMSvH(t: number): number {
   return rules.baselines[phaseAt(t).id].mSvPerHour;
 }
 
-const spe = mission.spe;
-const SPE_ONSET = at(spe.onset.day, spe.onset.hhmm);
+const REPLAY_START = mission.spe.startDay * 1440;
+const BIN = rad.bin_min;
+const RATIO = rad.ratio_E as (number | null)[];
 
-/** SPE excess dose rate at an unshielded cabin point, in mSv/h. */
+/** Measured RAD E ratio (rate / fitted background) at minute t. Linear between 15 min bins. 1 outside the replay. */
+export function radRatio(t: number): number {
+  const x = (t - REPLAY_START) / BIN;
+  if (x < 0 || x >= RATIO.length - 1) return 1;
+  const i = Math.floor(x);
+  const a = RATIO[i], b = RATIO[i + 1];
+  if (a === null && b === null) return 1;
+  if (a === null) return b!;
+  if (b === null) return a;
+  return a + (b - a) * (x - i);
+}
+
+/** SPE excess dose rate at an unshielded cabin point, in mSv/h. From measured MSL RAD data (March 2012). */
 export function speExcessMSvH(t: number): number {
-  const dt = t - SPE_ONSET;
-  if (dt <= 0) return 0;
-  if (dt <= spe.riseMinutes) return spe.peakExcessMSvPerHour * Math.pow(dt / spe.riseMinutes, spe.riseExponent);
-  return spe.peakExcessMSvPerHour * Math.exp(-(dt - spe.riseMinutes) / spe.decayTauMinutes);
+  return Math.max(0, radRatio(t) - 1) * baselineMSvH(t);
 }
 
 /** Small, repeatable noise so each replay gives the same numbers. */

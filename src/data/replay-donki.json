@@ -1,15 +1,86 @@
 {
   "label": "Replay",
-  "provenance": "Synthetic records in the DONKI JSON schema, placed on mission time for the demo. Dependency DP-5: replace them with one real DONKI SEP event. Run `npm run fetch-donki -- <start> <end>` with an api.nasa.gov key.",
+  "provenance": "Real events of 5 to 7 March 2012, on mission time (day 92 00:00 = 5 March 2012 00:00 UTC). Flares: NOAA GOES XRS event list. CMEs: SOHO LASCO CDAW catalog. SEP: GOES >10 MeV protons from NASA OMNI. These are the same events that DONKI logs. Our test system could not reach the DONKI host, so the IDs here are our own.",
   "flares": [
-    { "flrID": "SIM-FLR-090-0315", "day": 90, "hhmm": "03:15", "classType": "M1.4", "sourceLocation": "N14E32", "linkedEvents": [] },
-    { "flrID": "SIM-FLR-094-0640", "day": 94, "hhmm": "06:40", "classType": "X2.1", "sourceLocation": "S09W18", "linkedEvents": ["SIM-CME-094-0640", "SIM-SEP-094-1330"] }
+    {
+      "flrID": "FLR-2012-03-05T04:09",
+      "day": 92,
+      "hhmm": "04:09",
+      "classType": "X1.1",
+      "sourceLocation": "N16E54",
+      "linkedEvents": [
+        "CME-2012-03-05T04:00"
+      ]
+    },
+    {
+      "flrID": "FLR-2012-03-07T00:24",
+      "day": 94,
+      "hhmm": "00:24",
+      "classType": "X5.4",
+      "sourceLocation": "N17E27",
+      "linkedEvents": [
+        "CME-2012-03-07T00:24",
+        "SEP-2012-03-07T05:10"
+      ]
+    },
+    {
+      "flrID": "FLR-2012-03-07T01:14",
+      "day": 94,
+      "hhmm": "01:14",
+      "classType": "X1.3",
+      "sourceLocation": "N22E12",
+      "linkedEvents": [
+        "CME-2012-03-07T01:30"
+      ]
+    }
   ],
   "cmes": [
-    { "activityID": "SIM-CME-091-1820", "day": 91, "hhmm": "18:20", "speed": 640, "type": "C", "linkedEvents": [] },
-    { "activityID": "SIM-CME-094-0640", "day": 94, "hhmm": "06:40", "speed": 1800, "type": "R", "linkedEvents": ["SIM-FLR-094-0640"] }
+    {
+      "activityID": "CME-2012-03-05T04:00",
+      "day": 92,
+      "hhmm": "04:00",
+      "speed": 1531,
+      "type": "Halo",
+      "linkedEvents": [
+        "FLR-2012-03-05T04:09"
+      ]
+    },
+    {
+      "activityID": "CME-2012-03-07T00:24",
+      "day": 94,
+      "hhmm": "00:24",
+      "speed": 2684,
+      "type": "Halo",
+      "linkedEvents": [
+        "FLR-2012-03-07T00:24"
+      ]
+    },
+    {
+      "activityID": "CME-2012-03-07T01:30",
+      "day": 94,
+      "hhmm": "01:30",
+      "speed": 1825,
+      "type": "Halo",
+      "linkedEvents": [
+        "FLR-2012-03-07T01:14"
+      ]
+    }
   ],
   "seps": [
-    { "sepID": "SIM-SEP-094-1330", "day": 94, "hhmm": "13:30", "endDay": 95, "endHhmm": "01:00", "endNote": "DONKI SEP records have no end time. The end is a team value for the clear rule.", "instruments": ["GOES-P: Proton 10 MeV"], "linkedEvents": ["SIM-FLR-094-0640", "SIM-CME-094-0640"] }
+    {
+      "sepID": "SEP-2012-03-07T05:10",
+      "day": 94,
+      "hhmm": "05:10",
+      "endDay": 102,
+      "endHhmm": "04:35",
+      "endNote": "GOES >10 MeV protons stayed at or above 10 pfu until 15 March 04:35 UTC (OMNI data). A second event on 13 March is part of that span.",
+      "instruments": [
+        "GOES-15: >10 MeV protons"
+      ],
+      "linkedEvents": [
+        "FLR-2012-03-07T00:24",
+        "CME-2012-03-07T00:24"
+      ]
+    }
   ]
 }

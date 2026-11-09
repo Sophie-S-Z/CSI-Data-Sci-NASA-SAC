@@ -6,7 +6,9 @@ The tool answers one question when Earth cannot answer in time:
 
 > What is my radiation risk now, and what do I do?
 
-**Not for clinical use.** All dose values are simulated. Solar event records are a replay.
+**Not for clinical use.** The radiation event is measured data: the MSL RAD detector on the 2012 cruise to Mars. The solar event records are the real records of 5 to 7 March 2012. The sensor spread, cabin air, and crew vitals are simulated, and the app labels them "Simulated".
+
+The rules come from tests on 6 real solar particle events. See `research/realdata/RESULTS.md`.
 
 ## Run it
 
@@ -22,26 +24,28 @@ The build is a static site. It works from any folder and from GitHub Pages. Afte
 
 ## The 2-minute demo
 
-The demo controls at the bottom of the screen drive the replay. "Pause on new alert" stops the replay when a Caution or Warning starts.
+The demo dock at the bottom of the screen drives the replay. Each beat jumps to one moment of the real March 2012 event.
 
-| Time | Beat | Do this |
+| Beat | Mission time | What you see |
 | --- | --- | --- |
-| 0:15 | Normal day | Tap **Normal day**. Tap the heart block at 07:00 on your timeline row. Save a check-in. |
-| 0:30 | Event | Tap **Solar flare**. The DONKI replay gives a Caution (rule R-C1). Tap **Dose rise**, then **Play**. Rule R-W1 gives a Warning at 14:13. |
-| 0:55 | Action | Tap **Go to procedure SH-1**. Tap **Done** on each step. Step 3 moves you into the shelter and records metric M-1. |
-| 1:20 | Budget | Tap **All clear**. The budget shows the dose that the shelter saved (estimate) and the waiver projection. |
-| 1:35 | Earth | Set the link to **Offline**, save a private health check, then set the link to **Live**. Open **Ground**. The private entry is not in the summary. |
-| 1:50 | Close | Open **Log**. The alarm-burden card shows 1 Caution or Warning event in 8 simulated days. |
+| 1 X5.4 flare | Day 94 00:20 | The flare and CME records give a Caution (rule R-C1). |
+| 2 Sensor spike | Day 94 03:08 | One sensor jumps. The app gives Verify, not a Warning, because only 1 sensor agrees. |
+| 3 Dose rise | Day 94 06:30 | The RAD dose rate starts to rise. |
+| 4 Warning | Day 94 08:45 | At 2 × background on 2 or more sensors, rule R-W1 gives a Warning. Tap **Start procedure SH-1**. |
+| 5 Peak | Day 95 17:00 | The dose rate is about 35 × the baseline. The exposure panel shows the dose that the shelter avoids. |
+| 6 Warning clears | Day 97 00:45 | The Warning drops to Caution. The SEP record keeps the Caution active. |
+
+Open **Real-data test** to show the rule results on all 6 events.
 
 ## What is in this build
 
 | PRD item | Where |
 | --- | --- |
 | FR-01 Dose-rate monitor, 4 alert rules | `src/engine/world.ts`, `src/data/rules.json` |
-| FR-02 Solar event watch (DONKI never sets Warning) | `src/engine/donki.ts`, Solar events panel, Live DONKI tab |
+| FR-02 Solar event watch (DONKI never sets Warning) | `src/engine/donki.ts`, Solar events panel, Radiation view |
 | FR-03 Shelter procedure SH-1 | Opens in place in the alert panel. 1 tap from the Warning. |
 | FR-04 Dose budget and waiver state | Dose budget panel and career chart |
-| FR-05 Timeline band | Crew timeline (top of the Now view) |
+| FR-05 Timeline band | Crew timeline (bottom of the Radiation view) |
 | FR-06 Source panel | Tap any underlined value or a **Source** button |
 | FR-07 Delay switch | Link control in the replay deck and on **Ground** |
 | FR-08 Replay mode, labels | Replay deck. "Replay" and "Simulated" tags. |
@@ -59,41 +63,35 @@ The demo controls at the bottom of the screen drive the replay. "Pause on new al
 | NFR-07 Audit | Append-only, frozen log entries. Export as JSON on **Log**. |
 | NFR-08 Labels | "Replay", "Simulated dose", "Not for clinical use" in the status bar |
 
-### Interface (redesign, November 2026)
+### Interface (Phase 4, November 2026)
 
-The interface copies the crew tools that astronauts already use: the iPV procedure viewer and the OSTPV timeline. See `docs/design-notes.md` for the rules and the reasons.
+React 19, Tailwind CSS 4, shadcn/ui (Radix), Motion, and Recharts. See `docs/design-notes.md`.
 
-- **Now view.** The crew timeline is on top. The decision panel is the only loud element. It gives one action in large type and one button to procedure SH-1. Dose budget, dose rate, sensors, a flat position drawing, and DONKI events support it.
-- **Procedure in place.** SH-1 opens inside the alert panel, not in a pop-up. The alert band and the action sentence stay in view.
-- **Clear rule progress.** In the shelter, the panel shows how long the sensors stayed below 3 × B, against the 2 h that the clear rule needs.
-- **One-page health check.** Sleep, mood, symptoms in three groups, pain, a note, and who can see the entry. The side panel shows the rules that the draft sets off.
-- **Body view.** One table row for each challenge risk, with the latest value, an 8-day trend, the data source, and the rule state.
-- **Action line.** Each crew action shows at the top of the page with its mission time, so each tap gives a visible change.
-- **Themes.** Day (default), Dim, and Night (no blue light).
-- **Calm motion.** Motion answers a tap or marks a new alert. It uses CSS only, and it stops when the device asks for reduced motion.
-- **Version 4 look.** Soft panels, a red or yellow decision panel during an alert, pill buttons, a sliding tab bar, and a floating demo dock. See `docs/design-notes.md`.
-- **Mission tab.** A 3D view (three.js) shows the Sun, Earth, Mars, the vehicle, and the particle stream in the alert color. It loads only when you open the tab, so the crew views stay light. The Now view keeps the flat drawing.
+- **Sidebar.** Crew views (Radiation, Cabin air, Body, Health check, Log) come first. Mission team views (Real-data test, Mission 3D, CMO, Ground link, Rules and sources) come after. On a phone, a bottom tab bar replaces the sidebar.
+- **Radiation view.** The decision panel fills with red or yellow during an alert. SH-1 opens in place. A log-scale chart shows the cabin dose rate with the Caution and Warning lines and the shelter time.
+- **Cabin air.** CO2, temperature, humidity, ppO2, and pressure against NASA-STD-3001 Vol 2 limits. The values are simulated. They rise during a shelter stay.
+- **Real-data test.** The rule results on 6 RAD events, an event replay for each rule, the cost of late entry, and the electron cue test.
+- **Themes.** Day, Dim, and Night (no blue light).
+- **Offline.** A service worker keeps the app after the first load.
 
 ## Edit the rules
 
-All radiation thresholds, timings, and sources are in `src/data/rules.json`. The body-system rules are in `src/data/body-rules.json`. The Science owner can change a value with no code change. Run `npm test` after a change. The tests check the day 94 demo story from PRD section 07.
+All radiation thresholds, timings, and sources are in `src/data/rules.json`. The body-system rules are in `src/data/body-rules.json`. The Science owner can change a value with no code change. Run `npm test` after a change. The tests check the day 94 story on the real March 2012 data.
 
 The mission, sensors, schedule, sensor faults, and the SPE dose profile are in `src/data/mission.json`.
 
-## Replace the replay with a real DONKI event (DP-5)
+## Data files
 
-The replay file `src/data/replay-donki.json` holds synthetic records in the DONKI schema. To use a real event:
-
-```bash
-NASA_API_KEY=your_key npm run fetch-donki -- 2024-05-08 2024-05-14 > donki-raw.json
-```
-
-Copy the FLR, CME, and SEP records that you choose into the replay file. Set `day` and `hhmm` to mission time.
+- `src/data/real/rad-replay.json`: RAD dose rate, 5 to 11 March 2012, 15-min bins. `research/realdata/export_app.py` writes it.
+- `src/data/real/rad-events.json` and `l1-summary.json`: the test results for the Real-data test view.
+- `src/data/replay-donki.json`: the real flare, CME, and SEP records of March 2012, in the DONKI schema.
+- `src/data/cabin-rules.json`: cabin air limits from NASA-STD-3001 Vol 2.
 
 ## Open items for the team
 
 - **Source check.** The PRD credits the cruise rate (1.84 mSv/d) to Hassler et al. 2014. That rate comes from Zeitlin et al., Science 2013 (MSL cruise). Hassler 2014 gives the surface rate (0.64 mSv/d). `sources.json` uses the correct papers.
-- **Unit factor.** The one mGy-to-mSv factor (3.83) comes from the RAD cruise data. It overstates SPE dose. The source panel says so.
+- **Unit factor.** The one mGy-to-mSv factor (3.83) comes from the RAD cruise data. It overstates SPE dose (the SPE factor is about 1.77). The source panel says so.
+- **May 2024 dose.** NASA gives 8.1 mGy for the 20 May 2024 event. Our detector E excess is 1.83 mGy. We did not find the cause.
 - **Validate** the shelter factor (0.25), the Berger 2024 DOI, the ESA / CSA / Roscosmos limit source, and the NOAA S1 and DONKI SEP definitions.
 - **Event rules (RK-04).** Check if the 2026 rules allow code written before 14 November.
 

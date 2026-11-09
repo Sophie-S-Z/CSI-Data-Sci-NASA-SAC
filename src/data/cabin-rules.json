@@ -1,0 +1,13 @@
+{
+  "version": "NASA-STD-3001 Vol 2 limits, from OCHMO technical briefs TB-002 (ECLSS) and TB-004 (CO2). Crew values are simulated.",
+  "limits": {
+    "co2HourMmHg": { "max": 3, "label": "1-hour average ppCO2", "req": "V2 6004", "source": "ochmoCo2" },
+    "co2WeekMmHg": { "max": 2.5, "label": "7-day average ppCO2 for under 1% headache risk", "req": "Law et al. 2014, as cited in TB-004", "source": "ochmoCo2" },
+    "tempHealthC": { "min": 18, "max": 27, "label": "Crew health limit", "req": "V2 6012", "source": "ochmoEclss" },
+    "tempComfortC": { "min": 20, "max": 25, "label": "Crew performance zone", "req": "V2 6013", "source": "ochmoEclss" },
+    "rhHealthPct": { "min": 25, "max": 75, "label": "Crew health limit", "req": "V2 6012", "source": "ochmoEclss" },
+    "rhComfortPct": { "min": 30, "max": 60, "label": "Crew performance zone", "req": "V2 6013", "source": "ochmoEclss" },
+    "ppO2TargetMmHg": { "min": 145, "max": 155, "label": "Normoxia target range", "req": "V2 6003 (table not in the brief)", "source": "ochmoEclss" },
+    "totalKPa": { "min": 34.5, "max": 103, "label": "Total pressure for indefinite exposure", "req": "V2 6006", "source": "ochmoEclss" }
+  }
+}

@@ -115,7 +115,7 @@ export const PROCEDURE_SH1 = {
     { n: 3, text: 'Go to the shelter.', marksShelter: true },
     { n: 4, text: 'Put on the radiation vest.', branch: { label: 'Vest not found', goto: 5, logText: 'Vest not found. Crew continued without the vest. Tell the CMO.' } },
     { n: 5, text: 'Start the shelter dose log.' },
-    { n: 6, text: 'Stay until the Warning clears for 2 h.', waitsForClear: true },
+    { n: 6, text: 'Stay until the Warning clears (all sensors below 1.5 × B for 1 h).', waitsForClear: true },
   ],
 };
 
@@ -194,7 +194,7 @@ export class World {
 
   /**
    * Progress of the clear rule for an open Warning: minutes that all sensors stayed
-   * below 3 × B, and the minutes that the rule needs. Null when no Warning is open.
+   * below the Caution level, and the minutes that the rule needs. Null when no Warning is open.
    */
   warningClearProgress(): { have: number; need: number } | null {
     const a = this.openAlert('radiation');
@@ -281,7 +281,7 @@ export class World {
           : `Projected unsheltered dose ${fmt(proj, 0)} mSv in 24 h`,
       };
     } else if (open?.level === 'warning' && this.belowRun < TM.warningClearMin) {
-      target = { level: 'warning', ruleId: 'R-W1', reason: `Warning holds until all sensors stay below ${TH.cautionMultiple.label} for 2 h` };
+      target = { level: 'warning', ruleId: 'R-W1', reason: `Warning holds until all sensors stay below ${TH.cautionMultiple.label} for ${TM.warningClearMin} min` };
     } else if (cautCond) {
       const why = d.sep.length
         ? `DONKI SEP record ${d.sep[0].id}`
@@ -290,7 +290,7 @@ export class World {
           : `≥${fmt(x(TH.cautionMultiple.x))} mSv/h on ${nC} sensors for ${TM.cautionSustainMin} min`;
       target = { level: 'caution', ruleId: 'R-C1', reason: why };
     } else if (open && LEVEL_RANK[open.level] >= 3 && this.belowRun < TM.cautionClearMin) {
-      target = { level: 'caution', ruleId: 'R-C1', reason: 'Caution holds until sensors stay below 3 × B for 1 h' };
+      target = { level: 'caution', ruleId: 'R-C1', reason: `Caution holds until sensors stay below ${TH.cautionMultiple.label} for ${TM.cautionClearMin} min` };
     } else if (advCond) {
       const r = d.adv[d.adv.length - 1];
       target = { level: 'advisory', ruleId: 'R-A1', reason: `DONKI ${r.kind} ${r.kind === 'FLR' ? r.classType : `${r.speed} km/s`}, dose rate normal` };

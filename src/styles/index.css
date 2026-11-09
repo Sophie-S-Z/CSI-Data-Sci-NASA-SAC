@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Themes: light (day), dark (dim), and night (no blue light). The <html> element
+   carries data-theme. Status colors keep one meaning each (Appendix F habit):
+   red only for Warning, amber only for Caution. Each status also has an icon and a word. */
+@custom-variant dark (&:is([data-theme="dim"] *, [data-theme="night"] *));
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-elevated: var(--elevated);
+  --color-nominal: var(--nominal);
+  --color-advisory: var(--advisory);
+  --color-verify: var(--verify);
+  --color-caution: var(--caution);
+  --color-caution-ink: var(--caution-ink);
+  --color-warning: var(--warning);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+}
+
+:root,
+[data-theme="day"] {
+  --radius: 0.75rem;
+  --background: oklch(0.975 0.004 255);
+  --foreground: oklch(0.2 0.02 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.02 260);
+  --elevated: oklch(0.985 0.003 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.02 260);
+  --primary: oklch(0.52 0.19 262);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.006 255);
+  --secondary-foreground: oklch(0.25 0.02 260);
+  --muted: oklch(0.955 0.006 255);
+  --muted-foreground: oklch(0.5 0.02 258);
+  --accent: oklch(0.945 0.012 262);
+  --accent-foreground: oklch(0.25 0.04 262);
+  --destructive: oklch(0.56 0.22 27);
+  --border: oklch(0.91 0.008 258);
+  --input: oklch(0.9 0.008 258);
+  --ring: oklch(0.6 0.16 262);
+  --sidebar: oklch(0.985 0.003 255);
+  --nominal: oklch(0.55 0.14 155);
+  --advisory: oklch(0.55 0.13 235);
+  --verify: oklch(0.52 0.2 300);
+  --caution: oklch(0.8 0.16 80);
+  --caution-ink: oklch(0.42 0.1 70);
+  --warning: oklch(0.56 0.22 27);
+  --chart-1: oklch(0.52 0.19 262);
+  --chart-2: oklch(0.65 0.12 200);
+  --chart-3: oklch(0.6 0.02 258);
+  color-scheme: light;
+}
+
+[data-theme="dim"] {
+  --background: oklch(0.155 0.012 262);
+  --foreground: oklch(0.95 0.005 255);
+  --card: oklch(0.195 0.014 262);
+  --card-foreground: oklch(0.95 0.005 255);
+  --elevated: oklch(0.225 0.014 262);
+  --popover: oklch(0.21 0.014 262);
+  --popover-foreground: oklch(0.95 0.005 255);
+  --primary: oklch(0.7 0.15 262);
+  --primary-foreground: oklch(0.16 0.02 262);
+  --secondary: oklch(0.25 0.014 262);
+  --secondary-foreground: oklch(0.93 0.005 255);
+  --muted: oklch(0.24 0.012 262);
+  --muted-foreground: oklch(0.7 0.015 258);
+  --accent: oklch(0.27 0.02 262);
+  --accent-foreground: oklch(0.95 0.005 255);
+  --destructive: oklch(0.64 0.21 25);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.7 0.15 262);
+  --sidebar: oklch(0.17 0.012 262);
+  --nominal: oklch(0.74 0.15 155);
+  --advisory: oklch(0.74 0.12 235);
+  --verify: oklch(0.72 0.16 300);
+  --caution: oklch(0.83 0.16 82);
+  --caution-ink: oklch(0.86 0.15 85);
+  --warning: oklch(0.64 0.21 25);
+  --chart-1: oklch(0.74 0.14 262);
+  --chart-2: oklch(0.76 0.11 200);
+  --chart-3: oklch(0.6 0.02 258);
+  color-scheme: dark;
+}
+
+/* Night: no blue light. Everything is red-amber on near black. */
+[data-theme="night"] {
+  --background: oklch(0.13 0.01 40);
+  --foreground: oklch(0.78 0.13 60);
+  --card: oklch(0.16 0.012 40);
+  --card-foreground: oklch(0.78 0.13 60);
+  --elevated: oklch(0.19 0.014 40);
+  --popover: oklch(0.17 0.012 40);
+  --popover-foreground: oklch(0.78 0.13 60);
+  --primary: oklch(0.7 0.15 55);
+  --primary-foreground: oklch(0.14 0.01 40);
+  --secondary: oklch(0.21 0.02 40);
+  --secondary-foreground: oklch(0.78 0.13 60);
+  --muted: oklch(0.2 0.015 40);
+  --muted-foreground: oklch(0.6 0.1 55);
+  --accent: oklch(0.23 0.03 45);
+  --accent-foreground: oklch(0.82 0.13 60);
+  --destructive: oklch(0.6 0.2 30);
+  --border: oklch(0.7 0.12 55 / 14%);
+  --input: oklch(0.7 0.12 55 / 18%);
+  --ring: oklch(0.7 0.15 55);
+  --sidebar: oklch(0.14 0.01 40);
+  --nominal: oklch(0.72 0.12 85);
+  --advisory: oklch(0.72 0.12 70);
+  --verify: oklch(0.7 0.12 40);
+  --caution: oklch(0.78 0.15 70);
+  --caution-ink: oklch(0.8 0.14 70);
+  --warning: oklch(0.6 0.2 30);
+  --chart-1: oklch(0.75 0.14 60);
+  --chart-2: oklch(0.65 0.12 45);
+  --chart-3: oklch(0.5 0.06 50);
+  color-scheme: dark;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01", "tnum" 0;
+    min-height: 100dvh;
+  }
+  .tnum, .num { font-variant-numeric: tabular-nums slashed-zero; }
+  ::selection { background: color-mix(in oklch, var(--primary) 25%, transparent); }
+}
+
+@layer utilities {
+  .glass {
+    background: color-mix(in oklch, var(--card) 78%, transparent);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  }
+  .ring-hairline { box-shadow: 0 0 0 1px var(--border), 0 1px 2px oklch(0 0 0 / 4%), 0 8px 24px -12px oklch(0 0 0 / 10%); }
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
+
+/* A pulse that marks a new loud alert. It stops for reduced motion. */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklch, currentColor 45%, transparent); }
+  100% { box-shadow: 0 0 0 14px transparent; }
+}
+.pulse-ring { animation: pulse-ring 1.6s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* Recharts: inherit theme text color */
+.recharts-cartesian-axis-tick-value { fill: var(--muted-foreground); font-size: 11px; }
+.recharts-text.recharts-label { fill: var(--muted-foreground); }

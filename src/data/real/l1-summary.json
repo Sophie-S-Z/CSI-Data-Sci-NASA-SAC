@@ -1,0 +1,10 @@
+{
+  "headline": "ACE electrons at L1 gave an early cue for most NOAA S1 proton events. The cue had too many false alarms to send the crew to the shelter. The app uses it only to stage the shelter at Caution level.",
+  "tiles": [
+    {"label": "Tuned on cycle 24", "value": "26 of 27", "sub": "S1 events caught, 4.5 false alarms per 100 days"},
+    {"label": "Tested on cycle 25", "value": "24 of 27", "sub": "S1 events caught, 7.4 false alarms per 100 days"},
+    {"label": "Median lead, cycle 25", "value": "115 min", "sub": "Before the S1 onset. 10th percentile 58 min"},
+    {"label": "False alarm ratio", "value": "0.87", "sub": "Cycle 25. Shelter grade needs 0.5 or less"}
+  ],
+  "note": "Rule: ACE EPAM 175 to 315 keV electrons at 3 times the 24 h background and rising. Settings chosen on cycle 24 (2010 to 2019) before the cycle 25 test (2020 to 2025). Protons: OMNI to March 2020, then GOES-R SGPS above 10 MeV. Mars is not at L1, so this cue applies only near Earth."
+}
