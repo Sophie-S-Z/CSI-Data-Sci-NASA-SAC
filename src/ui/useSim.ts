@@ -20,7 +20,7 @@ export const BEATS = [
   { label: 'Dose rise', t: at(94, '06:30') },
   { label: 'Warning', t: at(94, '08:45') },
   { label: 'Peak', t: at(95, '17:00') },
-  { label: 'Warning clears', t: at(97, '00:45') },
+  { label: 'Warning clears', t: at(97, '13:30') },
 ];
 
 interface Saved { actions: RecordedAction[]; t: number }

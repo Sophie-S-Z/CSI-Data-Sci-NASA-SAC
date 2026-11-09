@@ -8,13 +8,14 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import rules from '../../data/rules.json';
 import mission from '../../data/mission.json';
-import { RULES, LINK_LABEL, LINK_DELAY_MIN, LEVEL_RANK, PROCEDURE_SH1, type Alert, type World } from '../../engine/world';
+import { RULES, LINK_LABEL, LINK_DELAY_MIN, LEVEL_RANK, PROCEDURE_SH1, actionSentence, type Alert, type World } from '../../engine/world';
 import { SENSORS } from '../../engine/doseModel';
 import { REPLAY, REPLAY_PROVENANCE } from '../../engine/donki';
 import { at, dayOf, hhmm, stamp, duration, minuteOfDay, MIN_PER_DAY } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { vehicleAt, earthAt, marsAt, R_EARTH, R_MARS, TRANSIT_DAYS } from '../../engine/orbit';
 import { cabinAt, CABIN } from '../../engine/cabin';
+import { warningForecast } from '../../engine/forecast';
 import { useUi } from '../context';
 import { LevelBadge, LevelIcon, LEVEL_WORD, Panel, Prov, Src, Spark, Kv } from '../parts';
 
@@ -45,13 +46,6 @@ export function NowView() {
 }
 
 // ---------------------------------------------------------------- decision
-
-function actionSentence(a: Alert, w: World): string {
-  if (a.level === 'warning') return w.inShelter ? 'Stay in the shelter.' : 'Go to the shelter now.';
-  if (a.level === 'caution') return w.inShelter ? 'Stay in the shelter until the Caution clears.' : 'Safe your task. Stage the shelter.';
-  if (a.level === 'verify') return 'Check the sensor. Read your dosimeter.';
-  return 'No action now. Read at the daily review.';
-}
 
 function whyLine(a: Alert, w: World): string {
   const x = w.current.mean / w.current.B;
@@ -129,6 +123,7 @@ function Decision() {
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-black/15" role="progressbar" aria-label="Clear rule progress" aria-valuemin={0} aria-valuemax={clear.need} aria-valuenow={clear.have}>
                 <motion.div className="h-full rounded-full bg-white" animate={{ width: `${(clear.have / clear.need) * 100}%` }} transition={{ duration: 0.3 }} />
               </div>
+              {clear.have === 0 && <ClearEstimate w={w} />}
             </div>
           )}
           <div className="relative mt-6 flex flex-wrap items-center gap-2">
@@ -202,6 +197,18 @@ function Decision() {
         </div>
       )}
     </section>
+  );
+}
+
+/** Clear-time estimate from the measured RAD events. It never changes the alert. */
+function ClearEstimate({ w }: { w: World }) {
+  const { go } = useUi();
+  const f = warningForecast(w);
+  return (
+    <button type="button" onClick={() => go('ask')} className="mt-2 block text-left text-xs opacity-90 underline decoration-dotted underline-offset-4 hover:opacity-100">
+      {f ? <>Estimate: clear between <span className="num">{stamp(f.earliest)}</span> and <span className="num">{stamp(f.latest)}</span>, from {f.analogs.length} measured events</>
+        : 'Clear time: no estimate while the rate is near its peak'}
+    </button>
   );
 }
 

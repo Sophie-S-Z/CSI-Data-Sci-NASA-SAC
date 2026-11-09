@@ -615,6 +615,14 @@ export class World {
   }
 }
 
+/** The one action sentence for an alert. The decision panel and the assistant both use it. */
+export function actionSentence(a: Alert, w: World): string {
+  if (a.level === 'warning') return w.inShelter ? 'Stay in the shelter.' : 'Go to the shelter now.';
+  if (a.level === 'caution') return w.inShelter ? 'Stay in the shelter until the Caution clears.' : 'Safe your task. Stage the shelter.';
+  if (a.level === 'verify') return 'Check the sensor. Read your dosimeter.';
+  return 'No action now. Read at the daily review.';
+}
+
 export const VIS_LABEL: Record<Visibility, string> = { private: 'Only me', cmo: 'CMO', crew: 'Crew', ground: 'Ground' };
 export const LINK_LABEL: Record<LinkState, string> = {
   live: 'Live', d5: 'Delayed 5 min', d14: 'Delayed 14 min', d22: 'Delayed 22 min', blackout: 'Offline (blackout)',

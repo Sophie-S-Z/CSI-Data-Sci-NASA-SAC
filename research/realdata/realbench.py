@@ -104,11 +104,11 @@ def background_fit(x: np.ndarray, thr: float = 1.25) -> np.ndarray:
             pass  # keep the old fit through a data gap
         else:
             # leave out event samples: above thr x the old fit, or above thr x the
-            # window median when the old fit is missing or not usable
+            # 20th percentile of the window when an event fills most of it
             ref = a + c * idx if not math.isnan(a) else np.full(idx.size, np.nanmedian(v))
             ok = have & (v <= thr * ref)
             if ok.sum() < 0.5 * have.sum():
-                ok = have & (v <= thr * np.nanmedian(v))
+                ok = have & (v <= thr * np.nanpercentile(v, 20))
             c2, a2 = np.polyfit(idx[ok], v[ok], 1)
             end_val = a2 + c2 * min(hi + SPD, n)
             if end_val > 0.5 * np.nanmedian(v[ok]):
