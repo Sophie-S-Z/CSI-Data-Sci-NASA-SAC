@@ -4,6 +4,9 @@ import { at, hhmm, dayOf } from '../src/engine/time';
 import { toMSv, toMGy, MSV_PER_MGY } from '../src/engine/units';
 import { flareRank } from '../src/engine/donki';
 import rules from '../src/data/rules.json';
+import bodyRules from '../src/data/body-rules.json';
+import cabinRules from '../src/data/cabin-rules.json';
+import sources from '../src/data/sources.json';
 
 const clock = () => 0;
 
@@ -186,5 +189,18 @@ describe('warning clear progress', () => {
       expect(q.have).toBeLessThanOrEqual(q.need);
       w.step();
     }
+  });
+});
+
+describe('sources', () => {
+  it('every source key in the data files exists in sources.json', () => {
+    const keys: string[] = [];
+    const walk = (v: unknown): void => {
+      if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) k === 'source' && typeof x === 'string' ? keys.push(x) : walk(x);
+    };
+    [rules, bodyRules, cabinRules].forEach(walk);
+    expect(keys.length).toBeGreaterThan(20);
+    for (const k of keys) expect(sources, k).toHaveProperty(k);
   });
 });

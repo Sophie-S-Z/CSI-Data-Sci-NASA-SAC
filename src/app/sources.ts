@@ -68,15 +68,15 @@ export function resolveSource(key: string): SourceView[] {
     case 'career':
       return [{ title: rules.limits.career.label, value: `${rules.limits.career.mSv} mSv`, basis: 'A Mars crew passes this limit by design. The budget shows a waiver state, not an alert.', sourceKey: 'std3001', evidence: sources.std3001.evidence, team: false }];
     case 'intlCareer':
-      return [{ title: rules.limits.intlCareer.label, value: `${rules.limits.intlCareer.mSv} mSv`, sourceKey: 'std3001', evidence: 'Validate: confirm the source for the ESA, CSA, and Roscosmos value.', team: false }];
+      return [{ title: rules.limits.intlCareer.label, value: `${rules.limits.intlCareer.mSv} mSv`, sourceKey: 'nasem2021', evidence: sources.nasem2021.evidence, team: false }];
     case 'singleSpe':
-      return [{ title: rules.limits.singleSpe.label, value: `${rules.limits.singleSpe.mSv} mSv`, sourceKey: 'std3001', evidence: sources.std3001.evidence, team: false }];
+      return [{ title: rules.limits.singleSpe.label, value: `${rules.limits.singleSpe.mSv} mSv`, basis: rules.limits.singleSpe.note, sourceKey: 'std3001', evidence: sources.std3001.evidence, team: false }];
     case 'shelterFactor':
       return [{
         title: 'Shelter factor', value: `${TH.shelterFactor.value} × cabin SPE rate`, basis: `${TH.shelterFactor.label}. ${TH.shelterFactor.basis}`,
         formula: 'Dose saved (estimate) = Σ minutes in shelter × (rate outside − rate inside). Rate outside = rate inside ÷ shelter factor.',
-        sourceKey: 'team', evidence: 'Team value for demo. Validate.', team: true,
-      }, { title: rules.limits.shelterGoal.label, value: `≤ ${rules.limits.shelterGoal.mSv} mSv`, sourceKey: 'berger2024', evidence: sources.berger2024.evidence, team: false }];
+        sourceKey: 'team', evidence: 'Team value for demo, compared with Orion data.', team: true,
+      }, { title: rules.limits.shelterGoal.label, value: `≤ ${rules.limits.shelterGoal.mSv} mSv`, sourceKey: 'george2024', evidence: sources.george2024.evidence, team: false }];
     case 'units':
       return [{
         title: 'Unit conversion (NFR-02)', value: `1 mGy = ${rules.units.mSvPerMGy} mSv`, basis: rules.units.factorBasis,

@@ -357,7 +357,7 @@ function Exposure() {
         <div className="relative mt-1 h-4 text-[11px] text-muted-foreground">
           <span className="absolute left-0">0</span>
           <span className="absolute -translate-x-1/2" style={{ left: pct(limit) }}>{limit} NASA</span>
-          <span className="absolute -translate-x-1/2" style={{ left: pct(1000) }}><Src k="intlCareer">1000</Src></span>
+          <span className="absolute -translate-x-1/2" style={{ left: pct(rules.limits.intlCareer.mSv) }}><Src k="intlCareer">{rules.limits.intlCareer.mSv}</Src></span>
         </div>
       </div>
       {end > limit && <p className="mt-3 rounded-xl bg-muted/60 p-3 text-xs leading-relaxed"><b>Waiver case, not an alert.</b> The GCR projection passes {limit} mSv on day <span className="num">{cross}</span>. A Mars crew passes this limit by design.</p>}

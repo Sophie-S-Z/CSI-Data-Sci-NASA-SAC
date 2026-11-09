@@ -120,8 +120,15 @@ The mission, sensors, schedule, sensor faults, and the SPE dose profile are in `
 - **Source check.** The PRD credits the cruise rate (1.84 mSv/d) to Hassler et al. 2014. That rate comes from Zeitlin et al., Science 2013 (MSL cruise). Hassler 2014 gives the surface rate (0.64 mSv/d). `sources.json` uses the correct papers.
 - **Unit factor.** The one mGy-to-mSv factor (3.83) comes from the RAD cruise data. It overstates SPE dose (the SPE factor is about 1.77). The source panel says so.
 - **Background fit (fixed 9 November 2026).** When an event filled most of the 5-day window, the old fit used the window median. On 10 March 2012 that put the event into the background, and the replay cleared the Warning about 12 h early. The fit now uses the lowest 20% of the window in that case. Only the March 2012 numbers changed. See `research/realdata/RESULTS.md`.
-- **May 2024 dose.** NASA gives 8.1 mGy for the 20 May 2024 event. Our detector E excess is 1.83 mGy. We did not find the cause.
-- **Validate** the shelter factor (0.25), the Berger 2024 DOI, the ESA / CSA / Roscosmos limit source, and the NOAA S1 and DONKI SEP definitions.
+- **May 2024 dose.** The NASA press release gives 8,100 µGy for an astronaut next to Curiosity on 20 May 2024. It does not name the quantity. In the RAD data, detectors B and E agree. Against the median rate before 20 May, the excess dose from 20 to 24 May is 1.60 mGy (B) and 1.76 mGy (E), with no data gaps. So the choice of detector does not cause the difference. We did not find the cause.
+- **Source audit (Phase 7, 9 November 2026).** Each citation was checked against Crossref, PubMed, arXiv, or the NASA PDF.
+  - The Artemis I paper is George et al., Nature 634:48-52 (2024). Berger is a coauthor. The old entry gave the wrong first author, title, and volume.
+  - The 250 mSv value is [V1 4031] in NASA-STD-3001 Vol 1 Rev C: a design limit for the reference SPE (sum of the October 1989 events). The old label called it a 30-day limit for blood-forming organs.
+  - The 1,000 mSv ESA / CSA / Roscosmos limit comes from National Academies 2021, Table 3-1.
+  - The shelter factor 0.25 stays a team value. Orion data give 0.23 (model of the October 1989 SPE) and 0.47 (measured in the proton belt).
+  - Barger 2014 gives a mean of 5.96 h of sleep on the shuttle and 6.09 h on the ISS.
+  - `tests/engine.test.ts` now checks that each source key in the data files exists.
+- **Validate** the NOAA S1 and DONKI SEP definitions, and the "Appendix F" alert class reference in NASA-STD-3001 Vol 2. We could not get the Vol 2 Rev D PDF.
 - **Event rules (RK-04).** Check if the 2026 rules allow code written before 14 November.
 
 See `docs/design-notes.md` for the design system and the screen decisions.
