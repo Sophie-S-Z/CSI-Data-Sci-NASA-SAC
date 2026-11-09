@@ -6,6 +6,7 @@ import { BODY_RULE } from '../engine/bodyRules';
 import { cabinAt, cabinFindings, CABIN } from '../engine/cabin';
 import { backtest, warningForecast, REPLAY_ANALOGS } from '../engine/forecast';
 import { dayOf, stamp, hhmm, duration } from '../engine/time';
+import { flareRank } from '../engine/donki';
 import { fmt } from '../engine/units';
 import { resolveSource } from './sources';
 import type { Tab } from './context';
@@ -51,6 +52,11 @@ const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const dot = (s: string) => (/[.!?]$/.test(s) ? s : `${s}.`);
 const shown = (w: World) => w.activeAlerts.filter((a) => !a.suppressed);
 const shelterMin = (w: World) => (w.inShelter ? w.t - w.shelterIntervals[w.shelterIntervals.length - 1].start : 0);
+
+/** The brief covers this many minutes before now. */
+export const BRIEF_MIN = 12 * 60;
+/** The brief lists at most this many entries. The rest are on the Log. */
+const BRIEF_ITEMS = 6;
 
 let testCache: ReturnType<typeof backtest> | null = null;
 /** Leave-one-out result of the forecast on the 6 measured events. Computed once, on first use. */
@@ -105,6 +111,35 @@ const TOPICS: Topic[] = [
           `Estimate: the Warning clears between ${stamp(f.earliest)} and ${stamp(f.latest)}. This comes from ${f.analogs.length} other measured RAD events, from the time when they fell to the same dose rate.`,
           `In a test on the 6 measured events, the real clear time was in the range at ${Math.round((t.hits / t.checks) * 100)}% of checks. Most misses cleared later than the range. A new solar event can also raise the rate again.`],
         sources: ['R-W1', 'speModel'], estimate: true,
+      };
+    },
+  },
+  {
+    id: 'brief', ask: 'What happened in the last 12 h?',
+    examples: ['what happened while I slept', 'what happened overnight', 'what happened today', 'catch me up', 'brief me', 'what changed', 'recap', 'any news', 'shift handover', 'what happened while I was away', 'what did I miss overnight'],
+    answer: (w) => {
+      const from = w.t - BRIEF_MIN;
+      const entries = w.log.filter((e) => e.t > from && (e.kind === 'alert' || e.kind === 'clear' || e.kind === 'advisory'));
+      const solar = w.donkiSeen().filter((r) => r.t > from);
+      const flare = solar.filter((r) => r.kind === 'FLR').sort((x, y) => flareRank(y.classType!) - flareRank(x.classType!))[0];
+      const cme = solar.filter((r) => r.kind === 'CME').sort((x, y) => (y.speed ?? 0) - (x.speed ?? 0))[0];
+      const sep = solar.find((r) => r.kind === 'SEP');
+      const dose = w.history.filter((h) => h.t > from).reduce((sum, h) => sum + h.personal / 60, 0);
+      const shelter = w.shelterIntervals.reduce((sum, iv) => sum + Math.max(0, Math.min(iv.end ?? w.t, w.t) - Math.max(iv.start, from)), 0);
+      const a = shown(w)[0];
+      return {
+        lines: [
+          `Your dose in the last 12 h: ${fmt(dose, 2)} mSv.${shelter ? ` Time in the shelter: ${duration(shelter)}.` : ''}`,
+          ...(entries.length ? entries.slice(-BRIEF_ITEMS).map((e) => `${stamp(e.t)}: ${e.kind === 'alert' ? `${e.alertId} ${e.text}` : e.text}`) : ['No alerts or findings in the last 12 h.']),
+          ...(entries.length > BRIEF_ITEMS ? [`${entries.length - BRIEF_ITEMS} earlier entries are on the Log.`] : []),
+          ...(solar.length ? [[`Solar records: ${solar.length}.`,
+            flare && `Strongest flare: ${flare.classType}.`,
+            cme && `Fastest CME: ${cme.speed!.toLocaleString('en-US')} km/s.`,
+            sep && `Proton event (SEP) from ${stamp(sep.t)}.`].filter(Boolean).join(' ')] : []),
+          a ? `Now: ${cap(a.level)} ${a.id}. ${actionSentence(a, w)}` : 'Now: no alert is open.',
+        ],
+        sources: [...new Set(entries.flatMap((e) => (e.ruleId ? [e.ruleId] : [])))].concat(solar.length ? ['donki'] : []),
+        go: { tab: 'log', label: 'Open the log' },
       };
     },
   },
@@ -348,11 +383,11 @@ export function ask(question: string, w: World): Answer {
 /** Questions that fit the state now, for the suggestion buttons. */
 export function suggestions(w: World): string[] {
   const a = shown(w)[0];
-  const ids = !a ? ['now', 'dose', 'missing', 'cabin']
+  const ids = !a ? ['now', 'brief', 'dose', 'missing']
     : a.level === 'warning' ? ['clear', 'leave', 'why', 'sensor']
-    : a.level === 'caution' ? ['now', 'solar', 'why', 'missing']
+    : a.level === 'caution' ? ['now', 'brief', 'solar', 'why']
     : a.level === 'verify' ? ['sensor', 'now', 'why', 'missing']
-    : ['now', 'solar', 'dose', 'missing'];
+    : ['now', 'brief', 'solar', 'dose'];
   return ids.map((id) => TOPICS.find((t) => t.id === id)!.ask);
 }
 

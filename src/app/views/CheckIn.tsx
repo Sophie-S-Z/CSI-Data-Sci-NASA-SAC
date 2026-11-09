@@ -10,13 +10,14 @@ import { useUi } from '../context';
 import { LevelBadge, PageHead, Panel, Src } from '../parts';
 import { sources } from '../sources';
 import { LogRow } from './Log';
+import { readNote, type Symptom } from '../noteReader';
 
 /** One page, no wizard: a normal day takes about 30 s. */
 const GROUPS = [
   { id: 'rad', title: 'Radiation signs', hint: 'Early signs after a high dose. Most days you mark none.', items: ['Nausea', 'Vomiting', 'Diarrhea', 'Fatigue', 'Skin redness', 'Fever'] },
   { id: 'head', title: 'Head, eyes, and air', hint: 'Vision change can be a sign of SANS. Headache with a stuffy head can come from high CO2.', items: ['Headache', 'Blurred near vision', 'Eye pressure', 'Stuffy head', 'Short of breath', 'Dizzy'] },
   { id: 'body', title: 'Body', hint: 'Back pain is common in the first weeks of weightlessness.', items: ['Back pain', 'Muscle soreness', 'Joint pain', 'Bruising', 'Bleeding gums'] },
-] as const;
+] as const satisfies readonly { id: string; title: string; hint: string; items: readonly Symptom[] }[];
 
 const SCALE5 = { sleep: ['Poor', 'Fair', 'OK', 'Good', 'Great'], mood: ['Low', 'Flat', 'Steady', 'Good', 'High'] };
 const VIS_ICON = { private: Lock, cmo: Stethoscope, crew: Users, ground: Satellite } as const;
@@ -52,6 +53,7 @@ export function CheckInView() {
   const draft = { sleepH: sleep, symptoms: sym, note: text, sleepQuality: sleepQ, mood, pain };
   const flags = w.bodyFindings(draft).filter((f) => f.system !== 'heart' && f.system !== 'bone');
   const toggle = (x: string) => setSym((s) => (s.includes(x) ? s.filter((y) => y !== x) : [...s, x]));
+  const fromNote = readNote(text).filter((x) => !sym.includes(x));
   const doneToday = w.log.some((e) => e.kind === 'checkin' && dayOf(e.t) === dayOf(w.t));
 
   function save() {
@@ -113,6 +115,18 @@ export function CheckInView() {
               <div>
                 <label htmlFor="note" className="mb-2 block text-sm font-medium">Note (optional)</label>
                 <Textarea id="note" value={text} onChange={(e) => setText(e.target.value)} placeholder="Anything the CMO should know" className="min-h-20 rounded-xl" />
+                {fromNote.length > 0 && (
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label="Symptoms named in your note">
+                    <span className="text-xs text-muted-foreground">Your note names:</span>
+                    {fromNote.map((x) => (
+                      <button key={x} type="button" onClick={() => toggle(x)} aria-label={`Mark ${x}`}
+                        className="inline-flex h-10 items-center gap-1 rounded-full border border-dashed border-foreground/30 bg-card px-3 text-sm font-medium transition-[transform,border-color] hover:border-foreground/60 active:scale-[0.97]">
+                        <Plus className="size-3.5" aria-hidden="true" />{x}
+                      </button>
+                    ))}
+                    <span className="text-xs text-muted-foreground">Tap to mark. The rules read marked symptoms only.</span>
+                  </div>
+                )}
               </div>
             </div>
 

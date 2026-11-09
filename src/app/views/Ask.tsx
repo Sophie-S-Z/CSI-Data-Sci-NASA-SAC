@@ -102,6 +102,8 @@ function HowItWorks() {
         ['Matching', `Nearest of ${ASSISTANT_INFO.examples} example questions, ${ASSISTANT_INFO.topics} topics`],
         ['No answer', `Below a match score of ${MIN_SCORE}`],
         ['Refuses', 'Diagnosis, treatment, changes to alerts or rules'],
+        ['Last 12 h brief', 'Alerts, findings, dose, shelter time, solar records'],
+        ['Check-in note', 'Names the symptoms in your note. You mark them.'],
         ['Clear-time estimate', `${ASSISTANT_INFO.analogs} measured RAD events`],
         ['Estimate test', `${Math.round((t.hits / t.checks) * 100)}% in range, ${t.checks} checks`],
       ]} />
