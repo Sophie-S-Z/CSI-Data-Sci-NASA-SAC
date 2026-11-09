@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs the same checks as .github/workflows/ci.yml before each push.
+# Turn on once per clone: git config core.hooksPath .githooks
+exec npm run check

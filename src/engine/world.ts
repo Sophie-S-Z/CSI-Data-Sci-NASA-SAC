@@ -242,12 +242,12 @@ export class World {
     const x = (k: number) => k * B;
     const nW = cabin.filter((v) => v !== null && v >= x(TH.warningMultiple.x)).length;
     const nC = cabin.filter((v) => v !== null && v >= x(TH.cautionMultiple.x)).length;
-    const allBelow3 = cabin.every((v) => v === null || v < x(TH.cautionMultiple.x));
-    const allBelow2 = cabin.every((v) => v === null || v < x(TH.advisoryMultiple.x));
+    const belowCaution = cabin.every((v) => v === null || v < x(TH.cautionMultiple.x));
+    const belowAdvisory = cabin.every((v) => v === null || v < x(TH.advisoryMultiple.x));
 
     this.warnRun = nW >= 2 ? this.warnRun + 1 : 0;
     this.cautRun = nC >= 2 ? this.cautRun + 1 : 0;
-    this.belowRun = allBelow3 ? this.belowRun + 1 : 0;
+    this.belowRun = belowCaution ? this.belowRun + 1 : 0;
     // R-V1: one sensor high, and its value is far from the others (quality "poor").
     const loneHigh = nC === 1 && cabin.some((v, i) => v !== null && v >= x(TH.verifyMultiple.x) && quality[i] === 'poor');
     this.singleRun = loneHigh ? this.singleRun + 1 : 0;
@@ -269,7 +269,7 @@ export class World {
     const warnCond = on('R-W1') && (warnBySensors || warnByProj);
     const cautBySensors = this.cautRun > TM.cautionSustainMin;
     const cautCond = on('R-C1') && (d.sep.length > 0 || d.fastPair.length > 0 || cautBySensors);
-    const advCond = on('R-A1') && d.adv.length > 0 && allBelow2;
+    const advCond = on('R-A1') && d.adv.length > 0 && belowAdvisory;
 
     const open = this.openAlert('radiation');
     let target: { level: Level; ruleId: string; reason: string } | null = null;

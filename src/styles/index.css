@@ -1,10 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Themes: light (day), dark (dim), and night (no blue light). The <html> element
-   carries data-theme. Status colors keep one meaning each (Appendix F habit):
+/* Themes: dark (default) and light. The <html> element carries data-theme. Status colors keep one meaning each (Appendix F habit):
    red only for Warning, amber only for Caution. Each status also has an icon and a word. */
-@custom-variant dark (&:is([data-theme="dim"] *, [data-theme="night"] *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
@@ -46,41 +45,8 @@
 }
 
 :root,
-[data-theme="day"] {
+[data-theme="dark"] {
   --radius: 0.75rem;
-  --background: oklch(0.975 0.004 255);
-  --foreground: oklch(0.2 0.02 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 260);
-  --elevated: oklch(0.985 0.003 255);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 260);
-  --primary: oklch(0.52 0.19 262);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.955 0.006 255);
-  --secondary-foreground: oklch(0.25 0.02 260);
-  --muted: oklch(0.955 0.006 255);
-  --muted-foreground: oklch(0.5 0.02 258);
-  --accent: oklch(0.945 0.012 262);
-  --accent-foreground: oklch(0.25 0.04 262);
-  --destructive: oklch(0.56 0.22 27);
-  --border: oklch(0.91 0.008 258);
-  --input: oklch(0.9 0.008 258);
-  --ring: oklch(0.6 0.16 262);
-  --sidebar: oklch(0.985 0.003 255);
-  --nominal: oklch(0.55 0.14 155);
-  --advisory: oklch(0.55 0.13 235);
-  --verify: oklch(0.52 0.2 300);
-  --caution: oklch(0.8 0.16 80);
-  --caution-ink: oklch(0.42 0.1 70);
-  --warning: oklch(0.56 0.22 27);
-  --chart-1: oklch(0.52 0.19 262);
-  --chart-2: oklch(0.65 0.12 200);
-  --chart-3: oklch(0.6 0.02 258);
-  color-scheme: light;
-}
-
-[data-theme="dim"] {
   --background: oklch(0.155 0.012 262);
   --foreground: oklch(0.95 0.005 255);
   --card: oklch(0.195 0.014 262);
@@ -113,38 +79,37 @@
   color-scheme: dark;
 }
 
-/* Night: no blue light. Everything is red-amber on near black. */
-[data-theme="night"] {
-  --background: oklch(0.13 0.01 40);
-  --foreground: oklch(0.78 0.13 60);
-  --card: oklch(0.16 0.012 40);
-  --card-foreground: oklch(0.78 0.13 60);
-  --elevated: oklch(0.19 0.014 40);
-  --popover: oklch(0.17 0.012 40);
-  --popover-foreground: oklch(0.78 0.13 60);
-  --primary: oklch(0.7 0.15 55);
-  --primary-foreground: oklch(0.14 0.01 40);
-  --secondary: oklch(0.21 0.02 40);
-  --secondary-foreground: oklch(0.78 0.13 60);
-  --muted: oklch(0.2 0.015 40);
-  --muted-foreground: oklch(0.6 0.1 55);
-  --accent: oklch(0.23 0.03 45);
-  --accent-foreground: oklch(0.82 0.13 60);
-  --destructive: oklch(0.6 0.2 30);
-  --border: oklch(0.7 0.12 55 / 14%);
-  --input: oklch(0.7 0.12 55 / 18%);
-  --ring: oklch(0.7 0.15 55);
-  --sidebar: oklch(0.14 0.01 40);
-  --nominal: oklch(0.72 0.12 85);
-  --advisory: oklch(0.72 0.12 70);
-  --verify: oklch(0.7 0.12 40);
-  --caution: oklch(0.78 0.15 70);
-  --caution-ink: oklch(0.8 0.14 70);
-  --warning: oklch(0.6 0.2 30);
-  --chart-1: oklch(0.75 0.14 60);
-  --chart-2: oklch(0.65 0.12 45);
-  --chart-3: oklch(0.5 0.06 50);
-  color-scheme: dark;
+[data-theme="light"] {
+  --background: oklch(0.975 0.004 255);
+  --foreground: oklch(0.2 0.02 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.02 260);
+  --elevated: oklch(0.985 0.003 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.02 260);
+  --primary: oklch(0.52 0.19 262);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.006 255);
+  --secondary-foreground: oklch(0.25 0.02 260);
+  --muted: oklch(0.955 0.006 255);
+  --muted-foreground: oklch(0.5 0.02 258);
+  --accent: oklch(0.945 0.012 262);
+  --accent-foreground: oklch(0.25 0.04 262);
+  --destructive: oklch(0.56 0.22 27);
+  --border: oklch(0.91 0.008 258);
+  --input: oklch(0.9 0.008 258);
+  --ring: oklch(0.6 0.16 262);
+  --sidebar: oklch(0.985 0.003 255);
+  --nominal: oklch(0.55 0.14 155);
+  --advisory: oklch(0.55 0.13 235);
+  --verify: oklch(0.52 0.2 300);
+  --caution: oklch(0.8 0.16 80);
+  --caution-ink: oklch(0.42 0.1 70);
+  --warning: oklch(0.56 0.22 27);
+  --chart-1: oklch(0.52 0.19 262);
+  --chart-2: oklch(0.65 0.12 200);
+  --chart-3: oklch(0.6 0.02 258);
+  color-scheme: light;
 }
 
 @layer base {
@@ -183,3 +148,14 @@
 /* Recharts: inherit theme text color */
 .recharts-cartesian-axis-tick-value { fill: var(--muted-foreground); font-size: 11px; }
 .recharts-text.recharts-label { fill: var(--muted-foreground); }
+
+/* Mission 3D view (src/ui/MissionView.tsx). three.js draws the canvas, and the labels are plain spans. */
+.mv { position: relative; height: min(62vh, 560px); overflow: hidden; background: var(--muted); cursor: grab; touch-action: pan-y; }
+.mv:active { cursor: grabbing; }
+.mv canvas { display: block; width: 100% !important; height: 100% !important; }
+.mv[data-nowebgl] { cursor: default; display: grid; place-items: center; }
+.mv[data-nowebgl]::after { content: 'The 3D view needs WebGL. The rest of the tool works without it.'; color: var(--muted-foreground); font-size: 13.5px; padding: 16px; text-align: center; }
+.mv-labels { position: absolute; inset: 0; pointer-events: none; }
+.mv-label { position: absolute; left: 0; top: 0; font-size: 12px; color: var(--muted-foreground); background: var(--card); padding: 0 5px; border-radius: 4px; white-space: nowrap; }
+.mv-label.me { color: var(--foreground); font-weight: 600; box-shadow: 0 0 0 1px var(--border); }
+@media (max-width: 720px) { .mv { height: 320px; } }

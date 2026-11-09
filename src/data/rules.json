@@ -1,5 +1,5 @@
 {
- "version": "PRD Rev C, thresholds updated by the Phase 4 real-data test (November 2026)",
+ "version": "PRD Rev D (Phase 4 real-data test, November 2026)",
  "note": "Thresholds are team values for a Mars cruise. They are not NASA flight rules. Edit this file to change a rule. No code change is necessary.",
  "units": {
   "storedAs": "mGy (absorbed dose) from each sensor",
@@ -133,7 +133,7 @@
    "triggers": [
     "DONKI logs a flare of class M1 or higher.",
     "DONKI logs a CME at 500 km/s or faster.",
-    "All sensors stay below 2 × B (0.15 mSv/h)."
+    "All sensors stay below 1.25 × B (0.096 mSv/h)."
    ],
    "action": "Read at the next daily review. No timeline change.",
    "basis": "M-class and stronger flares and fast CMEs come before most large proton events. The dose at the vehicle is still normal.",

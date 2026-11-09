@@ -37,14 +37,15 @@ Appendix F habit. Red is only for Warning. Yellow is only for Caution. Each leve
 
 Tokens use OKLCH in `src/styles/index.css`. Neutrals carry a small cool tint.
 
-| Token | Day (default) | Dim | Night |
-| --- | --- | --- | --- |
-| Page | porcelain (cool light gray) | deep navy | near black, warm |
-| Panels | white, soft shadow, no hard border | navy, lifted by tone | warm dark |
-| Ink | deep navy | near white | amber |
-| Text | near black | near white | amber |
-| Warning | red fill, white text | red fill | red-orange fill |
-| Caution | yellow fill, dark text | yellow fill | amber fill |
+| Token | Dark (default) | Light |
+| --- | --- | --- |
+| Page | deep navy | porcelain (cool light gray) |
+| Panels | navy, lifted by tone | white, soft shadow, no hard border |
+| Text | near white | near black |
+| Warning | red fill | red fill, white text |
+| Caution | yellow fill | yellow fill, dark text |
+
+The Night theme (no blue light) is gone. In November 2026 the team chose 2 modes, dark and light, with dark as the default.
 
 ## Type
 
@@ -109,11 +110,12 @@ Version 5 keeps the rules above. It moves the app to a modern component stack an
 | Part | Choice | Why |
 | --- | --- | --- |
 | Components | shadcn/ui on Radix primitives | Keyboard and screen reader support comes with each part. |
-| Styles | Tailwind CSS 4 with OKLCH tokens for Day, Dim, and Night | One token set drives all 3 themes. |
+| Styles | Tailwind CSS 4 with OKLCH tokens for dark and light | One token set drives both themes. |
 | Type | Inter for words and numbers, JetBrains Mono for rule codes | Inter has tabular figures and clear shapes at small sizes. Both fonts ship with the app. |
 | Charts | Recharts, log scale for dose rate | A dose rate that goes from 1 × to 35 × fits on one axis. |
 | Motion | Motion (Framer) for page changes and the alert panel | Short, and off when the device asks for reduced motion. |
 | Navigation | Sidebar on a tablet or desktop, bottom tabs on a phone | Crew views first. Mission team views in a second group. |
+| Theme | A sun/moon button in the top bar. Dark by default | One tap. The icon shows the mode that the tap gives. |
 
 Each value has a provenance tag: "RAD event data" (measured), "Simulated", "Estimate", or "Real, March 2012". The tag is on the panel, near the value.
 

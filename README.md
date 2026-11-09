@@ -18,7 +18,18 @@ npm run dev        # open the printed local URL
 npm test           # rules engine tests (demo story, privacy, audit log)
 npm run build      # static, offline-ready build in dist/
 npm run preview    # serve the build
+npm run check      # tests and build, the same steps as CI
 ```
+
+### Checks before a push
+
+The GitHub Actions minutes for this month are used up, so CI runs on your machine. Turn on the pre-push hook once in each clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+After that, each `git push` runs `npm run check` first and stops the push if a test or the build fails. `.github/workflows/ci.yml` runs the same steps when Actions minutes are available again.
 
 The build is a static site. It works from any folder and from GitHub Pages. After the first load, it works with the network off (service worker cache).
 
@@ -55,7 +66,7 @@ Open **Real-data test** to show the rule results on all 6 events.
 | FR-12 CMO case view | **CMO** |
 | FR-13 Combined-effects note | **CMO** (infection watch, evidence "emerging") |
 | FR-14 Body systems (scope change 3B) | **Body**. Rules B-RAD1 to B-B2 in `src/data/body-rules.json`. Advisory or Caution only. They do not count toward M-3. |
-| FR-15 Night mode | **Display: Night** (no blue light) |
+| FR-15 Display mode | Sun/moon button in the top bar. Dark is the default. |
 | NFR-01 Offline | `vite-plugin-pwa`. Fonts ship with the app. |
 | NFR-02 Units | `src/engine/units.ts`. One factor, documented in `rules.json`. |
 | NFR-04 Gloved touch | 40 to 60 px targets, 48 px for crew actions. No drag or hover controls. |
@@ -71,7 +82,7 @@ React 19, Tailwind CSS 4, shadcn/ui (Radix), Motion, and Recharts. See `docs/des
 - **Radiation view.** The decision panel fills with red or yellow during an alert. SH-1 opens in place. A log-scale chart shows the cabin dose rate with the Caution and Warning lines and the shelter time.
 - **Cabin air.** CO2, temperature, humidity, ppO2, and pressure against NASA-STD-3001 Vol 2 limits. The values are simulated. They rise during a shelter stay.
 - **Real-data test.** The rule results on 6 RAD events, an event replay for each rule, the cost of late entry, and the electron cue test.
-- **Themes.** Day, Dim, and Night (no blue light).
+- **Themes.** Dark (default) and light. The sun/moon button in the top bar switches them, and the app keeps the choice.
 - **Offline.** A service worker keeps the app after the first load.
 
 ## Edit the rules
