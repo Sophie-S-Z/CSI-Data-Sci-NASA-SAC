@@ -120,3 +120,14 @@ Version 5 keeps the rules above. It moves the app to a modern component stack an
 Each value has a provenance tag: "RAD event data" (measured), "Simulated", "Estimate", or "Real, March 2012". The tag is on the panel, near the value.
 
 The Warning threshold is now 2 × background on 2 or more sensors, from the Phase 4 test (`research/realdata/RESULTS.md`). The chart shows the old 10 × line as a dotted line, so the change is visible.
+
+## Version 6: onboard assistant (Phase 5, November 2026)
+
+| Part | Choice | Why |
+| --- | --- | --- |
+| Model | Small local models: TF-IDF question matching and an analog forecast. No language model. | It loads at once, works on any device, and the tests can check every answer. The research says an AI must not diagnose, and a judge will ask how the model was checked. |
+| Authority | Reads only. Crew actions stay on visible buttons. | A Warning action must come from the crew, with a log entry. |
+| Place | An **Ask** view in the crew group, and one estimate line in the Warning panel | The decision panel keeps one job. The estimate sits under the clear rule that it explains. |
+| Input | Suggested questions as 44 px buttons. Typing is optional. | Gloves. The suggestions change with the alert level. |
+| Motion | A new answer enters from the input above it (200 ms, ease-out). Its lines follow 30 ms apart. It leaves in 160 ms. Buttons scale to 0.97 on press. | The eye follows the answer to its place. |
+| Honesty | "Estimate" tag, the test result in the view, and "No answer" when the match is weak | A crew member must know when not to trust it. |

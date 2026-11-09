@@ -20,7 +20,7 @@ Check of the RAD parse: the cruise median for detector E is 443.1 µGy/day. Löw
 Method:
 
 - 15-min median bins.
-- The background is a linear fit to the previous 5 days, made again each day (Löwe 2025). The fit leaves out event samples.
+- The background is a linear fit to the previous 5 days, made again each day (Löwe 2025). The fit leaves out event samples. When an event fills most of the 5 days, the fit uses the lowest 20% of the samples. (Before 9 November 2026, it used the median. On 10 March 2012 that put the event into the background, and the ratio fell from 2.1 to 0.6 in one bin.)
 - An event starts at 2 × background for 30 min. It ends after 4 h below 1.25 × background.
 - Shelter factor 0.25 (team value). So 75% is the most dose that a rule can avoid.
 
@@ -31,7 +31,7 @@ Scored days: cruise 117.2, surface 2017 117.0, surface 2024 312.3.
 | Onset (UTC) | Where | Peak | Rise to peak | Excess dose (E) |
 | --- | --- | --- | --- | --- |
 | 2012-01-27 19:00 | Cruise | 9.1 × | 2.75 h | 1.53 mGy |
-| 2012-03-07 08:30 | Cruise | 35.8 × | 32.5 h | 9.42 mGy |
+| 2012-03-07 08:30 | Cruise | 35.8 × | 32.5 h | 9.65 mGy |
 | 2012-05-17 02:30 | Cruise | 9.26 × | 1.5 h | 1.11 mGy |
 | 2017-09-10 | Surface | 2.14 × | 4.25 h | 0.245 mGy |
 | 2024-05-20 | Surface | 68.35 × | 1.0 h | 1.83 mGy |
@@ -45,8 +45,8 @@ The NASA press figure for 20 May 2024 is 8.1 mGy. Our excess dose for detector E
 
 | Rule | Events sheltered before the peak | False entries | Mean dose avoided |
 | --- | --- | --- | --- |
-| Old rule: 10 × fixed baseline | 2 of 6 | 0 | 22% |
-| Löwe 2025: 1.25 × fitted background | 6 of 6 | 8 | 75% |
+| Old rule: 10 × fixed baseline | 2 of 6 | 0 | 21% |
+| Löwe 2025: 1.25 × fitted background | 6 of 6 | 9 | 75% |
 | Löwe, 2 detectors agree | 6 of 6 | 6 | 75% |
 | Storm Shelter v2: 2 × background, 2 detectors agree | 6 of 6 | 0 | 72% |
 

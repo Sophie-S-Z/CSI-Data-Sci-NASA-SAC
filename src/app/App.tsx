@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import {
   Radiation, Wind, HeartPulse, ClipboardCheck, ScrollText, FlaskConical, Orbit, Stethoscope, Satellite, BookOpen,
-  Sun, Moon, Ellipsis,
+  Sun, Moon, Ellipsis, MessagesSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -21,6 +21,7 @@ import { CabinView } from './views/Cabin';
 import { BodyView } from './views/Body';
 import { CheckInView } from './views/CheckIn';
 import { LogView } from './views/Log';
+import { AskView } from './views/Ask';
 import { EvidenceView } from './views/Evidence';
 import { CmoView, GroundView } from './views/Team';
 import { SourcesView } from './views/Sources';
@@ -36,6 +37,7 @@ const CREW: NavItem[] = [
   { id: 'body', label: 'Body', icon: HeartPulse },
   { id: 'checkin', label: 'Health check', icon: ClipboardCheck, short: 'Check' },
   { id: 'log', label: 'Log', icon: ScrollText },
+  { id: 'ask', label: 'Ask', icon: MessagesSquare },
 ];
 const TEAM: NavItem[] = [
   { id: 'evidence', label: 'Real-data test', icon: FlaskConical },
@@ -101,6 +103,7 @@ export function App() {
                     {tab === 'body' && <BodyView />}
                     {tab === 'checkin' && <CheckInView />}
                     {tab === 'log' && <LogView />}
+                    {tab === 'ask' && <AskView />}
                     {tab === 'evidence' && <EvidenceView />}
                     {tab === 'mission' && <Suspense fallback={<p className="text-muted-foreground">Loading the 3D view.</p>}><MissionTab /></Suspense>}
                     {tab === 'cmo' && <CmoView />}
@@ -276,7 +279,7 @@ function MobileTabs() {
         <SheetContent side="bottom" className="rounded-t-3xl pb-8">
           <SheetHeader><SheetTitle>More views</SheetTitle><SheetDescription>Views for the crew, the CMO, the ground, and the judges.</SheetDescription></SheetHeader>
           <div className="grid gap-1 px-4">
-            {[CREW[4], ...TEAM].map((n) => <div key={n.id} onClick={() => setMore(false)}><NavButton item={n} /></div>)}
+            {[...CREW.slice(4), ...TEAM].map((n) => <div key={n.id} onClick={() => setMore(false)}><NavButton item={n} /></div>)}
           </div>
         </SheetContent>
       </Sheet>
