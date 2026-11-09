@@ -39,7 +39,7 @@ Scored days: cruise 117.2, surface 2017 117.0, surface 2024 312.3.
 
 Decay e-fold times are 6 to 16 h.
 
-The NASA press figure for 20 May 2024 is 8.1 mGy. Our excess dose for detector E is 1.83 mGy. We did not find the cause of the difference, so we claim neither figure as a match.
+The NASA press release gives 8,100 µGy for an astronaut next to Curiosity on 20 May 2024. It does not name the quantity. Against the median rate before 20 May, `rad_surface_2024may.csv` gives an excess dose from 20 to 24 May of 1.60 mGy for detector B (silicon) and 1.76 mGy for detector E (plastic), with no gap over 30 min. The two detectors agree, so the choice of detector does not cause the difference. We did not find the cause, so we claim neither figure as a match.
 
 ### Rules
 

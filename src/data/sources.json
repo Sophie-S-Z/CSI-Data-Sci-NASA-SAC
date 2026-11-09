@@ -12,10 +12,10 @@
   "evidence": "Measured on the surface, one instrument (RAD). The full-mission value is a model estimate."
  },
  "std3001": {
-  "short": "NASA-STD-3001 Vol 1 Rev B, 2022",
-  "citation": "NASA Space Flight Human-System Standard, Volume 1: Crew Health, Rev B (2022). Radiation Technical Brief.",
-  "url": "https://www.nasa.gov/ochmo/human-spaceflight-standards/",
-  "evidence": "Standard. The career limit uses a cancer-risk model only."
+  "short": "NASA-STD-3001 Vol 1 Rev C, via OCHMO-TB-020 Rev G",
+  "citation": "NASA Space Flight Human-System Standard, Volume 1: Crew Health, Rev C. Requirements [V1 4029] ALARA, [V1 4030] career limit 600 mSv, [V1 4031] SPE limit 250 mSv. As quoted in NASA OCHMO Technical Brief OCHMO-TB-020 Rev G, Design for Ionizing Radiation Protection (6 June 2025).",
+  "url": "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-020-radiation-protection.pdf",
+  "evidence": "NASA standard. The 600 mSv career limit is set from a 3% mean risk of cancer death. The 250 mSv SPE limit is a design requirement for the reference event (sum of the October 1989 events)."
  },
  "std3001appF": {
   "short": "NASA-STD-3001 Vol 2, Appendix F",
@@ -35,11 +35,11 @@
   "url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
   "evidence": "Event catalog near Earth. It does not measure dose at the vehicle."
  },
- "berger2024": {
-  "short": "Berger et al., Nature 2024",
-  "citation": "Berger T. et al. Radiation dose measurements on board Orion during the Artemis I mission. Nature 632, 2024. doi:10.1038/s41586-024-07927-7",
-  "url": "https://www.nature.com/articles/s41586-024-07927-7",
-  "evidence": "Measured in phantoms on Orion, Artemis I (2022). Measured, 1 flight."
+ "george2024": {
+  "short": "George et al., Nature 2024",
+  "citation": "George S.P., Gaza R., Matthiä D., ... Berger T. et al. Space radiation measurements during the Artemis I lunar mission. Nature 634:48-52 (2024).",
+  "url": "https://doi.org/10.1038/s41586-024-07927-7",
+  "evidence": "Measured on Orion, Artemis I (2022), uncrewed, 1 flight. In the inner proton belt (a proxy for a large SPE), the storm shelter read 134 µGy/min and the crew cabin read 287 µGy/min (ratio 0.47). A model of the October 1989 SPE gives 95 and 414 µGy/min (ratio 0.23). Orion keeps a large SPE to 150 mSv or less in the shelter."
  },
  "team": {
   "short": "Team value for demo",
@@ -69,7 +69,7 @@
   "short": "Barger et al., Lancet Neurology 2014",
   "citation": "Barger L.K. et al. Prevalence of sleep deficiency and use of hypnotic drugs in astronauts before, during, and after spaceflight. Lancet Neurol 13(9):904-912 (2014).",
   "url": "https://doi.org/10.1016/S1474-4422(14)70122-X",
-  "evidence": "Observational, shuttle and ISS crews. Mean sleep under 6 h a night in flight."
+  "evidence": "Observational, actigraphy. Mean sleep in flight was 5.96 h a night on the shuttle and 6.09 h on the ISS."
  },
  "hrpBmed": {
   "short": "NASA HRP, Behavioral risk (BMed)",
@@ -124,5 +124,11 @@
   "citation": "NASA Office of the Chief Health and Medical Officer. Technical Brief OCHMO-TB-002, Environmental Control and Life Support Systems (2023). Cites NASA-STD-3001 Vol 2 [V2 6003, 6006, 6012, 6013].",
   "url": "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-002-eclss.pdf",
   "evidence": "NASA standard. The brief says to confirm values against NASA-STD-3001 Vol 2 Rev D."
+ },
+ "nasem2021": {
+  "short": "National Academies 2021",
+  "citation": "National Academies of Sciences, Engineering, and Medicine. Space Radiation and Astronaut Health: Managing and Communicating Cancer Risks. Washington, DC: The National Academies Press (2021). Table 3-1.",
+  "url": "https://doi.org/10.17226/26155",
+  "evidence": "Consensus report. ESA, CSA, and the Russian agency set a career limit of 1,000 mSv effective dose for all ages and sexes. JAXA uses a 3% cancer-death risk (500 to 1,000 mSv)."
  }
 }

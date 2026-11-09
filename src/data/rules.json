@@ -30,19 +30,19 @@
   },
   "singleSpe": {
    "mSv": 250,
-   "label": "NASA 30-day limit, blood-forming organs (250 mGy-Eq)",
+   "label": "NASA SPE limit, design reference event",
    "source": "std3001",
-   "note": "NASA-STD-3001 gives 30-day and 1-year limits for organs, not a limit for one SPE. The app shows 250 as the 30-day limit. Check the table in the current revision before the pitch."
+   "note": "[V1 4031]: the program shall protect crew from the design reference SPE (sum of the October 1989 events) to less than a NASA effective dose of 250 mSv. It is a design requirement for the vehicle. The app shows it for scale only."
   },
   "intlCareer": {
    "mSv": 1000,
    "label": "ESA / CSA / Roscosmos career limit",
-   "source": "std3001"
+   "source": "nasem2021"
   },
   "shelterGoal": {
    "mSv": 150,
    "label": "Orion shelter design goal for a large event",
-   "source": "berger2024"
+   "source": "george2024"
   }
  },
  "thresholds": {
@@ -99,7 +99,7 @@
   "shelterFactor": {
    "value": 0.25,
    "label": "Shelter keeps 25% of the cabin dose rate",
-   "basis": "Team value. Validate against Orion and Artemis I data.",
+   "basis": "Team value. Orion data (George 2024): a model of the October 1989 SPE gives 0.23 in the storm shelter. The measured inner-belt value is 0.47. If our shelter is like the measured case, the shelter saves 53% of the event dose. The app uses 75%.",
    "source": "team"
   },
   "priorCareerMSv": {
