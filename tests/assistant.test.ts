@@ -35,6 +35,8 @@ describe('onboard assistant: question matching', () => {
     ['How long until mission control hears about this?', 'ground'],
     ['How good is the shielding in the shelter?', 'shelter'],
     ['Where does this data come from?', 'data'],
+    ['What happened while I was asleep?', 'brief'],
+    ['Catch me up on the night', 'brief'],
   ];
   it.each(cases)('"%s" goes to %s', (q, topic) => {
     expect(match(q).topic).toBe(topic);
@@ -99,9 +101,30 @@ describe('onboard assistant: answers from the state', () => {
     expect(l.lines[1]).toMatch(/If you leave now, the rest of the event adds about [\d.]+ to [\d.]+ mSv/);
   });
 
+  it('the brief lists the night of 5 March 2012: the solar records, the false sensor spike, and the open Caution', () => {
+    const w = worldAt(94, '06:00', false);
+    const b = ask('What happened in the last 12 h?', w);
+    const text = b.lines.join(' ');
+    expect(b.lines[0]).toMatch(/^Your dose in the last 12 h: [\d.]+ mSv\.$/);
+    expect(text).toContain('Caution opened');
+    expect(text).toMatch(/Verify opened.*clear\. Sensor data agrees again/);
+    expect(text).toContain('Strongest flare: X5.4.');
+    expect(text).toMatch(/Proton event \(SEP\) from Day 094/);
+    expect(b.lines[b.lines.length - 1]).toMatch(/^Now: Caution EV-094-\d\d\. Safe your task\. Stage the shelter\.$/);
+    expect(b.sources).toEqual(expect.arrayContaining(['R-C1', 'R-V1', 'donki']));
+  });
+
+  it('the brief counts shelter time and dose inside its 12 h window only', () => {
+    const w = worldAt(95, '12:00');
+    const b = ask('What happened in the last 12 h?', w);
+    expect(b.lines[0]).toContain('Time in the shelter: 12 h');
+    const dose = w.history.filter((h) => h.t > w.t - 720).reduce((s, h) => s + h.personal / 60, 0);
+    expect(b.lines[0]).toContain(`${dose.toFixed(2)} mSv`);
+  });
+
   it('every source key in every answer opens a source panel', () => {
     for (const w of [worldAt(94, '00:10', false), worldAt(94, '03:15', false), worldAt(96, '12:00')]) {
-      for (const q of [...suggestions(w), 'Is the cabin air OK?', 'How is my body?', 'What is the baseline B?', 'What is the difference between mGy and mSv?', 'Who can see my check-ins?', 'When does the ground know?']) {
+      for (const q of [...suggestions(w), 'What happened in the last 12 h?', 'Is the cabin air OK?', 'How is my body?', 'What is the baseline B?', 'What is the difference between mGy and mSv?', 'Who can see my check-ins?', 'When does the ground know?']) {
         const a = ask(q, w);
         expect(a.lines.length).toBeGreaterThan(0);
         for (const k of a.sources) expect(resolveSource(k), `${q} -> ${k}`).not.toHaveLength(0);

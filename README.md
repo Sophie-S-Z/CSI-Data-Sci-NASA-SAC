@@ -68,6 +68,8 @@ Open **Real-data test** to show the rule results on all 6 events.
 | FR-14 Body systems (scope change 3B) | **Body**. Rules B-RAD1 to B-B2 in `src/data/body-rules.json`. Advisory or Caution only. They do not count toward M-3. |
 | FR-15 Display mode | Sun/moon button in the top bar. Dark is the default. |
 | Onboard assistant (Phase 5) | **Ask**. `src/app/assistant.ts`. See "Onboard assistant" below. |
+| Last 12 h brief (Phase 6) | **Ask**, topic `brief` in `src/app/assistant.ts` |
+| Check-in note reader (Phase 6) | `src/app/noteReader.ts`. Suggestions under the note on **Health check**. |
 | Clear-time estimate (Phase 5) | `src/engine/forecast.ts`. In the Warning panel during a shelter stay, and in **Ask**. |
 | NFR-01 Offline | `vite-plugin-pwa`. Fonts ship with the app. |
 | NFR-02 Units | `src/engine/units.ts`. One factor, documented in `rules.json`. |
@@ -91,12 +93,14 @@ React 19, Tailwind CSS 4, shadcn/ui (Radix), Motion, and Recharts. See `docs/des
 
 The assistant runs on the crew laptop with no network and no model download. It reads the world. It cannot act: it has no path to a crew action, so it cannot acknowledge, suppress, or inhibit an alert, or change a rule.
 
-- **Questions.** A question goes to the nearest of 127 example questions (TF-IDF, cosine score). Below a score of 0.4, the assistant says that it has no answer. It does not guess.
+- **Questions.** A question goes to the nearest of 138 example questions (TF-IDF, cosine score). Below a score of 0.4, the assistant says that it has no answer. It does not guess.
 - **Answers.** Each answer comes from the live state (alerts, log, dose, sensors, cabin, body rules, link) or from `rules.json` and `sources.json`. Each answer lists its sources. The same state gives the same answer.
 - **Refusals.** A request for a diagnosis, a treatment, or a change to an alert or a rule gets a fixed refusal that points to the CMO or to the alert controls.
+- **Last 12 h brief (Phase 6).** "What happened in the last 12 h?" lists the alerts, clears, and findings from the log, the dose and the shelter time in the window, one line on the solar records (count, strongest flare, fastest CME, proton event start), and the alert that is open now. It is for a crew member who wakes up during an event. At day 94 06:00 in the replay, it shows the Caution from the X5.4 flare, the false S3 spike that opened and cleared a Verify, and the proton event.
+- **Check-in note reader (Phase 6).** The health check reads the free-text note and shows the symptom chips that it names, for example "head feels full" gives Stuffy head. A cue word earlier in the same sentence ("no", "not", "without", "n't") cancels a match, up to "but" or a full stop. It only suggests. The crew taps to mark, and the body rules read marked symptoms only. A missed symptom is the safe error, because the crew can still mark it by hand.
 - **Clear-time estimate.** After the peak of a Warning, the estimate takes the other measured RAD events as analogs. For each one, it finds the time when that event fell to the dose rate now, and the time that it then needed to clear. The range is the shortest and the longest. The replayed March 2012 event is not its own analog. In a leave-one-out test on the 6 events, the real clear time was in the range at 60% of 535 checks. Most misses cleared later than the range. The estimate never opens, holds, or clears an alert.
 
-`npm test` checks the matching on new wordings, the refusals, the no-answer case, the read-only rule, the source of each answer, and the forecast test.
+`npm test` checks the matching on new wordings, the brief on the replay night, the note reader with negation, the refusals, the no-answer case, the read-only rule, the source of each answer, and the forecast test.
 
 ## Edit the rules
 
