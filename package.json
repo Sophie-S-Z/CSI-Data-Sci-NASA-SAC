@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
+    "check": "vitest run && npm run build",
     "story": "vite-node scripts/print-story.ts",
     "fetch-donki": "node scripts/fetch-donki.mjs"
   },

@@ -2,10 +2,11 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import {
   Radiation, Wind, HeartPulse, ClipboardCheck, ScrollText, FlaskConical, Orbit, Stethoscope, Satellite, BookOpen,
-  Sun, Moon, MoonStar, Ellipsis,
+  Sun, Moon, Ellipsis,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { LINK_LABEL, LINK_DELAY_MIN } from '../engine/world';
 import { phaseAt } from '../engine/doseModel';
@@ -48,9 +49,9 @@ const TITLES: Record<Tab, string> = Object.fromEntries([...CREW, ...TEAM].map((n
 function readTheme(): Theme {
   try {
     const v = localStorage.getItem(THEME_KEY);
-    if (v === 'day' || v === 'dim' || v === 'night') return v;
+    if (v === 'light') return v;
   } catch { /* storage can be blocked */ }
-  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dim' : 'day';
+  return 'dark';
 }
 
 export function App() {
@@ -64,7 +65,7 @@ export function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute('content', theme === 'day' ? '#F6F7F9' : theme === 'dim' ? '#12151C' : '#120D0B');
+    meta?.setAttribute('content', theme === 'light' ? '#F6F7F9' : '#12151C');
     try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
   }, [theme]);
 
@@ -127,7 +128,7 @@ function Brand() {
         <path d="M16 36 L32 20 L48 36" fill="none" stroke="var(--background)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
         <rect x="24" y="34" width="16" height="11" rx="2.5" fill="var(--background)" />
       </svg>
-      <div className="leading-tight">
+      <div className="hidden leading-tight sm:block">
         <div className="text-[15px] font-semibold tracking-tight">Storm Shelter</div>
         <div className="text-[11px] text-muted-foreground">Crew health monitor</div>
       </div>
@@ -176,31 +177,23 @@ function Sidebar() {
         {TEAM.map((n) => <NavButton key={n.id} item={n} />)}
       </nav>
       <div className="mt-auto space-y-3 px-1">
-        <ThemeSwitch />
         <p className="px-2 text-[11px] leading-snug text-muted-foreground">Not for clinical use. Radiation event: measured MSL RAD data. Crew sensors and vitals: simulated.</p>
       </div>
     </aside>
   );
 }
 
-const THEMES: { v: Theme; label: string; icon: typeof Sun }[] = [
-  { v: 'day', label: 'Day', icon: Sun },
-  { v: 'dim', label: 'Dim', icon: Moon },
-  { v: 'night', label: 'Night (no blue light)', icon: MoonStar },
-];
-
-export function ThemeSwitch({ className }: { className?: string }) {
+/** Sun/moon button. It shows the mode that a tap gives. */
+function ThemeToggle() {
   const { theme, setTheme } = useUi();
+  const next = theme === 'dark' ? 'light' : 'dark';
+  const Icon = next === 'light' ? Sun : Moon;
   return (
-    <div role="radiogroup" aria-label="Display" className={cn('grid grid-cols-3 gap-1 rounded-xl bg-muted p-1', className)}>
-      {THEMES.map(({ v, label, icon: I }) => (
-        <button key={v} role="radio" aria-checked={theme === v} aria-label={label} onClick={() => setTheme(v)}
-          className={cn('relative flex h-8 items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-colors', theme === v ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-          {theme === v && <motion.span layoutId="theme-pill" className="absolute inset-0 rounded-lg bg-card shadow-sm ring-1 ring-border" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
-          <I className="relative size-3.5" aria-hidden="true" /><span className="relative">{v === 'night' ? 'Night' : label}</span>
-        </button>
-      ))}
-    </div>
+    <Button variant="ghost" size="icon" className="size-10 shrink-0 rounded-full" aria-label={`Switch to ${next} mode`} title={`Switch to ${next} mode`} onClick={() => setTheme(next)}>
+      <motion.span key={next} initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 0.2 }}>
+        <Icon className="size-5" aria-hidden="true" />
+      </motion.span>
+    </Button>
   );
 }
 
@@ -231,8 +224,9 @@ function TopBar({ last }: { last: { t: number; text: string } | null }) {
         </div>
         <div className="text-right leading-tight">
           <div className="text-[11px] text-muted-foreground">{phaseAt(w.t).label}</div>
-          <div className="num text-sm font-semibold" aria-label="Mission time">Day {dayOf(w.t)} <span className="text-base">{hhmm(w.t)}</span></div>
+          <div className="num text-sm font-semibold whitespace-nowrap" aria-label="Mission time">Day {dayOf(w.t)} <span className="text-base">{hhmm(w.t)}</span></div>
         </div>
+        <ThemeToggle />
       </div>
     </header>
   );
@@ -283,7 +277,6 @@ function MobileTabs() {
           <SheetHeader><SheetTitle>More views</SheetTitle><SheetDescription>Views for the crew, the CMO, the ground, and the judges.</SheetDescription></SheetHeader>
           <div className="grid gap-1 px-4">
             {[CREW[4], ...TEAM].map((n) => <div key={n.id} onClick={() => setMore(false)}><NavButton item={n} /></div>)}
-            <ThemeSwitch className="mt-3" />
           </div>
         </SheetContent>
       </Sheet>

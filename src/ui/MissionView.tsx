@@ -83,9 +83,9 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
       particles: new THREE.PointsMaterial({ size: 0.018, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true }),
     };
     function applyTheme() {
-      const text = cssColor('--text', '#e4eaf2');
-      const line = cssColor('--line', '#34445a');
-      const muted = cssColor('--muted', '#a3b1c4');
+      const text = cssColor('--foreground', '#e4eaf2');
+      const line = cssColor('--chart-3', '#34445a');
+      const muted = cssColor('--muted-foreground', '#a3b1c4');
       mat.orbit.color = line;
       mat.pathDone.color = text;
       mat.pathNext.color = muted;
@@ -190,7 +190,7 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
       const w = el.clientWidth, h = el.clientHeight;
       for (const t of tags) {
         const p = t.obj.position.clone().project(camera);
-        t.span.style.transform = `translate(${((p.x + 1) / 2) * w}px, ${((1 - p.y) / 2) * h}px)`;
+        t.span.style.transform = `translate(${((p.x + 1) / 2) * w}px, ${((1 - p.y) / 2) * h}px) translate(-50%, -150%)`;
       }
       renderer.render(scene, camera);
     }
