@@ -35,7 +35,7 @@ These come from the research briefs in the project folder and from four people w
 
 Appendix F habit. Red is only for Warning. Yellow is only for Caution. Each level also has an icon and a word, so color is never the only signal. Verify is violet text and Advisory is blue text, with no fill. Nominal is green text. All other parts of the screen are neutral.
 
-Tokens use OKLCH in `src/styles/app.css`. Neutrals carry a small cool tint.
+Tokens use OKLCH in `src/styles/index.css`. Neutrals carry a small cool tint.
 
 | Token | Day (default) | Dim | Night |
 | --- | --- | --- | --- |
@@ -101,3 +101,20 @@ The second revamp keeps every rule above and changes the form.
 | Timeline first on the Now view | The decision first, the timeline last | The first thing on screen answers "what do I do now?" |
 
 Inspiration came from the crew displays of current crewed vehicles (dark navy, few large touch targets), from health apps that show one large number with a calm label, and from tools with precise, quick motion. No layout, asset, or name comes from those products.
+
+## Version 5: Phase 4 (November 2026)
+
+Version 5 keeps the rules above. It moves the app to a modern component stack and adds real data.
+
+| Part | Choice | Why |
+| --- | --- | --- |
+| Components | shadcn/ui on Radix primitives | Keyboard and screen reader support comes with each part. |
+| Styles | Tailwind CSS 4 with OKLCH tokens for Day, Dim, and Night | One token set drives all 3 themes. |
+| Type | Inter for words and numbers, JetBrains Mono for rule codes | Inter has tabular figures and clear shapes at small sizes. Both fonts ship with the app. |
+| Charts | Recharts, log scale for dose rate | A dose rate that goes from 1 × to 35 × fits on one axis. |
+| Motion | Motion (Framer) for page changes and the alert panel | Short, and off when the device asks for reduced motion. |
+| Navigation | Sidebar on a tablet or desktop, bottom tabs on a phone | Crew views first. Mission team views in a second group. |
+
+Each value has a provenance tag: "RAD event data" (measured), "Simulated", "Estimate", or "Real, March 2012". The tag is on the panel, near the value.
+
+The Warning threshold is now 2 × background on 2 or more sensors, from the Phase 4 test (`research/realdata/RESULTS.md`). The chart shows the old 10 × line as a dotted line, so the change is visible.

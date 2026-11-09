@@ -3,7 +3,7 @@ import mission from '../data/mission.json';
 import { World, replayWorld, LEVEL_RANK, type Action, type RecordedAction } from '../engine/world';
 import { at } from '../engine/time';
 
-const KEY = 'storm-shelter.replay.v1';
+const KEY = 'storm-shelter.replay.v2';
 export const DEMO_START = at(mission.replay.demoStart.day, mission.replay.demoStart.hhmm);
 export const REPLAY_END = at(mission.replay.endDay, '23:59');
 
@@ -11,15 +11,16 @@ export const SPEEDS = [
   { id: 'x60', label: '1 min/s', minPerSec: 1 },
   { id: 'x600', label: '10 min/s', minPerSec: 10 },
   { id: 'x3600', label: '1 h/s', minPerSec: 60 },
+  { id: 'x14400', label: '4 h/s', minPerSec: 240 },
 ] as const;
 
 export const BEATS = [
-  { label: 'Normal day', t: at(94, '06:20') },
-  { label: 'Solar flare', t: at(94, '06:40') },
-  { label: 'Sensor spike', t: at(94, '13:54') },
-  { label: 'Dose rise', t: at(94, '14:07') },
-  { label: 'Warning', t: at(94, '14:14') },
-  { label: 'All clear', t: at(95, '02:40') },
+  { label: 'X5.4 flare', t: at(94, '00:20') },
+  { label: 'Sensor spike', t: at(94, '03:08') },
+  { label: 'Dose rise', t: at(94, '06:30') },
+  { label: 'Warning', t: at(94, '08:45') },
+  { label: 'Peak', t: at(95, '17:00') },
+  { label: 'Warning clears', t: at(97, '00:45') },
 ];
 
 interface Saved { actions: RecordedAction[]; t: number }
@@ -61,7 +62,7 @@ export function useSim() {
   if (!ref.current) ref.current = load();
   const [, setVersion] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(SPEEDS[1]);
+  const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(SPEEDS[2]);
   const [pauseOnAlert, setPauseOnAlert] = useState(true);
   const carry = useRef(0);
   const bump = useCallback(() => setVersion((v) => v + 1), []);

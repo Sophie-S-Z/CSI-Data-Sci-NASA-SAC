@@ -6,6 +6,7 @@ scored once. Run:  python3 -I research/sim/bench.py
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import sys
 import time
@@ -165,9 +166,12 @@ def dose_saved_curve(missions, offsets_min, f=SHELTER_FACTOR):
     return rows
 
 
+FITTED = "--fitted" in sys.argv  # Phase 4: event shape fitted to 6 real RAD events (research/realdata)
+
+
 def main():
     t0 = time.time()
-    cfg = Config()
+    cfg = Config(rise_h_range=(0.75, 33.0), decay_h_range=(6.0, 16.0)) if FITTED else Config()
     cal = calibrate(cfg)
     print("electron layer calibration:", cal)
     log = dict(config={k: v for k, v in vars(cfg).items()}, electron_calibration=cal)
@@ -177,7 +181,7 @@ def main():
     test, test_missions = run(TEST, cfg)
     log["test"] = test
 
-    cfg_clean = Config(faults=False)
+    cfg_clean = dataclasses.replace(cfg, faults=False)
     clean, _ = run(TEST, cfg_clean)
     log["test_no_faults"] = clean
 
@@ -199,7 +203,7 @@ def main():
 
     outdir = HERE / "out"
     outdir.mkdir(exist_ok=True)
-    (outdir / "phase3-results.json").write_text(json.dumps(log, indent=1, default=float))
+    (outdir / ("phase4-fitted-results.json" if FITTED else "phase3-results.json")).write_text(json.dumps(log, indent=1, default=float))
     for split in ("train", "test", "test_no_faults"):
         print(f"\n== {split} ==")
         for k, v in log[split].items():
