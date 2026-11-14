@@ -1,0 +1,35 @@
+{
+ "goes": {
+  "years": [
+   1986,
+   2026
+  ],
+  "bins_with_data_pct": 97.8,
+  "noaa_events_in_period": 264,
+  "noaa_events_with_no_goes_data": 0,
+  "noaa_events_found": 244,
+  "our_peak_over_noaa_peak_p16_p50_p84": [
+   0.83,
+   1.0,
+   1.04
+  ]
+ },
+ "rad": {
+  "observations": 466657,
+  "first": "2011-12-06 17:59:01",
+  "last": "2026-03-22 17:46:10",
+  "cruise_observations": 15359,
+  "cruise_median_E_uGy_day": 439.75,
+  "loewe_2025_uGy_day": 443.14,
+  "surface_median_E_uGy_day": 252.9
+ },
+ "crater": {
+  "first": "2009-06-26 20:00:00",
+  "last": "2026-10-07 23:00:00",
+  "hours": 151492,
+  "hours_with_data_pct": 98.7,
+  "median_d34_uGy_day": 218.4,
+  "d34_events": 75,
+  "d34_events_with_goes_proton_rise": 73
+ }
+}

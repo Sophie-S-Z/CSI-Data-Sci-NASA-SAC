@@ -1,0 +1,168 @@
+{
+ "bands": [
+  "10-30 MeV",
+  "30-60 MeV",
+  "60-100 MeV",
+  ">100 MeV"
+ ],
+ "unit": "uGy/h per pfu",
+ "detectors": {
+  "crater_d12": {
+   "coefficients": [
+    11.501,
+    75.191,
+    0.0,
+    1.027
+   ],
+   "background_uGy_h": 9.98,
+   "fit_period": {
+    "event_hours": 5349,
+    "hourly_log10_error_p16_p50_p84": [
+     -0.144,
+     -0.014,
+     0.112
+    ],
+    "hourly_within_factor_2": 0.966,
+    "hourly_log_correlation": 0.983,
+    "events": 75,
+    "event_peak_log10_error_p16_p50_p84": [
+     -0.095,
+     0.031,
+     0.136
+    ],
+    "event_dose_log10_error_p16_p50_p84": [
+     -0.109,
+     -0.013,
+     0.104
+    ],
+    "event_dose_within_factor_2": 0.933
+   },
+   "test_2020_on": {
+    "event_hours": 6009,
+    "hourly_log10_error_p16_p50_p84": [
+     -0.226,
+     -0.096,
+     0.032
+    ],
+    "hourly_within_factor_2": 0.915,
+    "hourly_log_correlation": 0.977,
+    "events": 70,
+    "event_peak_log10_error_p16_p50_p84": [
+     -0.258,
+     -0.08,
+     0.073
+    ],
+    "event_dose_log10_error_p16_p50_p84": [
+     -0.242,
+     -0.081,
+     0.041
+    ],
+    "event_dose_within_factor_2": 0.857
+   }
+  },
+  "crater_d34": {
+   "coefficients": [
+    0.0,
+    1.494,
+    42.283,
+    2.795
+   ],
+   "background_uGy_h": 9.37,
+   "fit_period": {
+    "event_hours": 1324,
+    "hourly_log10_error_p16_p50_p84": [
+     -0.065,
+     -0.003,
+     0.054
+    ],
+    "hourly_within_factor_2": 0.994,
+    "hourly_log_correlation": 0.991,
+    "events": 31,
+    "event_peak_log10_error_p16_p50_p84": [
+     -0.064,
+     0.028,
+     0.156
+    ],
+    "event_dose_log10_error_p16_p50_p84": [
+     -0.058,
+     0.006,
+     0.07
+    ],
+    "event_dose_within_factor_2": 1.0
+   },
+   "test_2020_on": {
+    "event_hours": 1094,
+    "hourly_log10_error_p16_p50_p84": [
+     -0.16,
+     -0.072,
+     -0.023
+    ],
+    "hourly_within_factor_2": 0.976,
+    "hourly_log_correlation": 0.985,
+    "events": 37,
+    "event_peak_log10_error_p16_p50_p84": [
+     -0.16,
+     -0.065,
+     -0.014
+    ],
+    "event_dose_log10_error_p16_p50_p84": [
+     -0.141,
+     -0.092,
+     -0.032
+    ],
+    "event_dose_within_factor_2": 1.0
+   }
+  },
+  "rad_cruise": {
+   "coefficients": [
+    0.0,
+    0.0,
+    0.0,
+    7.006
+   ],
+   "background_uGy_h": 18.59,
+   "fit_period": {
+    "event_hours": 102,
+    "hourly_log10_error_p16_p50_p84": [
+     -0.233,
+     -0.08,
+     0.227
+    ],
+    "hourly_within_factor_2": 0.735,
+    "hourly_log_correlation": 0.701,
+    "events": 3,
+    "event_peak_log10_error_p16_p50_p84": [
+     -0.206,
+     -0.177,
+     -0.123
+    ],
+    "event_dose_log10_error_p16_p50_p84": [
+     -0.258,
+     -0.234,
+     -0.057
+    ],
+    "event_dose_within_factor_2": 1.0
+   },
+   "leave_one_event_out": [
+    {
+     "onset": "2012-01-27 19:00:00",
+     "measured_peak_ratio": 8.33,
+     "modeled_peak_ratio": 5.01,
+     "modeled_over_measured_dose": 0.53
+    },
+    {
+     "onset": "2012-03-07 04:00:00",
+     "measured_peak_ratio": 33.81,
+     "modeled_peak_ratio": 32.33,
+     "modeled_over_measured_dose": 1.53
+    },
+    {
+     "onset": "2012-05-17 02:00:00",
+     "measured_peak_ratio": 8.84,
+     "modeled_peak_ratio": 6.86,
+     "modeled_over_measured_dose": 0.5
+    }
+   ]
+  }
+ }
+}

@@ -3,7 +3,7 @@ import type { Sim } from '../ui/useSim';
 
 export type Tab =
   | 'mission' | 'radiation' | 'weather' | 'air' | 'body' | 'checkin' | 'log' | 'ask' | 'cmo' | 'ground' | 'explorer'
-  | 'evidence' | 'sources';
+  | 'evidence' | 'research' | 'sources';
 export type Theme = 'dark' | 'light';
 
 export interface Ui {

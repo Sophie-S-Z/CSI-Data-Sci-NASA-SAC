@@ -1,0 +1,510 @@
+{
+ "features": [
+  "ln_ratio",
+  "ln_peak",
+  "h_since_entry",
+  "h_since_peak",
+  "slope_3h",
+  "slope_8h",
+  "drop_from_peak"
+ ],
+ "classes": {
+  "shielded": {
+   "parts": {
+    "train": {
+     "checks": 9563,
+     "stays": 204,
+     "solar_events": 125,
+     "by_source": {
+      "replay_cabin": 70,
+      "replay_deep": 134
+     }
+    },
+    "calibration": {
+     "checks": 1705,
+     "stays": 38,
+     "solar_events": 30,
+     "by_source": {
+      "crater_d34": 33,
+      "rad_E": 5
+     }
+    },
+    "test_measured": {
+     "checks": 1420,
+     "stays": 44,
+     "solar_events": 38,
+     "by_source": {
+      "crater_d34": 41,
+      "rad_E": 3
+     }
+    },
+    "test_replay": {
+     "checks": 942,
+     "stays": 39,
+     "solar_events": 27,
+     "by_source": {
+      "replay_cabin": 6,
+      "replay_deep": 33
+     }
+    }
+   },
+   "scores": {
+    "calibration (cross-fitted)": {
+     "climatology": {
+      "checks": 1705,
+      "stays": 38,
+      "solar_events": 30,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 95.25,
+      "coverage_ci": [
+       94.4,
+       95.8
+      ],
+      "coverage_by_stay_pct": 89.37,
+      "too_early_pct": 0.0,
+      "too_late_pct": 4.75,
+      "median_width_h": 172.7,
+      "median_width_over_left": 5.75,
+      "median_abs_error_h": 23.0,
+      "coverage_at_50": 61.99,
+      "median_width_at_50_h": 64.0,
+      "coverage_at_80": 89.91,
+      "median_width_at_80_h": 147.0,
+      "coverage_at_90": 95.25,
+      "median_width_at_90_h": 172.7
+     },
+     "analogs": {
+      "checks": 1705,
+      "stays": 38,
+      "solar_events": 30,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 81.52,
+      "coverage_ci": [
+       67.2,
+       93.6
+      ],
+      "coverage_by_stay_pct": 85.44,
+      "too_early_pct": 7.86,
+      "too_late_pct": 10.62,
+      "median_width_h": 46.25,
+      "median_width_over_left": 1.75,
+      "median_abs_error_h": 6.5,
+      "coverage_at_50": 52.96,
+      "median_width_at_50_h": 13.5,
+      "coverage_at_80": 75.48,
+      "median_width_at_80_h": 29.3,
+      "coverage_at_90": 81.52,
+      "median_width_at_90_h": 46.25
+     },
+     "decay, conformal": {
+      "checks": 989,
+      "stays": 30,
+      "solar_events": 24,
+      "share_of_hours_with_estimate_pct": 58.01,
+      "coverage_pct": 87.87,
+      "coverage_ci": [
+       81.8,
+       94.1
+      ],
+      "coverage_by_stay_pct": 91.01,
+      "too_early_pct": 7.18,
+      "too_late_pct": 4.95,
+      "median_width_h": 45.1,
+      "median_width_over_left": 2.19,
+      "median_abs_error_h": 7.7,
+      "coverage_at_90": 87.87,
+      "median_width_at_90_h": 45.1
+     },
+     "boosted, conformal": {
+      "checks": 1705,
+      "stays": 38,
+      "solar_events": 30,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 82.87,
+      "coverage_ci": [
+       73.0,
+       93.6
+      ],
+      "coverage_by_stay_pct": 82.65,
+      "too_early_pct": 9.09,
+      "too_late_pct": 8.04,
+      "median_width_h": 54.87,
+      "median_width_over_left": 1.96,
+      "median_abs_error_h": 6.8,
+      "coverage_at_50": 50.91,
+      "median_width_at_50_h": 17.14,
+      "coverage_at_80": 77.13,
+      "median_width_at_80_h": 37.44,
+      "coverage_at_90": 82.87,
+      "median_width_at_90_h": 54.87
+     },
+     "decay, RAD range": {
+      "checks": 989,
+      "stays": 30,
+      "solar_events": 24,
+      "share_of_hours_with_estimate_pct": 58.01,
+      "coverage_pct": 95.85,
+      "coverage_ci": [
+       91.4,
+       98.9
+      ],
+      "coverage_by_stay_pct": 97.88,
+      "too_early_pct": 2.83,
+      "too_late_pct": 1.31,
+      "median_width_h": 61.82,
+      "median_width_over_left": 3.07,
+      "median_abs_error_h": 7.7,
+      "coverage_at_90": 95.85,
+      "median_width_at_90_h": 61.82
+     }
+    },
+    "calibration (cross-fitted), after the half-peak point": {
+     "climatology": {
+      "checks": 989,
+      "stays": 30,
+      "solar_events": 24,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 93.02,
+      "coverage_ci": [
+       91.9,
+       93.8
+      ],
+      "coverage_by_stay_pct": 86.08,
+      "too_early_pct": 0.0,
+      "too_late_pct": 6.98,
+      "median_width_h": 172.55,
+      "median_width_over_left": 7.57,
+      "median_abs_error_h": 23.0,
+      "coverage_at_50": 61.88,
+      "median_width_at_50_h": 86.0,
+      "coverage_at_80": 85.74,
+      "median_width_at_80_h": 146.0,
+      "coverage_at_90": 93.02,
+      "median_width_at_90_h": 172.55
+     },
+     "analogs": {
+      "checks": 989,
+      "stays": 30,
+      "solar_events": 24,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 80.99,
+      "coverage_ci": [
+       66.1,
+       94.0
+      ],
+      "coverage_by_stay_pct": 85.98,
+      "too_early_pct": 5.36,
+      "too_late_pct": 13.65,
+      "median_width_h": 30.1,
+      "median_width_over_left": 1.47,
+      "median_abs_error_h": 5.5,
+      "coverage_at_50": 54.1,
+      "median_width_at_50_h": 9.75,
+      "coverage_at_80": 75.94,
+      "median_width_at_80_h": 21.2,
+      "coverage_at_90": 80.99,
+      "median_width_at_90_h": 30.1
+     },
+     "decay, conformal": {
+      "checks": 989,
+      "stays": 30,
+      "solar_events": 24,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 87.87,
+      "coverage_ci": [
+       81.9,
+       93.3
+      ],
+      "coverage_by_stay_pct": 91.01,
+      "too_early_pct": 7.18,
+      "too_late_pct": 4.95,
+      "median_width_h": 45.1,
+      "median_width_over_left": 2.19,
+      "median_abs_error_h": 7.7,
+      "coverage_at_90": 87.87,
+      "median_width_at_90_h": 45.1
+     },
+     "boosted, conformal": {
+      "checks": 989,
+      "stays": 30,
+      "solar_events": 24,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 83.92,
+      "coverage_ci": [
+       69.9,
+       95.4
+      ],
+      "coverage_by_stay_pct": 81.72,
+      "too_early_pct": 4.25,
+      "too_late_pct": 11.83,
+      "median_width_h": 47.43,
+      "median_width_over_left": 2.11,
+      "median_abs_error_h": 4.76,
+      "coverage_at_50": 54.2,
+      "median_width_at_50_h": 10.52,
+      "coverage_at_80": 79.68,
+      "median_width_at_80_h": 29.68,
+      "coverage_at_90": 83.92,
+      "median_width_at_90_h": 47.43
+     },
+     "decay, RAD range": {
+      "checks": 989,
+      "stays": 30,
+      "solar_events": 24,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 95.85,
+      "coverage_ci": [
+       91.6,
+       98.9
+      ],
+      "coverage_by_stay_pct": 97.88,
+      "too_early_pct": 2.83,
+      "too_late_pct": 1.31,
+      "median_width_h": 61.82,
+      "median_width_over_left": 3.07,
+      "median_abs_error_h": 7.7,
+      "coverage_at_90": 95.85,
+      "median_width_at_90_h": 61.82
+     }
+    }
+   },
+   "rad_stays_behind_the_rad_range": 5,
+   "decay_ratio_ranges": {
+    "decay, conformal": [
+     0.349,
+     3.539
+    ],
+    "decay, RAD range": [
+     0.122,
+     4.114
+    ]
+   }
+  },
+  "thin": {
+   "parts": {
+    "train": {
+     "checks": 18890,
+     "stays": 381,
+     "solar_events": 239,
+     "by_source": {
+      "replay_skin": 381
+     }
+    },
+    "calibration": {
+     "checks": 8098,
+     "stays": 129,
+     "solar_events": 78,
+     "by_source": {
+      "crater_d12": 82,
+      "crater_d56": 47
+     }
+    },
+    "test_measured": {
+     "checks": 8962,
+     "stays": 124,
+     "solar_events": 73,
+     "by_source": {
+      "crater_d12": 70,
+      "crater_d56": 54
+     }
+    },
+    "test_replay": {
+     "checks": 4969,
+     "stays": 79,
+     "solar_events": 72,
+     "by_source": {
+      "replay_skin": 79
+     }
+    }
+   },
+   "scores": {
+    "calibration (cross-fitted)": {
+     "climatology": {
+      "checks": 8098,
+      "stays": 129,
+      "solar_events": 78,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 93.01,
+      "coverage_ci": [
+       91.7,
+       94.1
+      ],
+      "coverage_by_stay_pct": 91.9,
+      "too_early_pct": 2.41,
+      "too_late_pct": 4.58,
+      "median_width_h": 307.25,
+      "median_width_over_left": 6.28,
+      "median_abs_error_h": 38.0,
+      "coverage_at_50": 53.05,
+      "median_width_at_50_h": 114.0,
+      "coverage_at_80": 83.19,
+      "median_width_at_80_h": 199.0,
+      "coverage_at_90": 93.01,
+      "median_width_at_90_h": 307.25
+     },
+     "analogs": {
+      "checks": 8098,
+      "stays": 129,
+      "solar_events": 78,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 81.93,
+      "coverage_ci": [
+       73.3,
+       91.2
+      ],
+      "coverage_by_stay_pct": 92.83,
+      "too_early_pct": 15.73,
+      "too_late_pct": 2.33,
+      "median_width_h": 134.2,
+      "median_width_over_left": 2.72,
+      "median_abs_error_h": 17.5,
+      "coverage_at_50": 51.73,
+      "median_width_at_50_h": 36.5,
+      "coverage_at_80": 76.08,
+      "median_width_at_80_h": 97.1,
+      "coverage_at_90": 81.93,
+      "median_width_at_90_h": 134.2
+     },
+     "decay, conformal": {
+      "checks": 4447,
+      "stays": 95,
+      "solar_events": 62,
+      "share_of_hours_with_estimate_pct": 54.91,
+      "coverage_pct": 88.71,
+      "coverage_ci": [
+       84.4,
+       93.7
+      ],
+      "coverage_by_stay_pct": 91.25,
+      "too_early_pct": 6.25,
+      "too_late_pct": 5.04,
+      "median_width_h": 193.64,
+      "median_width_over_left": 5.92,
+      "median_abs_error_h": 17.29,
+      "coverage_at_90": 88.71,
+      "median_width_at_90_h": 193.64
+     },
+     "boosted, conformal": {
+      "checks": 8098,
+      "stays": 129,
+      "solar_events": 78,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 86.73,
+      "coverage_ci": [
+       80.1,
+       92.9
+      ],
+      "coverage_by_stay_pct": 86.28,
+      "too_early_pct": 6.21,
+      "too_late_pct": 7.06,
+      "median_width_h": 198.03,
+      "median_width_over_left": 4.09,
+      "median_abs_error_h": 16.98,
+      "coverage_at_50": 48.99,
+      "median_width_at_50_h": 46.04,
+      "coverage_at_80": 77.85,
+      "median_width_at_80_h": 138.89,
+      "coverage_at_90": 86.73,
+      "median_width_at_90_h": 198.03
+     }
+    },
+    "calibration (cross-fitted), after the half-peak point": {
+     "climatology": {
+      "checks": 4447,
+      "stays": 95,
+      "solar_events": 62,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 92.44,
+      "coverage_ci": [
+       90.9,
+       93.7
+      ],
+      "coverage_by_stay_pct": 83.02,
+      "too_early_pct": 0.9,
+      "too_late_pct": 6.66,
+      "median_width_h": 333.0,
+      "median_width_over_left": 8.09,
+      "median_abs_error_h": 40.0,
+      "coverage_at_50": 51.29,
+      "median_width_at_50_h": 114.0,
+      "coverage_at_80": 81.47,
+      "median_width_at_80_h": 251.0,
+      "coverage_at_90": 92.44,
+      "median_width_at_90_h": 333.0
+     },
+     "analogs": {
+      "checks": 4447,
+      "stays": 95,
+      "solar_events": 62,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 79.11,
+      "coverage_ci": [
+       68.7,
+       90.6
+      ],
+      "coverage_by_stay_pct": 91.3,
+      "too_early_pct": 18.62,
+      "too_late_pct": 2.27,
+      "median_width_h": 84.0,
+      "median_width_over_left": 2.39,
+      "median_abs_error_h": 13.5,
+      "coverage_at_50": 49.74,
+      "median_width_at_50_h": 24.5,
+      "coverage_at_80": 73.29,
+      "median_width_at_80_h": 53.9,
+      "coverage_at_90": 79.11,
+      "median_width_at_90_h": 84.0
+     },
+     "decay, conformal": {
+      "checks": 4447,
+      "stays": 95,
+      "solar_events": 62,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 88.71,
+      "coverage_ci": [
+       84.2,
+       93.5
+      ],
+      "coverage_by_stay_pct": 91.25,
+      "too_early_pct": 6.25,
+      "too_late_pct": 5.04,
+      "median_width_h": 193.64,
+      "median_width_over_left": 5.92,
+      "median_abs_error_h": 17.29,
+      "coverage_at_90": 88.71,
+      "median_width_at_90_h": 193.64
+     },
+     "boosted, conformal": {
+      "checks": 4447,
+      "stays": 95,
+      "solar_events": 62,
+      "share_of_hours_with_estimate_pct": 100.0,
+      "coverage_pct": 83.2,
+      "coverage_ci": [
+       74.6,
+       91.7
+      ],
+      "coverage_by_stay_pct": 84.36,
+      "too_early_pct": 8.16,
+      "too_late_pct": 8.64,
+      "median_width_h": 125.46,
+      "median_width_over_left": 3.47,
+      "median_abs_error_h": 13.08,
+      "coverage_at_50": 46.5,
+      "median_width_at_50_h": 27.6,
+      "coverage_at_80": 73.65,
+      "median_width_at_80_h": 82.56,
+      "coverage_at_90": 83.2,
+      "median_width_at_90_h": 125.46
+     }
+    }
+   },
+   "decay_ratio_ranges": {
+    "decay, conformal": [
+     0.234,
+     9.574
+    ]
+   }
+  }
+ }
+}

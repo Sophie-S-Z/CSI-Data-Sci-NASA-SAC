@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState, type ComponentType } from 'react';
 import { MotionConfig, motion } from 'motion/react';
 import {
-  Radiation, Wind, HeartPulse, ClipboardCheck, ScrollText, FlaskConical, Orbit, Stethoscope, Satellite, BookOpen,
+  Radiation, Wind, HeartPulse, ClipboardCheck, ScrollText, FlaskConical, Microscope, Orbit, Stethoscope, Satellite, BookOpen,
   Sun, Moon, Ellipsis, MessagesSquare, SunMedium, SlidersHorizontal, Play, Pause, TriangleAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ const VIEWS: Record<Tab, ComponentType> = {
   ground: view(() => import('./views/Team'), 'GroundView'),
   explorer: view(() => import('./views/Explorer'), 'ExplorerView'),
   evidence: view(() => import('./views/Evidence'), 'EvidenceView'),
+  research: view(() => import('./views/Research'), 'ResearchView'),
   sources: view(() => import('./views/Sources'), 'SourcesView'),
 };
 
@@ -66,9 +67,10 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    id: 'real', label: 'Real-world data', about: 'Measured events, NASA limits, and the sources.',
+    id: 'real', label: 'Real-world data', about: 'Measured events, the research study, NASA limits, and the sources.',
     groups: [{ label: 'Measured and published', items: [
       { id: 'evidence', label: 'Measured events', icon: FlaskConical, short: 'Events' },
+      { id: 'research', label: 'Research', icon: Microscope, short: 'Research' },
       { id: 'sources', label: 'Rules and sources', icon: BookOpen, short: 'Sources' },
     ] }],
   },

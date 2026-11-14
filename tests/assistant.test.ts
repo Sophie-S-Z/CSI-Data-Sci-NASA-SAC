@@ -95,7 +95,7 @@ describe('onboard assistant: answers from the state', () => {
     const c = ask('When can I leave the shelter?', w);
     expect(c.estimate).toBe(true);
     expect(c.lines.join(' ')).toMatch(/Estimate: the Warning clears between Day 09\d \d\d:\d\d and Day 09\d \d\d:\d\d/);
-    expect(c.lines.join(' ')).toMatch(/in the range at \d+% of \d+ checks\. \d+ misses cleared later/);
+    expect(c.lines.join(' ')).toMatch(/on \d+ new shelter stays .* in the range at [\d.]+% of \d+ hourly checks\. At [\d.]+% the Warning cleared later/);
     const l = ask('Can I leave the shelter early?', w);
     expect(l.estimate).toBe(true);
     expect(l.lines[1]).toMatch(/If you leave now, the rest of the event adds about [\d.]+ to [\d.]+ mSv/);

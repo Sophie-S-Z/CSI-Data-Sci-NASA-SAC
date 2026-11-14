@@ -1,10 +1,11 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, CornerDownLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { stamp } from '../../engine/time';
-import { ask, suggestions, forecastTest, ASSISTANT_INFO, MIN_SCORE, type Answer } from '../assistant';
+import { fmt } from '../../engine/units';
+import { ask, suggestions, CLEAR_TEST, ASSISTANT_INFO, MIN_SCORE, type Answer } from '../assistant';
 import { resolveSource } from '../sources';
 import { useUi } from '../context';
 import { Kv, PageHead, Panel, Prov, Src } from '../parts';
@@ -93,7 +94,7 @@ function AnswerCard({ it, onGo }: { it: Item; onGo: (t: NonNullable<Answer['go']
 }
 
 function HowItWorks() {
-  const t = useMemo(forecastTest, []);
+  const t = CLEAR_TEST;
   return (
     <Panel title="How it works" className="h-fit">
       <Kv rows={[
@@ -105,11 +106,13 @@ function HowItWorks() {
         ['Last 12 h brief', 'Alerts, findings, dose, shelter time, solar records'],
         ['Check-in note', 'Names the symptoms in your note. You mark them.'],
         ['Clear-time estimate', 'Decay fit of the last 8 h. Range from the other measured RAD events'],
-        ['Estimate test', `${Math.round((t.hits / t.checks) * 100)}% in range, ${t.checks} checks`],
+        ['Estimate test', `${fmt(t.coverage_pct)}% in range, ${t.stays} new shelter stays`],
       ]} />
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         The clear-time estimate fits the decay of the last 8 h of the event and projects the time to the clear line. The other measured events set the width of the range.
-        In a leave-one-out test on the 6 events, {t.late} checks cleared later than the range and {t.early} earlier. The estimate never opens, holds, or clears an alert.
+        A test on {t.stays} new shelter stays (CRaTER and RAD, 2020 to 2026) had the real clear time in the range at {fmt(t.coverage_pct)}% of {t.checks} hourly checks.
+        The 95% range of this result is {fmt(t.coverage_ci[0])}% to {fmt(t.coverage_ci[1])}%. An earlier test on 6 events gave 98%, which was too high. The Research view has the details.
+        The estimate never opens, holds, or clears an alert.
       </p>
     </Panel>
   );
