@@ -47,7 +47,7 @@ export function CabinView() {
 
   return (
     <>
-      <PageHead title="Cabin air" sub={<>The air the crew breathes. Limits come from NASA-STD-3001 Volume 2. The crew values are <b>simulated</b>, because no open database gives a live crew cabin stream.</>}
+      <PageHead title="Cabin air" sub="The air you breathe. The limits come from NASA-STD-3001 Volume 2."
         actions={<Prov kind="standard">Limits: NASA-STD-3001 Vol 2</Prov>} />
       {shelterMin > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-shelter/40 bg-shelter/10 p-4 text-sm">
@@ -76,7 +76,7 @@ export function CabinView() {
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <Panel title={`${p.title}, last 72 h`} aside={<><Prov kind="simulated" /><Src k={p.src}>NASA limit</Src></>}>
+        <Panel title={`${p.title}, last 72 h`} aside={<Src k={p.src}>NASA limit</Src>}>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={series} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>

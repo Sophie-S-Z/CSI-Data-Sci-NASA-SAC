@@ -10,6 +10,7 @@ import { fmt } from '../../engine/units';
 import { lightMinutes, vehicleAt, TRANSIT_DAYS } from '../../engine/orbit';
 import { BEATS, DEMO_START, REPLAY_END, SPEEDS, beatIndex } from '../../ui/useSim';
 import { useUi } from '../context';
+import { displayName } from '../profile';
 import { InfoBadge, LevelBadge, Panel, Prov, Seg } from '../parts';
 import { Decision } from './Decision';
 
@@ -54,7 +55,7 @@ function timeAt(x: number): number {
 
 /** The demo controls, with steps that explain what each moment shows. */
 function DemoGuide() {
-  const { sim, note } = useUi();
+  const { sim, note, profile } = useUi();
   const w = sim.world;
   const cur = beatIndex(w.t);
   const atEnd = w.t >= REPLAY_END;
@@ -66,13 +67,8 @@ function DemoGuide() {
   return (
     <Panel title="Storm replay: March 2012" aside={<Prov kind="measured">Real radiation data, MSL RAD</Prov>} id="demo-h">
       <p className="max-w-3xl text-[15px] text-muted-foreground">
-        You are Crew A on a ship to Mars. A real solar storm hits the ship. Play the replay, or pick a step, and watch what the app tells you to do.
+        {displayName(profile)}, you are on a ship to Mars, and a real solar storm is coming. Press Play. The alert panel tells you what to do.
       </p>
-      <ol className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-        {['Press Play, or pick a step below.', 'Read the colored alert panel. It gives the one action to do now.', 'At the red Warning, press "Start procedure SH-1".'].map((t, i) => (
-          <li key={i} className="flex gap-2 rounded-md bg-muted/50 px-3 py-2"><span className="num font-semibold text-primary">{i + 1}.</span>{t}</li>
-        ))}
-      </ol>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button size="lg" className="h-12 min-w-32 rounded-md px-5 text-base" onClick={togglePlay} aria-pressed={sim.playing}>
@@ -125,8 +121,8 @@ function DemoGuide() {
         ))}
       </ol>
       <p className="mt-3 text-sm text-muted-foreground" aria-live="polite">
-        {cur < 0 ? `Ready at ${stamp(w.t)}. Press Play, or pick step 1.` : `Step ${cur + 1} of ${BEATS.length}: ${BEATS[cur].label}.`}
-        {next ? ` Next: ${next.label} at ${stamp(next.t)}.` : ' The replay is at the last step.'}
+        {cur < 0 ? 'Ready.' : `Step ${cur + 1} of ${BEATS.length}: ${BEATS[cur].label}.`}
+        {next ? ` Next: ${next.label} at ${stamp(next.t)}.` : ' This is the last step.'}
       </p>
       <details className="mt-2 text-xs">
         <summary className="cursor-pointer text-muted-foreground">Link to Earth: {LINK_LABEL[w.link]}</summary>
@@ -152,7 +148,7 @@ function ShipPanel() {
     <Panel title="Your ship" aside={storm === 'hit' ? <InfoBadge level="warning" k="protons">Protons at the ship</InfoBadge> : storm === 'watch' ? <InfoBadge level="caution" k="solarEvent">Solar event</InfoBadge> : <span>No solar event</span>} bodyClass="px-0 pb-0">
       <div className="relative">
         <Suspense fallback={<div className="mv grid place-items-center text-sm text-muted-foreground">Loading the ship view.</div>}>
-          <MissionView day={day} storm={storm} theme={theme} />
+          <MissionView day={day} storm={storm} shelter={w.inShelter} theme={theme} />
         </Suspense>
         <dl className="num grid grid-cols-2 gap-x-4 gap-y-0.5 border-b px-5 py-2 text-xs sm:pointer-events-none sm:absolute sm:top-3 sm:left-3 sm:rounded-md sm:border-0 sm:bg-background/85 sm:px-3">
           <div><dt className="inline text-muted-foreground">Day </dt><dd className="inline font-semibold">{fmt(day)} of {TRANSIT_DAYS}</dd></div>
@@ -161,7 +157,7 @@ function ShipPanel() {
           <div><dt className="inline text-muted-foreground">Link </dt><dd className="inline font-semibold">{LINK_LABEL[w.link]}</dd></div>
         </dl>
       </div>
-      <p className="px-5 py-3 text-xs text-muted-foreground">Drag to turn the view. Yellow particles: a solar event. Red particles: protons at the ship. Simplified, coplanar orbits.</p>
+      <p className="px-5 py-3 text-xs text-muted-foreground">Drag to turn the view. The yellow shell is a CME. The particles are solar protons. They curve along the Sun's magnetic field to the ship. The blue bubble is the shelter.</p>
     </Panel>
   );
 }

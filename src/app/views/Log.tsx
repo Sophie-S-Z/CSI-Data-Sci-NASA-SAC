@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { VIS_LABEL, VISIBILITY_ORDER, type LogEntry, type Visibility } from '../../engine/world';
@@ -38,7 +38,7 @@ export function LogRow({ e }: { e: LogEntry }) {
 type F = 'all' | 'alerts' | 'actions' | 'checkins' | 'ground';
 
 export function LogView() {
-  const { sim } = useUi();
+  const { sim, go } = useUi();
   const w = sim.world;
   const [f, setF] = useState<F>('all');
   const rows = w.log.filter((e) => e.kind !== 'visibility').filter((e) =>
@@ -48,19 +48,10 @@ export function LogView() {
   const total = [...byDay.values()].reduce((a, b) => a + b, 0);
   const maxN = Math.max(1, ...byDay.values());
 
-  function download() {
-    const blob = new Blob([JSON.stringify(w.log, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `storm-shelter-log-day${dayOf(w.t)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
   return (
     <>
-      <PageHead title="Event log" sub="Append-only. Each entry has a time, the rule, the inputs, and the crew action." actions={<Button variant="outline" className="rounded-md" onClick={download}><Download className="size-4" aria-hidden="true" />Export JSON</Button>} />
-      <Panel title="Alarm burden" aside="Metric M-3: 3 or fewer Caution or Warning events per 7 days" className="mb-4">
+      <PageHead title="Event log" sub="Each alert, check-in, and crew action, with its time and rule. Entries cannot be changed." actions={<Button variant="outline" className="rounded-md" onClick={() => go('report')}><FileText className="size-4" aria-hidden="true" />Daily report</Button>} />
+      <Panel title="Alarm burden" aside="Target: 3 or fewer in 7 days" className="mb-4">
         <div className="flex flex-wrap items-end gap-6">
           <div className="flex items-end gap-1.5" role="img" aria-label={`${total} Caution or Warning events in ${days.length} days`}>
             {days.map((d) => {

@@ -10,6 +10,7 @@ import { hhmm, duration } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { useUi } from '../context';
 import { LevelBadge, LevelIcon, LEVEL_WORD, Src } from '../parts';
+import { BodyEffects } from '../BodyEffects';
 
 const TH = rules.thresholds;
 const TM = rules.timing;
@@ -63,6 +64,7 @@ export function Decision() {
   const loud = level === 'warning' || level === 'caution';
   const showProc = procOpen && !!w.procedure;
   const clear = w.warningClearProgress();
+  const storm = w.openAlert('radiation');
   const say = main ? `${LEVEL_WORD[level]}. ${actionSentence(main, w)}` : 'Nominal. No action.';
 
   return (
@@ -136,6 +138,7 @@ export function Decision() {
           ))}
         </dl>
       ))}
+      {!showProc && <BodyEffects level={level} stormDose={storm && LEVEL_RANK[storm.peak] >= LEVEL_RANK.caution ? storm.eventDoseMSv : undefined} className={cn(main && 'border-t')} />}
 
       {active.length > 0 && (
         <div className="space-y-2 border-t bg-muted/40 px-5 py-3">

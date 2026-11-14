@@ -53,10 +53,10 @@ Open **Real-world data > Measured events** to show the rule results on all 6 eve
 
 ## Layout
 
-The app has 2 sections. A switch at the top of the sidebar (or in **More** on a phone) changes the section.
+The app has 2 modes. The **Simulation | Real-world data** switch is in the top bar on every screen. A line under the top bar says what the data in the mode is, so the panels need no "Simulated" labels.
 
-- **Simulation.** Mission replay (the landing page), Cabin radiation (inside the ship: sensors, dose chart, dose budget, crew timeline), Space weather (outside the ship: solar records, distance and angle to Earth), Cabin air, the crew views (Body, Health check, Log, Ask), the team views (CMO, Ground link), and the **Limits explorer**.
-- **Real-world data.** Measured events (the rule test on 6 RAD events) and Rules and sources.
+- **Simulation.** Mission replay (the landing page), Cabin radiation (inside the ship: sensors, dose chart, dose budget, crew timeline), Space weather (outside the ship: solar records, distance and angle to Earth), Cabin air, the crew views (Ask AI, Health check, Body, Log, Daily report), the team views (CMO, Ground link), and the **Limits explorer**.
+- **Real-world data.** Measured events (the rule test on 6 RAD events), Research, and Rules and sources.
 
 The **Limits explorer** is a what-if tool. Type a value for each factor (radiation dose rate, CO2, temperature, humidity, ppO2, pressure) and pick an area (ship cabin, storm shelter, Mars surface habitat). It shows the level of each value and the dangerous range in each area. The zones come from `src/engine/limits.ts`, which reads `rules.json` and `cabin-rules.json`. The Cabin air view uses the same zones.
 
@@ -86,7 +86,12 @@ The **Limits explorer** is a what-if tool. Type a value for each factor (radiati
 | FR-12 CMO case view | **CMO** |
 | FR-13 Combined-effects note | **CMO** (infection watch, evidence "emerging") |
 | FR-14 Body systems (scope change 3B) | **Body**. Rules B-RAD1 to B-B2 in `src/data/body-rules.json`. Advisory or Caution only. They do not count toward M-3. |
-| FR-15 Display mode | Sun/moon button in the top bar. Dark is the default. |
+| FR-15 Display mode | **Profile** (initials in the top bar). Dark is the default. |
+| Profile | Name, role, and look. Stored in this browser only. `src/app/profile.ts` |
+| Body effects | Under the alert panel: what the dose at each level does to the body, your storm dose against the 250 mSv storm limit, and a cited dose ladder. `src/app/health.ts` |
+| Daily report | **Daily report**: what needs attention, alerts, solar events, check-ins, and the log for one day. JSON download, or PDF from the print window. `src/app/report.ts` |
+| Voice input | Microphone button beside each text field (Ask, Health check note, Profile name, Limits explorer). Web Speech API. The button does not show in a browser without it. `src/app/Mic.tsx` |
+| AI engines | **Ask AI**: built-in (offline), a model in the browser (WebLLM, WebGPU), Claude with your API key, or any OpenAI-compatible API. `src/app/ai.ts` |
 | Onboard assistant (Phase 5) | **Ask**. `src/app/assistant.ts`. See "Onboard assistant" below. |
 | Last 12 h brief (Phase 6) | **Ask**, topic `brief` in `src/app/assistant.ts` |
 | Check-in note reader (Phase 6) | `src/app/noteReader.ts`. Suggestions under the note on **Health check**. |
@@ -95,14 +100,14 @@ The **Limits explorer** is a what-if tool. Type a value for each factor (radiati
 | NFR-02 Units | `src/engine/units.ts`. One factor, documented in `rules.json`. |
 | NFR-04 Gloved touch | 40 to 60 px targets, 48 px for crew actions. No drag or hover controls. |
 | NFR-05 Display rules | Red only for Warning, yellow only for Caution, each with an icon and a word |
-| NFR-07 Audit | Append-only, frozen log entries. Export as JSON on **Log**. |
-| NFR-08 Labels | "Replay", "Simulated dose", "Not for clinical use" in the status bar |
+| NFR-07 Audit | Append-only, frozen log entries. Export as JSON on **Daily report**. |
+| NFR-08 Labels | The mode line under the top bar: what is measured, what is simulated, and "Not for clinical use" |
 
 ### Interface
 
 React 19, Tailwind CSS 4, shadcn/ui (Radix), Motion, Recharts, and three.js. See `docs/design-notes.md`.
 
-- **Colors.** Dark (default) is a flight-display palette for a dim cabin: a near-black neutral ground, soft white text, one cyan accent for controls. Red is only for Warning, amber only for Caution, slate blue only for shelter time. Light mode is on the sun/moon button.
+- **Colors.** Dark (default) is a flight-display palette for a dim cabin: a near-black neutral ground, soft white text, one cyan accent for controls. Red is only for Warning, amber only for Caution, slate blue only for shelter time. Light mode is in the profile.
 - **Alert panel.** It fills with red or yellow during an alert. SH-1 opens in place. A Warning cannot be suppressed. Rule inhibit is on **Rules and sources** only, a banner shows each inhibited rule on every view, and 2 sensors at 10 × B for 5 min always give a Warning.
 - **Speed.** Each view except the landing page loads on first use. The dose chart rebuilds each 10 to 30 replay minutes, not each tick, and the panels have no blur. With the CPU slowed 4 times, the replay runs at about 60 frames per second on Mission replay.
 - **Offline.** A service worker keeps the app after the first load.
@@ -118,7 +123,17 @@ The assistant runs on the crew laptop with no network and no model download. It 
 - **Check-in note reader (Phase 6).** The health check reads the free-text note and shows the symptom chips that it names, for example "head feels full" gives Stuffy head. A cue word earlier in the same sentence ("no", "not", "without", "n't") cancels a match, up to "but" or a full stop. It only suggests. The crew taps to mark, and the body rules read marked symptoms only. A missed symptom is the safe error, because the crew can still mark it by hand.
 - **Clear-time estimate.** After the peak of a Warning, the estimate fits the decay time of the last 8 h of the event (a straight line through the log of the dose rate). It projects the fall to the clear line, plus the 1 h clear hold. The range comes from the other measured RAD events: the smallest and the largest ratio of the real time left to the projected time left. The replayed March 2012 event is not in its own range. In a leave-one-out test on the 6 events, the real clear time was in the range at 98% of 525 checks (514 hits, 6 later, 5 earlier). The old analog method reached 60%. A later test on 34 new shelter stays (CRaTER and RAD, 2020 to 2026) gave 90%. See `research/frontier/RESULTS.md`. The range is wide: its median width is about 38 h, for a median of about 19 h left. The estimate never opens, holds, or clears an alert.
 
-`npm test` checks the matching on new wordings, the brief on the replay night, the note reader with negation, the refusals, the no-answer case, the read-only rule, the source of each answer, and the forecast test.
+### AI engines
+
+Pick the engine on **Ask AI**. The built-in assistant always runs first:
+
+- A refusal (diagnosis, treatment, a change to an alert) never goes to a model.
+- For other questions, the model gets only the facts: the alert now, the built-in answer, and the body effect of the level. It rewrites them in plain words. "Facts the AI used" under each answer shows them.
+- **On this device.** WebLLM runs Llama 3.2 (1B or 3B) on the GPU (WebGPU, Chrome or Edge). The first load downloads the model. After that, it works offline. The 6 MB runtime loads only when you pick this engine.
+- **Claude** or **Other API.** Paste your own key. It stays in this browser (localStorage) and goes only to that provider. The repository holds no key.
+- If a model call fails, the card says why and shows the built-in answer.
+
+`npm test` checks the daily report, the AI facts, the matching on new wordings, the brief on the replay night, the note reader with negation, the refusals, the no-answer case, the read-only rule, the source of each answer, and the forecast test.
 
 ## Edit the rules
 

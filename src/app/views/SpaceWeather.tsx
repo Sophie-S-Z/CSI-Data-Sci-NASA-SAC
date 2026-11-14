@@ -11,7 +11,7 @@ import { InfoBadge, Kv, LevelBadge, PageHead, Panel, Prov } from '../parts';
 export function SpaceWeatherView() {
   return (
     <>
-      <PageHead title="Space weather" sub="Outside the ship. Real solar records from March 2012, and where the ship is relative to the Sun and Earth." />
+      <PageHead title="Space weather" sub="Outside the ship: real solar records from March 2012, and where the ship is." />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         <SolarEvents />
         <Geometry />

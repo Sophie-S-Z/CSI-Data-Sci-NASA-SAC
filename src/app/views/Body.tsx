@@ -6,18 +6,18 @@ import { fmt } from '../../engine/units';
 import { BODY_RULES, jitter, limitRange, paramsOf, type BodySystem } from '../../engine/bodyRules';
 import { cabinAt } from '../../engine/cabin';
 import { useUi } from '../context';
-import { LevelBadge, PageHead, Panel, Prov, Src, Spark, type Provenance } from '../parts';
+import { LevelBadge, PageHead, Panel, Src, Spark } from '../parts';
 import { sources } from '../sources';
 
-const ROWS: { id: string; title: string; icon: typeof Bed; systems: BodySystem[]; prov: Provenance; from: string; risk: string }[] = [
-  { id: 'rad', title: 'Radiation', icon: Radiation, systems: ['radiation', 'blood'], prov: 'measured', from: 'Dose (RAD event) and check-ins', risk: 'Acute radiation effects and cancer risk' },
-  { id: 'air', title: 'Air and CO2 signs', icon: Wind, systems: ['air'], prov: 'simulated', from: 'Cabin CO2 and check-ins', risk: 'Cabin CO2 exposure' },
-  { id: 'eyes', title: 'Eyes (SANS)', icon: Eye, systems: ['vision'], prov: 'replay', from: 'Check-ins', risk: 'Neuro-ocular syndrome' },
-  { id: 'sleep', title: 'Sleep', icon: Bed, systems: ['sleep'], prov: 'replay', from: 'Check-ins', risk: 'Sleep loss and circadian change' },
-  { id: 'mood', title: 'Mood', icon: Brain, systems: ['mood'], prov: 'replay', from: 'Shared check-ins', risk: 'Behavioral health' },
-  { id: 'heart', title: 'Resting heart rate', icon: HeartPulse, systems: ['heart'], prov: 'simulated', from: 'Wearable (simulated)', risk: 'Cardiovascular change' },
-  { id: 'exercise', title: 'Exercise', icon: Dumbbell, systems: ['bone'], prov: 'simulated', from: 'Timeline (simulated)', risk: 'Bone and muscle loss' },
-  { id: 'bone', title: 'Bone (hip)', icon: Bone, systems: [], prov: 'simulated', from: 'Model, 1 to 1.5% per month', risk: 'Bone loss' },
+const ROWS: { id: string; title: string; icon: typeof Bed; systems: BodySystem[]; from: string; risk: string }[] = [
+  { id: 'rad', title: 'Radiation', icon: Radiation, systems: ['radiation', 'blood'], from: 'Dose (RAD event) and check-ins', risk: 'Acute radiation effects and cancer risk' },
+  { id: 'air', title: 'Air and CO2 signs', icon: Wind, systems: ['air'], from: 'Cabin CO2 and check-ins', risk: 'Cabin CO2 exposure' },
+  { id: 'eyes', title: 'Eyes (SANS)', icon: Eye, systems: ['vision'], from: 'Check-ins', risk: 'Neuro-ocular syndrome' },
+  { id: 'sleep', title: 'Sleep', icon: Bed, systems: ['sleep'], from: 'Check-ins', risk: 'Sleep loss and circadian change' },
+  { id: 'mood', title: 'Mood', icon: Brain, systems: ['mood'], from: 'Shared check-ins', risk: 'Behavioral health' },
+  { id: 'heart', title: 'Resting heart rate', icon: HeartPulse, systems: ['heart'], from: 'Wearable', risk: 'Cardiovascular change' },
+  { id: 'exercise', title: 'Exercise', icon: Dumbbell, systems: ['bone'], from: 'Exercise timeline', risk: 'Bone and muscle loss' },
+  { id: 'bone', title: 'Bone (hip)', icon: Bone, systems: [], from: 'Model, 1 to 1.5% per month', risk: 'Bone loss' },
 ];
 
 export function BodyView() {
@@ -48,7 +48,7 @@ export function BodyView() {
 
   return (
     <>
-      <PageHead title="Body systems" sub="One card for each risk that the challenge names. Body rules give Advisory or Caution only. Radiation stays the only Warning. Each card says where its data comes from." />
+      <PageHead title="Body systems" sub="One card for each health risk in space. Body rules give Advisory or Caution only. Only radiation gives a Warning." />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {ROWS.map((r) => {
           const mine = findings.filter((f) => r.systems.includes(f.system));
@@ -70,7 +70,6 @@ export function BodyView() {
               <p className="mt-1 text-xs text-muted-foreground">{r.risk}</p>
               {top && <p className="mt-2 rounded-md bg-muted/60 p-2 text-xs">{top.title}. {top.why}</p>}
               <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3 text-[11px] text-muted-foreground">
-                <Prov kind={r.prov}>{r.prov === 'replay' ? 'Self-reported' : undefined}</Prov>
                 <span className="truncate">{r.from}</span>
                 {ids.length > 0 && <span className="ml-auto font-mono">{ids.map((id, i) => <span key={id}>{i ? ', ' : ''}<Src k={id}>{id}</Src></span>)}</span>}
               </div>
@@ -98,7 +97,7 @@ function PersonalLimits() {
     note(`${label} limit set to ${value}`);
   };
   return (
-    <Panel title="Your alert limits (Crew A)" aside="Stricter than the team value only" className="mt-4">
+    <Panel title="Your alert limits" aside="Stricter than the team value only" className="mt-4">
       <p className="text-sm text-muted-foreground">Set a limit for your own body. For example, a crew member with a low normal heart rate can get an alert earlier. You cannot set a limit looser than the team value. The CMO sees each change in the log.</p>
       <ul className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {LIMITS.map(({ ruleId, param, range: r }) => {

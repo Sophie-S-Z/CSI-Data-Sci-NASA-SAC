@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState, type Compone
 import { MotionConfig, motion } from 'motion/react';
 import {
   Radiation, Wind, HeartPulse, ClipboardCheck, ScrollText, FlaskConical, Microscope, Orbit, Stethoscope, Satellite, BookOpen,
-  Sun, Moon, Ellipsis, MessagesSquare, SunMedium, SlidersHorizontal, Play, Pause, TriangleAlert,
+  Ellipsis, Sparkles, SunMedium, SlidersHorizontal, Play, Pause, TriangleAlert, FileText, Database,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -12,6 +12,8 @@ import { LINK_LABEL, LINK_DELAY_MIN } from '../engine/world';
 import { dayOf, hhmm } from '../engine/time';
 import { useSim, BEATS, REPLAY_END, beatIndex } from '../ui/useSim';
 import { UiContext, useUi, type Tab, type Theme, type Ui } from './context';
+import { initials, loadProfile, saveProfile, type Profile } from './profile';
+import { ProfileSheet } from './ProfileSheet';
 import { LEVEL_WORD, LevelIcon } from './parts';
 import { SourceSheet } from './SourceSheet';
 import { MissionPage } from './views/Mission';
@@ -28,6 +30,7 @@ const VIEWS: Record<Tab, ComponentType> = {
   body: view(() => import('./views/Body'), 'BodyView'),
   checkin: view(() => import('./views/CheckIn'), 'CheckInView'),
   log: view(() => import('./views/Log'), 'LogView'),
+  report: view(() => import('./views/Report'), 'ReportView'),
   ask: view(() => import('./views/Ask'), 'AskView'),
   cmo: view(() => import('./views/Team'), 'CmoView'),
   ground: view(() => import('./views/Team'), 'GroundView'),
@@ -39,25 +42,27 @@ const VIEWS: Record<Tab, ComponentType> = {
 
 const THEME_KEY = 'storm-shelter.theme.v3';
 
+/** `short` marks the 4 views in the phone tab bar, with the short label. */
 interface NavItem { id: Tab; label: string; icon: typeof Radiation; short?: string }
-interface Section { id: 'sim' | 'real'; label: string; about: string; groups: { label: string; items: NavItem[] }[] }
+interface Section { id: 'sim' | 'real'; label: string; icon: typeof Radiation; about: string; groups: { label: string; items: NavItem[] }[] }
 
 /** The app has 2 sections: the simulation (a replay with simulated crew data) and the real-world data behind it. */
 const SECTIONS: Section[] = [
   {
-    id: 'sim', label: 'Simulation', about: 'A replay of a real storm, with simulated crew data.',
+    id: 'sim', label: 'Simulation', icon: Orbit, about: 'Real March 2012 storm data. The crew, sensors, and vitals are simulated.',
     groups: [
       { label: 'Storm replay', items: [
         { id: 'mission', label: 'Mission replay', icon: Orbit, short: 'Replay' },
         { id: 'radiation', label: 'Cabin radiation', icon: Radiation, short: 'Cabin' },
-        { id: 'weather', label: 'Space weather', icon: SunMedium, short: 'Space' },
-        { id: 'air', label: 'Cabin air', icon: Wind, short: 'Air' },
+        { id: 'weather', label: 'Space weather', icon: SunMedium },
+        { id: 'air', label: 'Cabin air', icon: Wind },
       ] },
       { label: 'Crew', items: [
+        { id: 'ask', label: 'Ask AI', icon: Sparkles, short: 'Ask AI' },
+        { id: 'checkin', label: 'Health check', icon: ClipboardCheck, short: 'Check-in' },
         { id: 'body', label: 'Body', icon: HeartPulse },
-        { id: 'checkin', label: 'Health check', icon: ClipboardCheck },
         { id: 'log', label: 'Log', icon: ScrollText },
-        { id: 'ask', label: 'Ask', icon: MessagesSquare },
+        { id: 'report', label: 'Daily report', icon: FileText },
       ] },
       { label: 'Mission team', items: [
         { id: 'cmo', label: 'CMO', icon: Stethoscope },
@@ -67,7 +72,7 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    id: 'real', label: 'Real-world data', about: 'Measured events, the research study, NASA limits, and the sources.',
+    id: 'real', label: 'Real-world data', icon: Database, about: 'Measured spacecraft data and published NASA limits. Nothing here is simulated.',
     groups: [{ label: 'Measured and published', items: [
       { id: 'evidence', label: 'Measured events', icon: FlaskConical, short: 'Events' },
       { id: 'research', label: 'Research', icon: Microscope, short: 'Research' },
@@ -92,6 +97,9 @@ export function App() {
   const [procOpen, setProcOpen] = useState(false);
   const [last, setLast] = useState<{ t: number; text: string } | null>(null);
   const [theme, setTheme] = useState<Theme>(readTheme);
+  const [profile, setProfileState] = useState<Profile>(loadProfile);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const setProfile = useCallback((p: Profile) => { setProfileState(p); saveProfile(p); }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -123,8 +131,9 @@ export function App() {
     openProcedure: () => { setTab('mission'); setProcOpen(true); },
     procOpen, setProcOpen,
     note: (text) => setLast({ t: sim.world.t, text }),
-    theme, setTheme,
-  }), [sim, tab, go, procOpen, theme]);
+    theme, setTheme, profile, setProfile,
+    openProfile: () => setProfileOpen(true),
+  }), [sim, tab, go, procOpen, theme, profile, setProfile]);
 
   const View = VIEWS[tab];
   return (
@@ -136,6 +145,7 @@ export function App() {
             <Sidebar />
             <div className="flex min-w-0 flex-1 flex-col">
               <TopBar last={last} />
+              <ModeBanner />
               <InhibitBanner />
               <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-5 pb-28 md:px-6 lg:px-8 lg:pb-10">
                 <Suspense fallback={<ViewSkeleton />}>
@@ -147,6 +157,7 @@ export function App() {
           </div>
           <MobileTabs />
           <SourceSheet k={source} onClose={() => setSource(null)} />
+          <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
         </UiContext.Provider>
       </TooltipProvider>
     </MotionConfig>
@@ -186,18 +197,39 @@ function useCounts() {
   return { warning: a.filter((x) => x.level === 'warning').length, caution: a.filter((x) => x.level === 'caution').length };
 }
 
-/** Simulation or Real-world data. A tap opens the first view of the section. */
-function SectionSwitch({ className }: { className?: string }) {
+/**
+ * Simulation or Real-world data: the first choice in the app, in the top bar on every screen.
+ * A tap opens the first view of that mode.
+ */
+function ModeSwitch() {
   const { tab, go } = useUi();
   const cur = sectionOf(tab).id;
   return (
-    <div role="tablist" aria-label="App section" className={cn('grid grid-cols-2 rounded-md bg-muted p-0.5', className)}>
-      {SECTIONS.map((s) => (
-        <button key={s.id} type="button" role="tab" aria-selected={cur === s.id} onClick={() => cur !== s.id && go(s.groups[0].items[0].id)}
-          className={cn('h-9 rounded px-1 text-xs font-semibold whitespace-nowrap', cur === s.id ? 'bg-card text-foreground ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>
-          {s.label}
-        </button>
-      ))}
+    <div role="tablist" aria-label="Data mode" className="grid h-10 grid-cols-2 rounded-full bg-muted p-1">
+      {SECTIONS.map((s) => {
+        const I = s.icon;
+        const on = cur === s.id;
+        return (
+          <button key={s.id} type="button" role="tab" aria-selected={on} onClick={() => !on && go(s.groups[0].items[0].id)}
+            className={cn('flex items-center justify-center gap-1.5 rounded-full px-3 text-[13px] font-semibold whitespace-nowrap transition-colors',
+              on ? (s.id === 'sim' ? 'bg-primary text-primary-foreground' : 'bg-nominal text-background') : 'text-muted-foreground hover:text-foreground')}>
+            <I className="size-4" aria-hidden="true" />
+            <span className="sm:hidden">{s.id === 'sim' ? 'Simulation' : 'Real data'}</span>
+            <span className="hidden sm:inline">{s.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** One line under the top bar: what the data in this mode is. It replaces a "Simulated" label on each panel. */
+function ModeBanner() {
+  const { tab } = useUi();
+  const s = sectionOf(tab);
+  return (
+    <div className={cn('border-b text-xs print:hidden', s.id === 'sim' ? 'bg-primary/8' : 'bg-nominal/10')}>
+      <p className="mx-auto max-w-[1400px] px-4 py-1.5 md:px-6 lg:px-8"><b>{s.label}.</b> {s.about} Not for clinical use.</p>
     </div>
   );
 }
@@ -234,26 +266,22 @@ function NavGroups({ section, onPick }: { section: Section; onPick?: () => void 
 
 function Sidebar() {
   const { tab } = useUi();
-  const section = sectionOf(tab);
   return (
-    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r bg-sidebar px-3 py-4 lg:flex">
-      <div className="px-2 pb-4"><Brand /></div>
-      <SectionSwitch />
-      <p className="px-1 pt-2 text-[11px] leading-snug text-muted-foreground">{section.about}</p>
-      <NavGroups section={section} />
-      <p className="mt-auto px-2 pt-4 text-[11px] leading-snug text-muted-foreground">Not for clinical use. Radiation event: measured MSL RAD data. Crew sensors and vitals: simulated.</p>
+    <aside className="sticky top-0 hidden print:hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r bg-sidebar px-3 py-4 lg:flex">
+      <div className="px-2 pb-2"><Brand /></div>
+      <NavGroups section={sectionOf(tab)} />
     </aside>
   );
 }
 
-function ThemeToggle() {
-  const { theme, setTheme } = useUi();
-  const next = theme === 'dark' ? 'light' : 'dark';
-  const Icon = next === 'light' ? Sun : Moon;
+/** The crew member's initials. A tap opens the profile and settings. */
+function ProfileButton() {
+  const { profile, openProfile } = useUi();
   return (
-    <Button variant="ghost" size="icon" className="size-10 shrink-0 rounded-md" aria-label={`Switch to ${next} mode`} title={`Switch to ${next} mode`} onClick={() => setTheme(next)}>
-      <Icon className="size-5" aria-hidden="true" />
-    </Button>
+    <button type="button" onClick={openProfile} aria-label="Profile and settings" title="Profile and settings"
+      className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-sm font-semibold text-primary ring-1 ring-primary/30 hover:bg-primary/25">
+      {initials(profile)}
+    </button>
   );
 }
 
@@ -267,7 +295,7 @@ function MiniReplay() {
       <Button size="icon" variant="outline" className="size-9 rounded-md" disabled={atEnd} aria-label={sim.playing ? 'Pause the replay' : 'Play the replay'} onClick={() => sim.setPlaying(!sim.playing)}>
         {sim.playing ? <Pause className="size-4" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />}
       </Button>
-      <button type="button" onClick={() => go('mission')} className="hidden text-left text-xs leading-tight text-muted-foreground hover:text-foreground xl:block">
+      <button type="button" onClick={() => go('mission')} className="hidden text-left text-xs leading-tight whitespace-nowrap text-muted-foreground hover:text-foreground 2xl:block">
         Step {cur + 1} of {BEATS.length}<br /><span className="font-medium text-foreground">{cur < 0 ? 'Ready' : BEATS[cur].label}</span>
       </button>
     </div>
@@ -280,36 +308,37 @@ function TopBar({ last }: { last: { t: number; text: string } | null }) {
   const c = useCounts();
   const inSim = sectionOf(tab).id === 'sim';
   const delay = LINK_DELAY_MIN[w.link];
-  const unack = w.activeAlerts.filter((a) => !a.acked && a.level !== 'advisory').length;
   const title = ITEMS.find((i) => i.id === tab)!.label;
   return (
-    <header className="sticky top-0 z-30 border-b bg-background">
+    <header className="sticky top-0 z-30 border-b print:hidden bg-background pt-[env(safe-area-inset-top)]">
       <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center gap-2 px-4 md:gap-3 md:px-6 lg:px-8">
         <div className="lg:hidden"><Brand /></div>
-        <div className="hidden min-w-0 lg:block">
+        <div className="hidden min-w-0 lg:block xl:w-56">
           <div className="truncate text-sm font-semibold">{title}</div>
-          <div className="truncate text-xs text-muted-foreground" aria-live="polite">
-            {last ? <>Last action <span className="num">{hhmm(last.t)}</span>: {last.text}</> : 'No crew action yet in this replay.'}
-          </div>
+          {inSim && <div className="truncate text-xs text-muted-foreground" aria-live="polite">{last ? <>Last action <span className="num">{hhmm(last.t)}</span>: {last.text}</> : 'No crew action yet.'}</div>}
         </div>
-        {inSim && tab !== 'mission' && <div className="ml-2"><MiniReplay /></div>}
-        <div className="ml-auto flex items-center gap-1.5" aria-label="Alert counts">
-          <CountPill level="warning" n={c.warning} />
-          <CountPill level="caution" n={c.caution} />
-          {unack > 0 && <span className="hidden h-7 items-center rounded-md bg-muted px-2.5 text-xs font-medium xl:inline-flex"><b className="num mr-1">{unack}</b> not acknowledged</span>}
-        </div>
-        <div className="hidden items-center gap-2 rounded-md bg-muted px-2.5 py-1 text-xs font-medium sm:flex" title="Link to Earth">
-          <span className={cn('size-2 rounded-full', delay === null ? 'bg-muted-foreground' : delay === 0 ? 'bg-nominal' : 'bg-advisory')} aria-hidden="true" />
-          {LINK_LABEL[w.link]}
-        </div>
-        <div className="num text-right text-sm leading-tight font-semibold whitespace-nowrap" aria-label="Mission time">Day {dayOf(w.t)}<br className="sm:hidden" /> <span className="sm:text-base">{hhmm(w.t)}</span></div>
-        <ThemeToggle />
+        <div className="hidden sm:block"><ModeSwitch /></div>
+        {inSim && tab !== 'mission' && <MiniReplay />}
+        {inSim && (
+          <>
+            <div className="ml-auto flex items-center gap-1.5" aria-label="Alert counts">
+              <CountPill level="warning" n={c.warning} />
+              <CountPill level="caution" n={c.caution} />
+            </div>
+            <div className="hidden items-center gap-2 rounded-md bg-muted px-2.5 py-1 text-xs font-medium whitespace-nowrap 2xl:flex" title="Link to Earth">
+              <span className={cn('size-2 rounded-full', delay === null ? 'bg-muted-foreground' : delay === 0 ? 'bg-nominal' : 'bg-advisory')} aria-hidden="true" />
+              {LINK_LABEL[w.link]}
+            </div>
+            <div className="num text-right text-sm leading-tight font-semibold whitespace-nowrap" aria-label="Mission time">Day {dayOf(w.t)}<br className="sm:hidden" /> <span className="sm:text-base">{hhmm(w.t)}</span></div>
+          </>
+        )}
+        <div className={cn(!inSim && 'ml-auto')}><ProfileButton /></div>
       </div>
+      <div className="px-4 pb-2 sm:hidden"><ModeSwitch /></div>
     </header>
   );
 }
 
-/** A rule that the crew turned off shows on every view (beta report S-2). */
 /**
  * A banner on every view while a rule is inhibited or an alert is suppressed.
  * A suppressed alert stays active: the banner keeps it in sight (beta report S-1).
@@ -321,7 +350,7 @@ function InhibitBanner() {
   const hidden = w.activeAlerts.filter((a) => a.suppressed);
   if (!off.length && !hidden.length) return null;
   return (
-    <div role="status" className="border-b border-caution/40 bg-caution/15">
+    <div role="status" className="border-b border-caution/40 print:hidden bg-caution/15">
       <div className="mx-auto max-w-[1400px] space-y-1.5 px-4 py-2 text-sm md:px-6 lg:px-8">
         {hidden.map((a) => (
           <div key={a.id} className="flex flex-wrap items-center gap-2">
@@ -361,36 +390,35 @@ function MobileTabs() {
   const section = sectionOf(tab);
   const main = section.groups.flatMap((g) => g.items).filter((i) => i.short).slice(0, 4);
   const inMore = !main.some((m) => m.id === tab);
-  const cell = 'relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium';
+  const cell = (on: boolean) => cn('flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium', on ? 'text-foreground' : 'text-muted-foreground');
+  // The active view gets a filled pill behind its icon, as in a native tab bar.
+  const pill = (on: boolean) => cn('relative grid h-7 w-14 place-items-center rounded-full transition-colors', on && 'bg-primary/20 text-primary');
   return (
     <>
-      <nav aria-label="Views" className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden">
-        <div className="mx-auto grid max-w-lg grid-cols-5">
+      <nav aria-label="Views" className="fixed print:hidden inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="mx-auto grid max-w-lg" style={{ gridTemplateColumns: `repeat(${main.length + 1}, minmax(0, 1fr))` }}>
           {main.map((n) => {
             const I = n.icon;
             const active = tab === n.id;
             return (
-              <button key={n.id} onClick={() => go(n.id)} aria-current={active ? 'page' : undefined} className={cn(cell, active ? 'text-primary' : 'text-muted-foreground')}>
-                <span className="relative">
+              <button key={n.id} onClick={() => go(n.id)} aria-current={active ? 'page' : undefined} className={cell(active)}>
+                <span className={pill(active)}>
                   <I className="size-5" aria-hidden="true" strokeWidth={active ? 2.4 : 2} />
-                  {n.id === 'mission' && (c.warning || c.caution) ? <span className={cn('absolute -top-0.5 -right-1 size-2 rounded-full', c.warning ? 'bg-warning' : 'bg-caution')} /> : null}
+                  {n.id === 'mission' && (c.warning || c.caution) ? <span className={cn('absolute top-0 right-3 size-2 rounded-full', c.warning ? 'bg-warning' : 'bg-caution')} /> : null}
                 </span>
                 {n.short}
               </button>
             );
           })}
-          <button onClick={() => setMore(true)} aria-current={inMore ? 'page' : undefined} className={cn(cell, 'col-start-5', inMore ? 'text-primary' : 'text-muted-foreground')}>
-            <Ellipsis className="size-5" aria-hidden="true" />More
+          <button onClick={() => setMore(true)} aria-current={inMore ? 'page' : undefined} className={cell(inMore)}>
+            <span className={pill(inMore)}><Ellipsis className="size-5" aria-hidden="true" /></span>More
           </button>
         </div>
       </nav>
       <Sheet open={more} onOpenChange={setMore}>
-        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-xl pb-8">
-          <SheetHeader><SheetTitle>All views</SheetTitle><SheetDescription>Pick a section, then a view.</SheetDescription></SheetHeader>
-          <div className="px-4">
-            <SectionSwitch />
-            <NavGroups section={section} onPick={() => setMore(false)} />
-          </div>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl pb-8">
+          <SheetHeader><SheetTitle>{section.label}</SheetTitle><SheetDescription>{section.about}</SheetDescription></SheetHeader>
+          <div className="px-4"><NavGroups section={section} onPick={() => setMore(false)} /></div>
         </SheetContent>
       </Sheet>
     </>

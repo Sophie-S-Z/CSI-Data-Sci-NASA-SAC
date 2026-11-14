@@ -4,6 +4,10 @@ import rules from '../../data/rules.json';
 import { AREAS, FACTORS, baselineOf, doseInArea, levelAt, type AreaId, type Factor, type Zone, type ZoneLevel } from '../../engine/limits';
 import { fmt, whole } from '../../engine/units';
 import { LevelBadge, PageHead, Panel, Prov, Seg, Src, ZoneBar } from '../parts';
+import { Mic } from '../Mic';
+
+/** The first number in a spoken phrase, for example "3.4" in "about 3.4 millimeters". */
+const spokenNumber = (t: string) => Number(t.replace(',', '.').match(/-?\d+(\.\d+)?/)?.[0] ?? NaN);
 
 type Values = Record<Factor['key'], number>;
 const START = Object.fromEntries(FACTORS.map((f) => [f.key, f.start])) as Values;
@@ -52,7 +56,7 @@ export function ExplorerView() {
   const a = AREAS.find((x) => x.id === area)!;
   return (
     <>
-      <PageHead title="Limits explorer" sub="Type a value for each factor, or pick an example. Then pick an area. The tool shows if each value is safe there, and which range is dangerous." actions={<Prov kind="standard">NASA-STD-3001 and app rules</Prov>} />
+      <PageHead title="Limits explorer" sub="Type or say a value, or pick an example. Then pick an area. You see if each value is safe there." actions={<Prov kind="standard">NASA-STD-3001 and app rules</Prov>} />
       <Panel>
         <div className="flex flex-wrap items-center gap-3 pt-4">
           <span className="text-sm font-medium">Area</span>
@@ -75,13 +79,14 @@ export function ExplorerView() {
           const id = `in-${f.key}`;
           return (
             <Panel key={f.key} title={<label htmlFor={id}>{f.title}</label>} aside={<LevelBadge level={level}>{WORD[level]}</LevelBadge>}>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <input id={id} type="number" inputMode="decimal" min={f.min} max={f.max} step={f.step} value={value}
                   onChange={(e) => { const x = e.target.valueAsNumber; if (Number.isFinite(x)) setV({ ...v, [f.key]: x }); }}
                   className="num h-11 w-32 rounded-md border bg-background px-3 text-lg font-semibold" />
                 <span className="text-sm text-muted-foreground">{f.unit}</span>
+                <Mic label={`Say a value for ${f.title}`} onText={(t) => { const x = spokenNumber(t); if (Number.isFinite(x)) setV((cur) => ({ ...cur, [f.key]: x })); }} />
                 <input type="range" aria-label={`${f.title} slider`} min={f.min} max={f.max} step={f.step} value={Math.min(f.max, Math.max(f.min, value))}
-                  onChange={(e) => setV({ ...v, [f.key]: e.target.valueAsNumber })} className="min-w-0 flex-1 accent-[var(--primary)]" />
+                  onChange={(e) => setV({ ...v, [f.key]: e.target.valueAsNumber })} className="w-full min-w-0 accent-[var(--primary)] sm:w-auto sm:flex-1" />
               </div>
               <ZoneBar f={f} zones={zones} v={value} className="mt-4" />
               <div className="num mt-1 flex justify-between text-[11px] text-muted-foreground"><span>{f.min}</span><span>{f.max}{f.log ? ' (log scale)' : ''}</span></div>

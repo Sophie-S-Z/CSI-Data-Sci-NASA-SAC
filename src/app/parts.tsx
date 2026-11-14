@@ -49,11 +49,10 @@ export function InfoBadge({ level, k, children }: { level: AnyLevel; k: string; 
 }
 
 /** Data label. Every number on screen says where it comes from. */
-export type Provenance = 'measured' | 'simulated' | 'standard' | 'team' | 'replay' | 'estimate';
+type Provenance = 'measured' | 'standard' | 'team' | 'replay' | 'estimate';
 const PROV: Record<Provenance, { label: string; cls: string }> = {
   measured: { label: 'Measured', cls: 'bg-nominal/10 text-nominal ring-nominal/25' },
   standard: { label: 'NASA standard', cls: 'bg-primary/10 text-primary ring-primary/25' },
-  simulated: { label: 'Simulated', cls: 'bg-muted text-muted-foreground ring-border' },
   team: { label: 'Team value', cls: 'bg-muted text-muted-foreground ring-border' },
   replay: { label: 'Replay', cls: 'bg-muted text-muted-foreground ring-border' },
   estimate: { label: 'Estimate', cls: 'bg-muted text-muted-foreground ring-border' },
