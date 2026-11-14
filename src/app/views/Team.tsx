@@ -24,9 +24,9 @@ export function CmoView() {
             <Kv rows={[
               ['Opened', stamp(ev.openedAt)],
               ['Status', ev.closedAt ? `Clear at ${stamp(ev.closedAt)}` : `Active, ${ev.level}`],
-              ['Event dose, Crew A', `${fmt(ev.eventDoseMSv, 1)} mSv`],
+              ['Event dose, Crew A', `${fmt(ev.eventDoseMSv)} mSv`],
               ['Time in shelter', ev.shelterMin ? duration(ev.shelterMin) : 'None'],
-              ['Dose saved (estimate)', `${fmt(ev.savedMSv, 1)} mSv`],
+              ['Dose saved (estimate)', `${fmt(ev.savedMSv)} mSv`],
               ['Data quality now', ev.quality],
             ]} />
             <ol className="mt-4 space-y-2 border-l-2 pl-4">

@@ -22,10 +22,10 @@ describe('body-system rules (3B)', () => {
   });
 
   it('B-RAD1: GI signs within 48 h after an event dose give Caution', () => {
-    const ev = { t: at(94, '06:40'), doseMSv: 3 };
+    const ev = { t: at(94, '06:40'), doseMSv: 600 };
     expect(ids(base({ checkins: [ci(95, { symptoms: ['Nausea'] })], lastEvent: ev }))).toContain('B-RAD1');
     expect(ids(base({ checkins: [ci(97, { symptoms: ['Nausea'] })], lastEvent: ev }))).not.toContain('B-RAD1');
-    expect(ids(base({ checkins: [ci(95, { symptoms: ['Nausea'] })], lastEvent: { ...ev, doseMSv: 0.2 } }))).not.toContain('B-RAD1');
+    expect(ids(base({ checkins: [ci(95, { symptoms: ['Nausea'] })], lastEvent: { ...ev, doseMSv: 22 } }))).not.toContain('B-RAD1');
     expect(evaluateBody(base({ checkins: [ci(95, { symptoms: ['Vomiting'] })], lastEvent: ev }))[0].level).toBe('caution');
   });
 
@@ -66,7 +66,7 @@ describe('body-system rules (3B)', () => {
   });
 
   it('sorts Caution before Advisory', () => {
-    const f = evaluateBody(base({ checkins: [ci(95, { symptoms: ['Nausea', 'Bruising'] })], lastEvent: { t: at(94, '14:00'), doseMSv: 4 } }));
+    const f = evaluateBody(base({ checkins: [ci(95, { symptoms: ['Nausea', 'Bruising'] })], lastEvent: { t: at(94, '14:00'), doseMSv: 600 } }));
     expect(f.map((x) => x.level)).toEqual(['caution', 'advisory']);
   });
 });

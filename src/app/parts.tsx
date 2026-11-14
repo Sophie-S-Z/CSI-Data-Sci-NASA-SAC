@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { OctagonAlert, TriangleAlert, CircleHelp, Info, CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Level } from '../engine/world';
+import { scalePos, type Factor, type Zone, type ZoneLevel } from '../engine/limits';
 import { useUi } from './context';
 
 export type AnyLevel = Level | 'clear' | 'nominal';
@@ -120,5 +121,35 @@ export function Kv({ rows, className }: { rows: [ReactNode, ReactNode][]; classN
         </div>
       ))}
     </dl>
+  );
+}
+
+/** Segmented choice. Each option is a radio button with a 32 px or larger target. */
+export function Seg<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
+  return (
+    <div role="radiogroup" aria-label={label} className="inline-flex flex-wrap rounded-md bg-muted p-0.5">
+      {options.map((o) => (
+        <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
+          className={cn('h-8 rounded px-2.5 text-xs font-medium whitespace-nowrap transition-colors', value === o.value ? 'bg-card text-foreground ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const ZONE_BG: Record<ZoneLevel, string> = { nominal: 'bg-nominal/40', advisory: 'bg-advisory/40', caution: 'bg-caution/70', warning: 'bg-warning/80' };
+
+/** The scale of one factor, with its safe and dangerous zones, and a marker at the value. */
+export function ZoneBar({ f, zones, v, className }: { f: Factor; zones: Zone[]; v: number; className?: string }) {
+  const pct = (x: number) => `${scalePos(f, x) * 100}%`;
+  return (
+    <div className={cn('relative h-2.5 rounded-full bg-muted', className)} aria-hidden="true">
+      {zones.map((z, i) => (
+        <div key={i} className={cn('absolute inset-y-0', ZONE_BG[z.level], i === 0 && 'rounded-l-full', i === zones.length - 1 && 'rounded-r-full')}
+          style={{ left: pct(z.from), width: `calc(${pct(z.to)} - ${pct(z.from)})` }} />
+      ))}
+      <div className="absolute top-1/2 h-5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-foreground ring-2 ring-card" style={{ left: pct(v) }} />
+    </div>
   );
 }

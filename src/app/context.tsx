@@ -1,7 +1,9 @@
 import { createContext, useContext } from 'react';
 import type { Sim } from '../ui/useSim';
 
-export type Tab = 'now' | 'cabin' | 'body' | 'checkin' | 'log' | 'ask' | 'evidence' | 'mission' | 'cmo' | 'ground' | 'sources';
+export type Tab =
+  | 'mission' | 'radiation' | 'weather' | 'air' | 'body' | 'checkin' | 'log' | 'ask' | 'cmo' | 'ground' | 'explorer'
+  | 'evidence' | 'sources';
 export type Theme = 'dark' | 'light';
 
 export interface Ui {

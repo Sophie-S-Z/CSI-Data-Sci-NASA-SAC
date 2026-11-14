@@ -4,7 +4,8 @@
   "rules": [
     { "id": "B-RAD1", "system": "radiation", "title": "Radiation sickness signs", "level": "caution",
       "text": "Nausea, vomiting, or diarrhea within 48 h after a dose event. Tell the CMO now.",
-      "params": { "windowH": 48, "minEventMSv": 0.5 }, "source": "iaeaArs" },
+      "params": { "windowH": 48, "minEventMSv": 500 }, "source": "iaeaArs",
+      "basis": "Team value, below the onset of acute radiation sickness (about 1,000 mSv whole body). Below it, nausea has a more likely cause, such as space motion sickness." },
     { "id": "B-V1", "system": "vision", "title": "Vision change", "level": "advisory",
       "text": "Blurred near vision or eye pressure. Do the near-vision check at the next exam.",
       "params": {}, "source": "lee2020sans" },

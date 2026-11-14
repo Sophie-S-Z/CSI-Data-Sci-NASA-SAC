@@ -60,7 +60,7 @@ export function CheckInView() {
     sim.act({ type: 'checkin', data: draft, visibility: vis });
     note(flags.some((f) => f.level === 'caution') ? 'Check-in saved. A finding needs the CMO now' : `Check-in saved. Shared with: ${VIS_LABEL[vis]}`);
     setSym([]); setText('');
-    go('now');
+    go('mission');
   }
 
   return (

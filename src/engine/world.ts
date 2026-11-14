@@ -135,7 +135,8 @@ export class World {
   log: LogEntry[] = [];
   inhibited = new Set<string>();
   procedure: ProcedureState | null = null;
-  link: LinkState = 'd14';
+  /** Delayed 5 min matches the one-way light time on the replay days (orbit.ts gives 4.9 min on day 94). */
+  link: LinkState = 'd5';
   actions: RecordedAction[] = [];
   consumed = new Set<string>();
   lastSummarySeq = 0;
@@ -144,6 +145,7 @@ export class World {
 
   // rule counters (minutes)
   private warnRun = 0;
+  private floorRun = 0;
   private cautRun = 0;
   private belowRun = 0;
   private singleRun = 0;
@@ -159,11 +161,11 @@ export class World {
     this.t = startT;
     this.now = now;
     this.missionDoseMSv = gcrDoseMSv(0, startT);
-    this.push({ kind: 'system', text: `Replay starts. ${phaseAt(startT).label}, ${stamp(startT)}. Link: delayed 14 min.`, visibility: 'ground' });
+    this.push({ kind: 'system', text: `Replay starts. ${phaseAt(startT).label}, ${stamp(startT)}. Link: ${LINK_LABEL[this.link].toLowerCase()}.`, visibility: 'ground' });
     if (this.projectedEndMSv() > TH.priorCareerMSv.value && this.projectedEndMSv() > rules.limits.career.mSv) {
       this.push({
         kind: 'advisory', level: 'advisory',
-        text: `Projected over NASA limit: waiver case. Mission-end career dose is about ${Math.round(this.projectedEndMSv())} mSv. The ${rules.limits.career.mSv} mSv limit is crossed on day ${this.crossingDay()}.`,
+        text: `Projected over NASA limit: waiver case. Mission-end career dose is about ${fmt(this.projectedEndMSv())} mSv. The ${rules.limits.career.mSv} mSv limit is crossed on day ${this.crossingDay()}.`,
         visibility: 'ground',
       });
     }
@@ -241,11 +243,13 @@ export class World {
 
     const x = (k: number) => k * B;
     const nW = cabin.filter((v) => v !== null && v >= x(TH.warningMultiple.x)).length;
+    const nF = cabin.filter((v) => v !== null && v >= x(TH.floorMultiple.x)).length;
     const nC = cabin.filter((v) => v !== null && v >= x(TH.cautionMultiple.x)).length;
     const belowCaution = cabin.every((v) => v === null || v < x(TH.cautionMultiple.x));
     const belowAdvisory = cabin.every((v) => v === null || v < x(TH.advisoryMultiple.x));
 
     this.warnRun = nW >= 2 ? this.warnRun + 1 : 0;
+    this.floorRun = nF >= 2 ? this.floorRun + 1 : 0;
     this.cautRun = nC >= 2 ? this.cautRun + 1 : 0;
     this.belowRun = belowCaution ? this.belowRun + 1 : 0;
     // R-V1: one sensor high, and its value is far from the others (quality "poor").
@@ -266,7 +270,9 @@ export class World {
     // A run counts the first minute too, so "for 5 min" needs a run of 6 samples.
     const warnBySensors = this.warnRun > TM.warningSustainMin;
     const warnByProj = proj >= TH.projection24hMSv.value;
-    const warnCond = on('R-W1') && (warnBySensors || warnByProj);
+    // The floor gives a Warning also when R-W1 is inhibited (beta report S-2).
+    const warnByFloor = this.floorRun > TM.floorSustainMin;
+    const warnCond = (on('R-W1') && (warnBySensors || warnByProj)) || warnByFloor;
     const cautBySensors = this.cautRun > TM.cautionSustainMin;
     const cautCond = on('R-C1') && (d.sep.length > 0 || d.fastPair.length > 0 || cautBySensors);
     const advCond = on('R-A1') && d.adv.length > 0 && belowAdvisory;
@@ -276,9 +282,11 @@ export class World {
     if (warnCond) {
       target = {
         level: 'warning', ruleId: 'R-W1',
-        reason: warnBySensors
+        reason: warnBySensors && on('R-W1')
           ? `≥${fmt(x(TH.warningMultiple.x))} mSv/h on ${nW} of ${SENSORS.length} sensors for ${TM.warningSustainMin} min`
-          : `Projected unsheltered dose ${fmt(proj, 0)} mSv in 24 h`,
+          : warnByProj && on('R-W1')
+            ? `Projected unsheltered dose ${fmt(proj)} mSv in 24 h`
+            : `≥${fmt(x(TH.floorMultiple.x))} mSv/h on ${nF} sensors for ${TM.floorSustainMin} min (floor, it cannot be inhibited)`,
       };
     } else if (open?.level === 'warning' && this.belowRun < TM.warningClearMin) {
       target = { level: 'warning', ruleId: 'R-W1', reason: `Warning holds until all sensors stay below ${TH.cautionMultiple.label} for ${TM.warningClearMin} min` };
@@ -313,7 +321,7 @@ export class World {
         // Estimate: what the same minute gives outside the shelter, minus what it gave inside.
         ev.savedMSv += (excess / SHELTER_FACTOR - excess) / 60;
       }
-      ev.measured = `${fmt(s.mean)} mSv/h cabin mean, ${fmt(s.mean / B, 0)} × B`;
+      ev.measured = `${fmt(s.mean)} mSv/h cabin mean, ${fmt(s.mean / B)} × B`;
       ev.quality = quality.includes('missing') ? 'missing' : quality.includes('poor') ? 'poor' : 'good';
     }
 
@@ -339,6 +347,14 @@ export class World {
       this.verifyFalseRun += 1;
       if (this.verifyFalseRun >= TM.verifyClearMin) this.close(vOpen);
     }
+  }
+
+  /** A deep copy. The demo uses it to jump back in time without a replay from day 88. */
+  clone(): World {
+    const { now, ...state } = this;
+    const c = Object.assign(Object.create(World.prototype) as World, structuredClone(state));
+    c.now = now;
+    return c;
   }
 
   advanceTo(t: number): void {
@@ -398,7 +414,7 @@ export class World {
     if (a.kind === 'radiation' && a.shelterMin > 0) {
       this.push({
         kind: 'advisory', level: 'advisory', alertId: a.id,
-        text: `Dose saved by the shelter (estimate): ${fmt(a.savedMSv, 1)} mSv. The event added ${fmt(a.eventDoseMSv, 1)} mSv to your dose.`,
+        text: `Dose saved by the shelter (estimate): ${fmt(a.savedMSv)} mSv. The event added ${fmt(a.eventDoseMSv)} mSv to your dose.`,
         visibility: 'ground',
       });
     }
@@ -413,10 +429,10 @@ export class World {
       kind: 'alert', level: a.level, ruleId: a.ruleId, alertId: a.id, text, visibility: 'ground',
       inputs: {
         'Cabin mean': `${fmt(s.mean)} mSv/h`,
-        'Baseline B': `${fmt(s.B, 3)} mSv/h`,
+        'Baseline B': `${fmt(s.B)} mSv/h`,
         'Sensors ≥ 10 × B': s.cabin.filter((v) => v !== null && v >= 10 * s.B).length,
         'Sensors ≥ 3 × B': s.cabin.filter((v) => v !== null && v >= 3 * s.B).length,
-        '24 h projection': `${fmt(this.projection24h(s), 1)} mSv`,
+        '24 h projection': `${fmt(this.projection24h(s))} mSv`,
         'Data quality': s.quality.join(' '),
       },
     });
@@ -453,7 +469,8 @@ export class World {
       case 'suppress':
       case 'unsuppress': {
         const a = this.alerts.find((x) => x.id === action.alertId);
-        if (a) { a.suppressed = action.type === 'suppress'; ui(`${a.id} ${action.type === 'suppress' ? 'suppressed. It stays in the log and the counts.' : 'shown again.'}`); }
+        // A Warning cannot be suppressed: the crew can acknowledge it, not hide it (beta report S-1).
+        if (a && !(action.type === 'suppress' && a.level === 'warning')) { a.suppressed = action.type === 'suppress'; ui(`${a.id} ${action.type === 'suppress' ? 'suppressed. It stays in the log and the counts.' : 'shown again.'}`); }
         break;
       }
       case 'inhibit':

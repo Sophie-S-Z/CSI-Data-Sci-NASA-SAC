@@ -1,4 +1,5 @@
 import cabinRules from '../data/cabin-rules.json';
+import { fmt } from './units';
 
 /**
  * Cabin air. The limits come from NASA-STD-3001 Vol 2 (OCHMO technical briefs
@@ -79,22 +80,22 @@ export function cabinFindings(r: CabinReading): CabinFinding[] {
   const f = (id: string, param: keyof CabinReading, level: 'advisory' | 'caution', title: string, text: string, source: string) =>
     out.push({ id, param, level, title, text, source });
   if (r.co2mmHg > L.co2HourMmHg.max) {
-    f('C-CO2-1', 'co2mmHg', 'caution', 'CO2 above the 1-hour limit', `ppCO2 ${r.co2mmHg.toFixed(1)} mmHg. The limit is ${L.co2HourMmHg.max} mmHg. Check the scrubber. Move air into the occupied volume. Log any headache.`, L.co2HourMmHg.source);
+    f('C-CO2-1', 'co2mmHg', 'caution', 'CO2 above the 1-hour limit', `ppCO2 ${fmt(r.co2mmHg)} mmHg. The limit is ${L.co2HourMmHg.max} mmHg. Check the scrubber. Move air into the occupied volume. Log any headache.`, L.co2HourMmHg.source);
   } else if (r.co2Day7 > L.co2WeekMmHg.max) {
-    f('C-CO2-2', 'co2Day7', 'advisory', 'CO2 weekly average high', `7-day average ${r.co2Day7.toFixed(2)} mmHg. Below ${L.co2WeekMmHg.max} mmHg keeps the headache risk under 1%.`, L.co2WeekMmHg.source);
+    f('C-CO2-2', 'co2Day7', 'advisory', 'CO2 weekly average high', `7-day average ${fmt(r.co2Day7)} mmHg. Below ${L.co2WeekMmHg.max} mmHg keeps the headache risk under 1%.`, L.co2WeekMmHg.source);
   }
   if (r.tempC < L.tempHealthC.min || r.tempC > L.tempHealthC.max) {
-    f('C-T-1', 'tempC', 'caution', 'Temperature outside the health limit', `${r.tempC.toFixed(1)} °C. Health limit ${L.tempHealthC.min} to ${L.tempHealthC.max} °C.`, L.tempHealthC.source);
+    f('C-T-1', 'tempC', 'caution', 'Temperature outside the health limit', `${fmt(r.tempC)} °C. Health limit ${L.tempHealthC.min} to ${L.tempHealthC.max} °C.`, L.tempHealthC.source);
   } else if (r.tempC < L.tempComfortC.min || r.tempC > L.tempComfortC.max) {
-    f('C-T-2', 'tempC', 'advisory', 'Temperature outside the comfort zone', `${r.tempC.toFixed(1)} °C. Comfort zone ${L.tempComfortC.min} to ${L.tempComfortC.max} °C.`, L.tempComfortC.source);
+    f('C-T-2', 'tempC', 'advisory', 'Temperature outside the comfort zone', `${fmt(r.tempC)} °C. Comfort zone ${L.tempComfortC.min} to ${L.tempComfortC.max} °C.`, L.tempComfortC.source);
   }
   if (r.rhPct < L.rhHealthPct.min || r.rhPct > L.rhHealthPct.max) {
-    f('C-RH-1', 'rhPct', 'caution', 'Humidity outside the health limit', `${r.rhPct.toFixed(0)}%. Health limit ${L.rhHealthPct.min} to ${L.rhHealthPct.max}%.`, L.rhHealthPct.source);
+    f('C-RH-1', 'rhPct', 'caution', 'Humidity outside the health limit', `${fmt(r.rhPct)}%. Health limit ${L.rhHealthPct.min} to ${L.rhHealthPct.max}%.`, L.rhHealthPct.source);
   } else if (r.rhPct < L.rhComfortPct.min || r.rhPct > L.rhComfortPct.max) {
-    f('C-RH-2', 'rhPct', 'advisory', 'Humidity outside the comfort zone', `${r.rhPct.toFixed(0)}%. Comfort zone ${L.rhComfortPct.min} to ${L.rhComfortPct.max}%.`, L.rhComfortPct.source);
+    f('C-RH-2', 'rhPct', 'advisory', 'Humidity outside the comfort zone', `${fmt(r.rhPct)}%. Comfort zone ${L.rhComfortPct.min} to ${L.rhComfortPct.max}%.`, L.rhComfortPct.source);
   }
   if (r.ppO2mmHg < L.ppO2TargetMmHg.min || r.ppO2mmHg > L.ppO2TargetMmHg.max) {
-    f('C-O2-1', 'ppO2mmHg', 'advisory', 'Oxygen outside the normoxia target', `ppO2 ${r.ppO2mmHg.toFixed(0)} mmHg. Target ${L.ppO2TargetMmHg.min} to ${L.ppO2TargetMmHg.max} mmHg.`, L.ppO2TargetMmHg.source);
+    f('C-O2-1', 'ppO2mmHg', 'advisory', 'Oxygen outside the normoxia target', `ppO2 ${fmt(r.ppO2mmHg)} mmHg. Target ${L.ppO2TargetMmHg.min} to ${L.ppO2TargetMmHg.max} mmHg.`, L.ppO2TargetMmHg.source);
   }
   return out;
 }

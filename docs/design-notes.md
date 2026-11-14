@@ -98,7 +98,7 @@ The second revamp keeps every rule above and changes the form.
 | Square buttons | Rounded buttons. The main action is a large white pill on the alert color | A clear target for a gloved hand. |
 | Monospace numbers everywhere | Sans numbers with tabular figures. Large hero number for the dose rate | Easier to read at a glance. |
 | Tab underline and a theme drop-down | A tab bar with a sliding thumb, and an icon switch for Day, Dim, and Night | Fewer steps. The choice is visible. |
-| Demo controls in a bar across the page | A floating dock at the bottom | The demo tools stay out of the crew view. |
+| Demo controls in a floating dock | A demo panel at the top of the landing page, and a small Play button in the top bar on other views | Beta testers missed the dock. It also covered SH-1 step 6. |
 | Timeline first on the Now view | The decision first, the timeline last | The first thing on screen answers "what do I do now?" |
 
 Inspiration came from the crew displays of current crewed vehicles (dark navy, few large touch targets), from health apps that show one large number with a calm label, and from tools with precise, quick motion. No layout, asset, or name comes from those products.

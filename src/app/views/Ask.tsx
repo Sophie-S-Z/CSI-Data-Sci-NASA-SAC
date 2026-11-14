@@ -32,7 +32,7 @@ export function AskView() {
       <PageHead title="Ask" sub="Answers from the rules, your log, and the source list on board. It works with no link to Earth. It reads the data. It cannot change an alert or a rule." />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-4">
-          <section className="rounded-3xl bg-card p-4 ring-hairline md:p-5">
+          <section className="rounded-lg bg-card p-4 ring-hairline md:p-5">
             <form onSubmit={onSubmit} className="flex gap-2">
               <label htmlFor="ask-q" className="sr-only">Your question</label>
               <input id="ask-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type a question" autoComplete="off" enterKeyHint="send"

@@ -66,6 +66,12 @@
    "label": "2 × B",
    "source": "phase4"
   },
+  "floorMultiple": {
+   "x": 10,
+   "label": "10 × B",
+   "basis": "Hard floor. 2 or more sensors at 10 × B for 5 min always give a Warning, also when the crew inhibits R-W1. It is the team's first Warning rule.",
+   "source": "team"
+  },
   "projection24hMSv": {
    "value": 50,
    "label": "50 mSv in 24 h, unsheltered",
@@ -114,6 +120,7 @@
  },
  "timing": {
   "warningSustainMin": 30,
+  "floorSustainMin": 5,
   "cautionSustainMin": 30,
   "verifyMismatchMin": 10,
   "missingDataMin": 5,

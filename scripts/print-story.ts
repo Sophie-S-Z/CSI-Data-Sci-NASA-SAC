@@ -18,4 +18,4 @@ if (!ev && w.inShelter) w.apply({ type: 'shelterExit' }, 0);
 w.advanceTo(at(95, '23:59'));
 for (const e of w.log) console.log(`${stamp(e.t)}  ${e.kind.padEnd(9)} ${e.level ?? ''} ${e.text}`);
 console.log('C/W by day', [...w.cautionWarningByDay()]);
-console.log('Mission dose', fmt(w.missionDoseMSv, 1), 'career', fmt(w.careerDoseMSv, 1), 'end', fmt(w.projectedEndMSv(), 0), 'cross day', w.crossingDay());
+console.log('Mission dose', fmt(w.missionDoseMSv), 'career', fmt(w.careerDoseMSv), 'end', fmt(w.projectedEndMSv()), 'cross day', w.crossingDay());

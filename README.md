@@ -18,7 +18,8 @@ npm run dev        # open the printed local URL
 npm test           # rules engine, forecast, and assistant tests
 npm run build      # static, offline-ready build in dist/
 npm run preview    # serve the build
-npm run check      # tests and build, the same steps as CI
+npm run lint       # ESLint
+npm run check      # lint, tests, and build, the same steps as CI
 ```
 
 ### Checks before a push
@@ -29,37 +30,56 @@ The GitHub Actions minutes for this month are used up, so CI runs on your machin
 git config core.hooksPath .githooks
 ```
 
-After that, each `git push` runs `npm run check` first and stops the push if a test or the build fails. `.github/workflows/ci.yml` runs the same steps when Actions minutes are available again.
+After that, each `git push` runs `npm run check` first and stops the push if the lint, a test, or the build fails. `.github/workflows/ci.yml` runs the same steps when Actions minutes are available again.
 
 The build is a static site. It works from any folder and from GitHub Pages. After the first load, it works with the network off (service worker cache).
 
 ## The 2-minute demo
 
-The demo dock at the bottom of the screen drives the replay. Each beat jumps to one moment of the real March 2012 event.
+The app opens on **Mission replay**. The top panel holds the demo: 3 short instructions, Play and speed, a time track, and 6 steps. Each step jumps to one moment of the real March 2012 event. Under the panel, the ship moves on its way to Mars, and the alert panel tells the crew what to do. On a phone, only the current step shows; the track gives the others.
 
-| Beat | Mission time | What you see |
+| Step | Mission time | What you see |
 | --- | --- | --- |
-| 1 X5.4 flare | Day 94 00:20 | The flare and CME records give a Caution (rule R-C1). |
-| 2 Sensor spike | Day 94 03:08 | One sensor jumps. The app gives Verify, not a Warning, because only 1 sensor agrees. |
-| 3 Dose rise | Day 94 06:30 | The RAD dose rate starts to rise. |
-| 4 Warning | Day 94 08:45 | At 2 × background on 2 or more sensors, rule R-W1 gives a Warning. Tap **Start procedure SH-1**. |
-| 5 Peak | Day 95 17:00 | The dose rate is about 35 × the baseline. The exposure panel shows the dose that the shelter avoids. |
-| 6 Warning clears | Day 97 13:30 | The Warning drops to Caution. The SEP record keeps the Caution active. |
+| 1 Solar flare | Day 94 00:25 | The X5.4 flare and the fast CME give a Caution (rule R-C1). The dose rate at the ship is still normal. |
+| 2 Sensor spike | Day 94 03:12 | One sensor jumps. The app gives Verify, not a Warning, because only 1 sensor agrees. |
+| 3 Dose rise | Day 94 06:30 | Protons reach the ship. The cabin dose rate passes 1.5 × the baseline. |
+| 4 Warning | Day 94 08:51 | At 2 × the baseline on 2 or more sensors for 30 min, rule R-W1 gives a Warning. Tap **Start procedure SH-1**. |
+| 5 Peak | Day 95 17:00 | The dose rate is about 35 × the baseline. **Cabin radiation** shows the dose that the shelter saves. |
+| 6 All clear | Day 97 13:30 | The Warning drops to Caution. You can leave the shelter. |
 
-Open **Real-data test** to show the rule results on all 6 events.
+`tests/demo.test.ts` checks that each step shows the level that it names. **Reset demo** clears the replay. A jump back in time copies the world at the demo start (`World.clone()`), so it does not replay 6 days of data.
+
+Open **Real-world data > Measured events** to show the rule results on all 6 events.
+
+## Layout
+
+The app has 2 sections. A switch at the top of the sidebar (or in **More** on a phone) changes the section.
+
+- **Simulation.** Mission replay (the landing page), Cabin radiation (inside the ship: sensors, dose chart, dose budget, crew timeline), Space weather (outside the ship: solar records, distance and angle to Earth), Cabin air, the crew views (Body, Health check, Log, Ask), the team views (CMO, Ground link), and the **Limits explorer**.
+- **Real-world data.** Measured events (the rule test on 6 RAD events) and Rules and sources.
+
+The **Limits explorer** is a what-if tool. Type a value for each factor (radiation dose rate, CO2, temperature, humidity, ppO2, pressure) and pick an area (ship cabin, storm shelter, Mars surface habitat). It shows the level of each value and the dangerous range in each area. The zones come from `src/engine/limits.ts`, which reads `rules.json` and `cabin-rules.json`. The Cabin air view uses the same zones.
+
+## Number style
+
+`src/engine/units.ts` is the only place that rounds a value. It follows the NASA technical publication style and the MSL RAD papers (for example 1.84 mSv/d and 0.481 mGy/d):
+
+- Measured and modeled values: 3 significant figures, a zero before the decimal point, and a comma between thousands (`fmt`).
+- Counts and percents of a whole: whole numbers (`whole`).
+- Limits and rule thresholds: the value as the standard or `rules.json` defines it (for example 600 mSv and 3 mmHg).
 
 ## What is in this build
 
 | PRD item | Where |
 | --- | --- |
 | FR-01 Dose-rate monitor, 4 alert rules | `src/engine/world.ts`, `src/data/rules.json` |
-| FR-02 Solar event watch (DONKI never sets Warning) | `src/engine/donki.ts`, Solar events panel, Radiation view |
+| FR-02 Solar event watch (DONKI never sets Warning) | `src/engine/donki.ts`, **Space weather** |
 | FR-03 Shelter procedure SH-1 | Opens in place in the alert panel. 1 tap from the Warning. |
 | FR-04 Dose budget and waiver state | Dose budget panel and career chart |
-| FR-05 Timeline band | Crew timeline (bottom of the Radiation view) |
+| FR-05 Timeline band | Crew timeline on **Cabin radiation** |
 | FR-06 Source panel | Tap any underlined value or a **Source** button |
-| FR-07 Delay switch | Link control in the replay deck and on **Ground** |
-| FR-08 Replay mode, labels | Replay deck. "Replay" and "Simulated" tags. |
+| FR-07 Delay switch | Link control in the demo panel and on **Ground** |
+| FR-08 Replay mode, labels | Demo panel on **Mission replay**. "Replay" and "Simulated" tags. |
 | FR-09 Alert counter | Alert bar, and the alarm-burden card on **Log** |
 | FR-10 Privacy control | Health check "Who can see this entry", and the selector on each log entry |
 | FR-11 Ground summary | **Ground**. Built when the link returns from a blackout. |
@@ -78,15 +98,13 @@ Open **Real-data test** to show the rule results on all 6 events.
 | NFR-07 Audit | Append-only, frozen log entries. Export as JSON on **Log**. |
 | NFR-08 Labels | "Replay", "Simulated dose", "Not for clinical use" in the status bar |
 
-### Interface (Phase 4, November 2026)
+### Interface
 
-React 19, Tailwind CSS 4, shadcn/ui (Radix), Motion, and Recharts. See `docs/design-notes.md`.
+React 19, Tailwind CSS 4, shadcn/ui (Radix), Motion, Recharts, and three.js. See `docs/design-notes.md`.
 
-- **Sidebar.** Crew views (Radiation, Cabin air, Body, Health check, Log, Ask) come first. Mission team views (Real-data test, Mission 3D, CMO, Ground link, Rules and sources) come after. On a phone, a bottom tab bar replaces the sidebar.
-- **Radiation view.** The decision panel fills with red or yellow during an alert. SH-1 opens in place. A log-scale chart shows the cabin dose rate with the Caution and Warning lines and the shelter time.
-- **Cabin air.** CO2, temperature, humidity, ppO2, and pressure against NASA-STD-3001 Vol 2 limits. The values are simulated. They rise during a shelter stay.
-- **Real-data test.** The rule results on 6 RAD events, an event replay for each rule, the cost of late entry, and the electron cue test.
-- **Themes.** Dark (default) and light. The sun/moon button in the top bar switches them, and the app keeps the choice.
+- **Colors.** Dark (default) is a flight-display palette for a dim cabin: a near-black neutral ground, soft white text, one cyan accent for controls. Red is only for Warning, amber only for Caution, slate blue only for shelter time. Light mode is on the sun/moon button.
+- **Alert panel.** It fills with red or yellow during an alert. SH-1 opens in place. A Warning cannot be suppressed. Rule inhibit is on **Rules and sources** only, a banner shows each inhibited rule on every view, and 2 sensors at 10 × B for 5 min always give a Warning.
+- **Speed.** Each view except the landing page loads on first use. The dose chart rebuilds each 10 to 30 replay minutes, not each tick, and the panels have no blur. With the CPU slowed 4 times, the replay runs at about 60 frames per second on Mission replay.
 - **Offline.** A service worker keeps the app after the first load.
 
 ## Onboard assistant (Phase 5)
@@ -111,7 +129,7 @@ The mission, sensors, schedule, sensor faults, and the SPE dose profile are in `
 ## Data files
 
 - `src/data/real/rad-replay.json`: RAD dose rate, 5 to 11 March 2012, 15-min bins. `research/realdata/export_app.py` writes it.
-- `src/data/real/rad-events.json` and `l1-summary.json`: the test results for the Real-data test view.
+- `src/data/real/rad-events.json` and `l1-summary.json`: the test results for the Measured events view.
 - `src/data/replay-donki.json`: the real flare, CME, and SEP records of March 2012, in the DONKI schema.
 - `src/data/cabin-rules.json`: cabin air limits from NASA-STD-3001 Vol 2.
 
