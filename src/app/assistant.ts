@@ -79,14 +79,14 @@ const TOPICS: Topic[] = [
       if (!a) {
         return {
           lines: [w.inShelter ? 'The Warning is clear. You can leave the shelter.' : 'Dose rate normal. No action.',
-            `The cabin mean is ${fmt(w.current.mean / w.B, 2)} × the baseline B. The rules check all ${SENSORS.length} sensors each minute.`],
+            `The cabin mean is ${fmt(w.current.mean / w.B)} × the baseline B. The rules check all ${SENSORS.length} sensors each minute.`],
           sources: ['B'],
         };
       }
       return {
         lines: [`${cap(a.level)} ${a.id}: ${actionSentence(a, w)}`, `Reason: ${dot(a.reason)}`, `Rule ${a.ruleId}: ${RULES[a.ruleId].action}`],
         sources: [a.ruleId],
-        go: { tab: 'now', label: 'Open the Radiation view' },
+        go: { tab: 'mission', label: 'Open the alert panel' },
       };
     },
   },
@@ -98,7 +98,7 @@ const TOPICS: Topic[] = [
       if (!a || a.level !== 'warning') {
         return { lines: ['No Warning is open.', a ? `${cap(a.level)} ${a.id}: ${actionSentence(a, w)}` : w.inShelter ? 'You can leave the shelter.' : 'You do not need the shelter now.'], sources: ['R-W1'] };
       }
-      const rule = `The Warning clears when all sensors stay below ${TH.cautionMultiple.label} (${fmt(TH.cautionMultiple.x * w.B, 3)} mSv/h) for ${TM.warningClearMin} min.`;
+      const rule = `The Warning clears when all sensors stay below ${TH.cautionMultiple.label} (${fmt(TH.cautionMultiple.x * w.B)} mSv/h) for ${TM.warningClearMin} min.`;
       const p = w.warningClearProgress()!;
       if (p.have > 0) {
         return { lines: [rule, `All sensors are below the line for ${duration(p.have)}. If they stay low, the Warning clears at ${hhmm(w.t + p.need - p.have)}.`], sources: ['R-W1'] };
@@ -129,7 +129,7 @@ const TOPICS: Topic[] = [
       const a = shown(w)[0];
       return {
         lines: [
-          `Your dose in the last 12 h: ${fmt(dose, 2)} mSv.${shelter ? ` Time in the shelter: ${duration(shelter)}.` : ''}`,
+          `Your dose in the last 12 h: ${fmt(dose)} mSv.${shelter ? ` Time in the shelter: ${duration(shelter)}.` : ''}`,
           ...(entries.length ? entries.slice(-BRIEF_ITEMS).map((e) => `${stamp(e.t)}: ${e.kind === 'alert' ? `${e.alertId} ${e.text}` : e.text}`) : ['No alerts or findings in the last 12 h.']),
           ...(entries.length > BRIEF_ITEMS ? [`${entries.length - BRIEF_ITEMS} earlier entries are on the Log.`] : []),
           ...(solar.length ? [[`Solar records: ${solar.length}.`,
@@ -150,11 +150,11 @@ const TOPICS: Topic[] = [
       const a = w.openAlert('radiation');
       if (!a) return { lines: ['Yes. No Warning or Caution is open.'], sources: ['R-W1'] };
       if (a.level !== 'warning') return { lines: [`${cap(a.level)} ${a.id}: ${actionSentence(a, w)}`, RULES[a.ruleId].action], sources: [a.ruleId] };
-      const lines = [`No. Stay in the shelter while the Warning is open (rule R-W1). The cabin rate is ${fmt(w.current.mean / w.B, 1)} × B now.`];
+      const lines = [`No. Stay in the shelter while the Warning is open (rule R-W1). The cabin rate is ${fmt(w.current.mean / w.B)} × B now.`];
       const f = warningForecast(w);
       if (f) {
         const out = (x: number) => x * w.B * mission.dosimeter.cabinFactor;
-        lines.push(`If you leave now, the rest of the event adds about ${fmt(out(f.excessLo), 1)} to ${fmt(out(f.excessHi), 1)} mSv. In the shelter, it adds about ${fmt(out(f.excessLo) * SHELTER_FACTOR, 1)} to ${fmt(out(f.excessHi) * SHELTER_FACTOR, 1)} mSv.`);
+        lines.push(`If you leave now, the rest of the event adds about ${fmt(out(f.excessLo))} to ${fmt(out(f.excessHi))} mSv. In the shelter, it adds about ${fmt(out(f.excessLo) * SHELTER_FACTOR)} to ${fmt(out(f.excessHi) * SHELTER_FACTOR)} mSv.`);
       }
       return { lines, sources: ['R-W1', 'shelterFactor'], estimate: !!f };
     },
@@ -167,13 +167,13 @@ const TOPICS: Topic[] = [
       const cross = w.crossingDay();
       return {
         lines: [
-          `Career dose: ${fmt(w.careerDoseMSv, 0)} mSv. The NASA career limit is ${rules.limits.career.mSv} mSv.`,
-          `This mission: ${fmt(w.missionDoseMSv, 0)} mSv.`,
-          ...(ev ? [`Event ${ev.id}: ${fmt(ev.eventDoseMSv, 1)} mSv${ev.closedAt === undefined ? ' so far' : ''}. The shelter saved about ${fmt(ev.savedMSv, 1)} mSv (estimate).`] : []),
-          `At mission end: about ${fmt(w.projectedEndMSv(), 0)} mSv.${cross ? ` You pass the limit on day ${cross}. This is a waiver case, planned before flight.` : ''}`,
+          `Career dose: ${fmt(w.careerDoseMSv)} mSv. The NASA career limit is ${rules.limits.career.mSv} mSv.`,
+          `This mission: ${fmt(w.missionDoseMSv)} mSv.`,
+          ...(ev ? [`Event ${ev.id}: ${fmt(ev.eventDoseMSv)} mSv${ev.closedAt === undefined ? ' so far' : ''}. The shelter saved about ${fmt(ev.savedMSv)} mSv (estimate).`] : []),
+          `At mission end: about ${fmt(w.projectedEndMSv())} mSv.${cross ? ` You pass the limit on day ${cross}. This is a waiver case, planned before flight.` : ''}`,
         ],
         sources: ['career', 'priorCareer', 'shelterFactor'],
-        go: { tab: 'now', label: 'Open the dose budget' },
+        go: { tab: 'radiation', label: 'Open the dose budget' },
       };
     },
   },
@@ -260,12 +260,12 @@ const TOPICS: Topic[] = [
       const f = cabinFindings(r);
       return {
         lines: [
-          `CO2 ${r.co2mmHg.toFixed(1)} mmHg (limit ${CABIN.limits.co2HourMmHg.max}). Temperature ${r.tempC.toFixed(1)} °C. Humidity ${r.rhPct.toFixed(0)}%. ppO2 ${r.ppO2mmHg.toFixed(0)} mmHg.`,
+          `CO2 ${fmt(r.co2mmHg)} mmHg (limit ${CABIN.limits.co2HourMmHg.max}). Temperature ${fmt(r.tempC)} °C. Humidity ${fmt(r.rhPct)}%. ppO2 ${fmt(r.ppO2mmHg)} mmHg.`,
           ...(f.length ? f.map((x) => `${cap(x.level)}: ${x.title}. ${x.text}`) : ['All values are inside the NASA-STD-3001 limits.']),
           'The cabin values are simulated.',
         ],
         sources: ['cabinCo2', 'cabinTemp'],
-        go: { tab: 'cabin', label: 'Open Cabin air' },
+        go: { tab: 'air', label: 'Open Cabin air' },
       };
     },
   },
@@ -365,7 +365,7 @@ const RULE_ID = /\b([RB]-[A-Z]+\d)\b/i;
 export function ask(question: string, w: World): Answer {
   const q = question.trim();
   if (CONTROL.test(q)) {
-    return { topic: 'control', kind: 'refusal', lines: ['I cannot change alerts or rules. I only read the data.', 'Use the alert controls on the Radiation view. Each control writes to the log.'], sources: [], go: { tab: 'now', label: 'Open the Radiation view' } };
+    return { topic: 'control', kind: 'refusal', lines: ['I cannot change alerts or rules. I only read the data.', 'Use the alert controls on the Mission replay view. Each control writes to the log.'], sources: [], go: { tab: 'mission', label: 'Open the alert panel' } };
   }
   if (MEDICAL.test(q)) {
     return { topic: 'medical', kind: 'refusal', lines: ['I do not diagnose or recommend treatment. Ask the CMO, who uses the medical kit procedures.', 'I can show your body findings and their sources.'], sources: [], go: { tab: 'body', label: 'Open Body' } };

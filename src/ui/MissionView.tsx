@@ -54,11 +54,11 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 50);
-    camera.position.set(0.15, 3.1, 2.4);
-    camera.lookAt(0.2, 0, 0);
+    camera.position.set(0, 2.6, 2.0);
+    camera.lookAt(0, 0, 0);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0.2, 0, 0);
+    controls.target.set(0, 0, 0);
     controls.enableZoom = false;
     controls.enablePan = false;
     controls.enableDamping = !reduce;
@@ -83,9 +83,10 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
       particles: new THREE.PointsMaterial({ size: 0.018, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true }),
     };
     function applyTheme() {
-      const text = cssColor('--foreground', '#e4eaf2');
-      const line = cssColor('--chart-3', '#34445a');
-      const muted = cssColor('--muted-foreground', '#a3b1c4');
+      // The scene is always space, so it keeps dark-sky colors in both themes.
+      const text = new THREE.Color(0xdde4ec);
+      const line = new THREE.Color(0x3c4655);
+      const muted = new THREE.Color(0x8794a6);
       mat.orbit.color = line;
       mat.pathDone.color = text;
       mat.pathNext.color = muted;
@@ -154,6 +155,11 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
       earth.position.copy(v3(e));
       mars.position.copy(v3(m));
       ship.position.copy(v3(v));
+      // Keep the ship in frame: the view centers between the Sun and the ship, so the ship moves across the screen.
+      const shift = v3(v).multiplyScalar(0.55).sub(controls.target);
+      controls.target.add(shift);
+      camera.position.add(shift);
+      controls.update();
       shipAngle = Math.atan2(v.y, v.x);
       shipR = Math.hypot(v.x, v.y);
       const nuNow = transferAnomaly(Math.min(d / TRANSIT_DAYS, 1));

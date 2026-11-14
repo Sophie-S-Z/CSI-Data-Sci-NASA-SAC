@@ -6,6 +6,7 @@ import l1raw from '../../data/real/l1-summary.json';
 
 const l1 = l1raw as { headline: string; tiles: { label: string; value: string; sub: string }[]; note: string };
 import { PageHead, Panel, Prov, Src } from '../parts';
+import { fmt, whole } from '../../engine/units';
 
 type PolicyId = keyof typeof ev.policies;
 const POLICY_ORDER: PolicyId[] = ['current', 'lowe', 'lowe2', 'layered2'];
@@ -51,7 +52,7 @@ export function EvidenceView() {
 
   return (
     <>
-      <PageHead title="Real-data test" sub={<>We tested 4 shelter rules on every solar particle event that NASA's Radiation Assessment Detector (RAD) measured in our data: the 2012 cruise to Mars and 2 years on the Mars surface. We tuned the rules on the 2012 cruise and 2017 surface data. Then we tested them once on the 2024 surface data.</>}
+      <PageHead title="Measured events" sub={<>We tested 4 shelter rules on every solar particle event that NASA's Radiation Assessment Detector (RAD) measured in our data: the 2012 cruise to Mars and 2 years on the Mars surface. We tuned the rules on the 2012 cruise and 2017 surface data. Then we tested them once on the 2024 surface data.</>}
         actions={<Prov kind="measured">MSL RAD, NASA PDS</Prov>} />
 
       <Panel title="Result on 6 real events" aside={<span className="num">{Math.round(totals[0].days)} days of RAD data scored</span>} bodyClass="px-0 pb-2">
@@ -66,8 +67,8 @@ export function EvidenceView() {
                   <td className="px-5 py-3"><div className="font-medium">{SHORT[r.p]}</div><div className="text-xs text-muted-foreground">{ev.policies[r.p]}</div></td>
                   <td className="py-3"><span className={cn('num text-lg font-semibold', r.caught === ev.events.length ? 'text-nominal' : 'text-warning')}>{r.caught} of {ev.events.length}</span></td>
                   <td className="num py-3 text-lg font-semibold">{r.false}</td>
-                  <td className="num py-3">{r.shelterH.toFixed(0)}</td>
-                  <td className="num py-3 pr-5">{r.avoided.toFixed(0)}%</td>
+                  <td className="num py-3">{fmt(r.shelterH)}</td>
+                  <td className="num py-3 pr-5">{whole(r.avoided)}%</td>
                 </tr>
               ))}
             </tbody>
@@ -83,7 +84,7 @@ export function EvidenceView() {
               <button key={x.id} role="radio" aria-checked={sel === x.id} onClick={() => setSel(x.id)}
                 className={cn('shrink-0 rounded-xl px-3 py-2 text-left ring-1 transition', sel === x.id ? 'bg-primary/8 ring-2 ring-primary' : 'ring-border hover:bg-muted/50')}>
                 <div className="text-xs font-semibold">{fmtUtc(x.onset_utc).split(',')[0]}</div>
-                <div className="num text-[11px] text-muted-foreground">{SET_LABEL[x.set].split(',')[0]} · peak {x.peak_ratio}×</div>
+                <div className="num text-[11px] text-muted-foreground">{SET_LABEL[x.set].split(',')[0]} · peak {fmt(x.peak_ratio)}×</div>
               </button>
             ))}
           </div>
@@ -102,7 +103,7 @@ export function EvidenceView() {
                 <YAxis scale="log" domain={[0.5, Math.max(20, e.peak_ratio * 1.3)]} ticks={[1, 2, 10, 30, 100].filter((x) => x <= Math.max(20, e.peak_ratio * 1.3))} allowDataOverflow tickFormatter={(v) => `${v}×`} tickLine={false} axisLine={false} width={44} />
                 <ReferenceLine y={2} stroke="var(--warning)" strokeWidth={1.5} />
                 <ReferenceLine y={10} stroke="var(--muted-foreground)" strokeDasharray="2 4" />
-                <RTooltip isAnimationActive={false} contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} labelFormatter={(t) => new Date(Number(t)).toUTCString().slice(5, 22) + ' UTC'} formatter={(v) => [`${Number(v).toFixed(2)} × background`, 'RAD E dose rate']} />
+                <RTooltip isAnimationActive={false} contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} labelFormatter={(t) => new Date(Number(t)).toUTCString().slice(5, 22) + ' UTC'} formatter={(v) => [`${fmt(Number(v))} × background`, 'RAD E dose rate']} />
                 <Area type="monotone" dataKey="r" stroke="var(--chart-1)" strokeWidth={2} fill="url(#evFill)" connectNulls isAnimationActive={false} dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
@@ -119,16 +120,16 @@ export function EvidenceView() {
               {[
                 ['Where', SET_LABEL[e.set]],
                 ['Onset', fmtUtc(e.onset_utc)],
-                ['Peak', `${e.peak_ratio}× (${e.peak_uGy_h} µGy/h)`],
-                ['Rise to peak', `${e.rise_h} h`],
-                ['Decay (e-fold)', e.decay_efold_h ? `${e.decay_efold_h} h` : 'n/a'],
-                ['Event dose (E)', `${(e.event_dose_uGy / 1000).toFixed(2)} mGy`],
+                ['Peak', `${fmt(e.peak_ratio)}× (${fmt(e.peak_uGy_h)} µGy/h)`],
+                ['Rise to peak', `${fmt(e.rise_h)} h`],
+                ['Decay (e-fold)', e.decay_efold_h ? `${fmt(e.decay_efold_h)} h` : 'n/a'],
+                ['Event dose (E)', `${fmt(e.event_dose_uGy / 1000)} mGy`],
                 ['Split', e.split === 'tune' ? 'Tune (cycle 24)' : 'Test (cycle 25)'],
               ].map(([k, v]) => <div key={k}><dt className="text-xs text-muted-foreground">{k}</dt><dd className="num font-medium">{v}</dd></div>)}
             </dl>
             <div className={cn('mt-4 rounded-xl p-3 text-sm', score.entered_before_peak ? 'bg-nominal/10' : 'bg-warning/10')}>
               <b>{SHORT[pol]}:</b> {score.entered_before_peak
-                ? <>sheltered {score.lead_vs_2xB_min !== null && score.lead_vs_2xB_min >= 0 ? `${score.lead_vs_2xB_min} min before` : `${Math.abs(score.lead_vs_2xB_min ?? 0)} min after`} the 2× crossing, before the peak. Avoided {score.dose_avoided_pct}% of the event dose.</>
+                ? <>sheltered {score.lead_vs_2xB_min !== null && score.lead_vs_2xB_min >= 0 ? `${score.lead_vs_2xB_min} min before` : `${Math.abs(score.lead_vs_2xB_min ?? 0)} min after`} the 2× crossing, before the peak. Avoided {whole(score.dose_avoided_pct ?? 0)}% of the event dose.</>
                 : <>no shelter entry before the peak. The crew got the full event dose.</>}
             </div>
           </Panel>

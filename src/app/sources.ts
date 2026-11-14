@@ -39,21 +39,22 @@ export function resolveSource(key: string): SourceView[] {
     case 'B':
     case 'cruise':
       return [{
-        title: 'Baseline rate B, Mars cruise', value: `${fmt(B, 4)} mSv/h (${rules.baselines.cruise.mSvPerDay} mSv/d)`,
+        title: 'Baseline rate B, Mars cruise', value: `${fmt(B)} mSv/h (${rules.baselines.cruise.mSvPerDay} mSv/d)`,
         basis: 'Galactic cosmic rays in the MSL cruise stage. The rules switch B with the mission phase.',
         sourceKey: 'zeitlin2013', evidence: rules.baselines.cruise.evidence, team: false,
       }, {
-        title: 'Baseline rate B, Mars surface', value: `${fmt(rules.baselines.surface.mSvPerHour, 4)} mSv/h (${rules.baselines.surface.mSvPerDay} mSv/d)`,
+        title: 'Baseline rate B, Mars surface', value: `${fmt(rules.baselines.surface.mSvPerHour)} mSv/h (${rules.baselines.surface.mSvPerDay} mSv/d)`,
         sourceKey: 'hassler2014', evidence: rules.baselines.surface.evidence, team: false,
       }];
     case 'warningMultiple':
+    case 'floorMultiple':
     case 'cautionMultiple':
     case 'verifyMultiple':
     case 'advisoryMultiple': {
       const th = TH[key];
       return [{
         title: `Threshold ${th.label}`, value: `${fmt(th.x * B)} mSv/h in cruise`,
-        basis: `${th.label} of the cruise baseline B (${fmt(B, 4)} mSv/h).`,
+        basis: `${th.label} of the cruise baseline B (${fmt(B)} mSv/h).`,
         sourceKey: 'team', evidence: sources.team.evidence, team: true,
       }, ...resolveSource('B').slice(0, 1)];
     }

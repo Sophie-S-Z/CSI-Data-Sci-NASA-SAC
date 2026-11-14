@@ -197,10 +197,33 @@ describe('sources', () => {
     const keys: string[] = [];
     const walk = (v: unknown): void => {
       if (Array.isArray(v)) v.forEach(walk);
-      else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) k === 'source' && typeof x === 'string' ? keys.push(x) : walk(x);
+      else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) {
+        if (k === 'source' && typeof x === 'string') keys.push(x);
+        else walk(x);
+      }
     };
     [rules, bodyRules, cabinRules].forEach(walk);
     expect(keys.length).toBeGreaterThan(20);
     for (const k of keys) expect(sources, k).toHaveProperty(k);
+  });
+});
+
+describe('safety controls (beta report S-1, S-2)', () => {
+  it('a Warning cannot be suppressed', () => {
+    const w = new World(undefined, () => 0);
+    w.advanceTo(at(95, '17:00'));
+    const a = w.activeAlerts[0];
+    expect(a.level).toBe('warning');
+    w.apply({ type: 'suppress', alertId: a.id }, 0);
+    expect(a.suppressed).toBe(false);
+  });
+
+  it('the 10 × B floor gives a Warning when R-W1 is inhibited', () => {
+    const w = new World(undefined, () => 0);
+    w.advanceTo(at(94, '00:00'));
+    w.apply({ type: 'inhibit', ruleId: 'R-W1' }, 0);
+    w.apply({ type: 'inhibit', ruleId: 'R-C1' }, 0);
+    w.advanceTo(at(95, '17:00'));
+    expect(w.activeAlerts[0]?.level).toBe('warning');
   });
 });

@@ -35,14 +35,14 @@ export function BodyView() {
   const dose = days.map((d) => w.history.filter((h) => dayOf(h.t) === d).reduce((a, h) => a + h.personal / 60, 0));
 
   const data: Record<string, { latest: string; trend?: number[]; min?: number; max?: number; limit?: number }> = {
-    rad: { latest: `${fmt(dose[7], 2)} mSv today`, trend: dose, min: 0 },
-    air: { latest: `${co2[7].toFixed(1)} mmHg CO2`, trend: co2, min: 0, max: 4, limit: 3 },
+    rad: { latest: `${fmt(dose[7])} mSv today`, trend: dose, min: 0 },
+    air: { latest: `${fmt(co2[7])} mmHg CO2`, trend: co2, min: 0, max: 4, limit: 3 },
     eyes: { latest: `${vision} logged` },
-    sleep: { latest: `${fmt(sleep[7], 1)} h`, trend: sleep, min: 3, max: 9 },
-    mood: { latest: `${fmt(mood[7], 1)} of 5`, trend: mood, min: 1, max: 5 },
+    sleep: { latest: `${fmt(sleep[7])} h`, trend: sleep, min: 3, max: 9 },
+    mood: { latest: `${fmt(mood[7])} of 5`, trend: mood, min: 1, max: 5 },
     heart: { latest: `${input.hr[7]} bpm`, trend: input.hr, min: 45, max: 80 },
     exercise: { latest: `${input.exercise[7]} min`, trend: input.exercise, min: 20, max: 110 },
-    bone: { latest: `${fmt(bone[7], 1)}%`, trend: bone, min: bone[0] - 0.4, max: bone[7] + 0.4 },
+    bone: { latest: `${fmt(bone[7])}%`, trend: bone, min: bone[0] - 0.4, max: bone[7] + 0.4 },
   };
 
   return (

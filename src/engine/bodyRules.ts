@@ -1,6 +1,7 @@
 import bodyRules from '../data/body-rules.json';
 import type { CheckIn } from './world';
 import { dayOf } from './time';
+import { fmt } from './units';
 
 /**
  * Body-system rules (scope change 3B). Pure functions over check-ins and
@@ -81,7 +82,7 @@ export function evaluateBody(input: BodyInput): BodyFinding[] {
     const p = BODY_RULE['B-RAD1'].params;
     if (hasAny(c, GI) && lastEvent && lastEvent.doseMSv > p.minEventMSv && last.t - lastEvent.t <= p.windowH * 60 && last.t >= lastEvent.t) {
       const h = Math.round((last.t - lastEvent.t) / 60);
-      out.push(finding('B-RAD1', `${c.symptoms.filter((s) => GI.includes(s)).join(', ')} ${h} h after an event dose of ${lastEvent.doseMSv.toFixed(1)} mSv.`));
+      out.push(finding('B-RAD1', `${c.symptoms.filter((s) => GI.includes(s)).join(', ')} ${h} h after an event dose of ${fmt(lastEvent.doseMSv)} mSv.`));
     }
 
     if (hasAny(c, VISION)) {
