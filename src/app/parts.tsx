@@ -37,6 +37,17 @@ export function LevelBadge({ level, children, className }: { level: AnyLevel; ch
   );
 }
 
+/** A level badge that opens its explanation in the source panel. */
+export function InfoBadge({ level, k, children }: { level: AnyLevel; k: string; children: ReactNode }) {
+  const { openSource } = useUi();
+  return (
+    <button type="button" onClick={() => openSource(k)} aria-label={`${typeof children === 'string' ? children : ''}: what does this mean?`}
+      className="rounded-full focus-visible:ring-2 focus-visible:ring-ring">
+      <LevelBadge level={level} className="cursor-pointer underline decoration-dotted underline-offset-2 hover:opacity-90">{children}<CircleHelp className="size-3.5" aria-hidden="true" /></LevelBadge>
+    </button>
+  );
+}
+
 /** Data label. Every number on screen says where it comes from. */
 export type Provenance = 'measured' | 'simulated' | 'standard' | 'team' | 'replay' | 'estimate';
 const PROV: Record<Provenance, { label: string; cls: string }> = {

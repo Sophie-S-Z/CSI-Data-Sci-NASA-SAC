@@ -1,11 +1,12 @@
-import { Bed, Brain, Eye, Wind, HeartPulse, Dumbbell, Bone, Radiation } from 'lucide-react';
+import { Bed, Brain, Eye, Wind, HeartPulse, Dumbbell, Bone, Radiation, Minus, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { dayOf } from '../../engine/time';
 import { fmt } from '../../engine/units';
-import { BODY_RULES, jitter, type BodySystem } from '../../engine/bodyRules';
+import { BODY_RULES, jitter, limitRange, paramsOf, type BodySystem } from '../../engine/bodyRules';
 import { cabinAt } from '../../engine/cabin';
 import { useUi } from '../context';
-import { LevelBadge, PageHead, Prov, Src, Spark, type Provenance } from '../parts';
+import { LevelBadge, PageHead, Panel, Prov, Src, Spark, type Provenance } from '../parts';
 import { sources } from '../sources';
 
 const ROWS: { id: string; title: string; icon: typeof Bed; systems: BodySystem[]; prov: Provenance; from: string; risk: string }[] = [
@@ -77,7 +78,46 @@ export function BodyView() {
           );
         })}
       </div>
+      <PersonalLimits />
       <p className="mt-4 text-xs text-muted-foreground">Days with no shared check-in show simulated sleep and mood values. Private check-ins are left out. Sources: {[...new Set(BODY_RULES.map((b) => b.source))].map((s) => (sources as Record<string, { short: string }>)[s]?.short ?? s).join('; ')}.</p>
     </>
+  );
+}
+
+const LIMITS = BODY_RULES.flatMap((r) => Object.keys(r.personal ?? {}).map((param) => ({ ruleId: r.id, param, range: limitRange(r.id, param)! })));
+
+/**
+ * Personal alert limits. Each crew member sets them on their own device.
+ * A limit can be stricter than the team value, never looser. Each change goes to the log for the CMO.
+ */
+function PersonalLimits() {
+  const { sim, note } = useUi();
+  const w = sim.world;
+  const set = (ruleId: string, param: string, value: number, label: string) => {
+    sim.act({ type: 'limit', ruleId, param, value });
+    note(`${label} limit set to ${value}`);
+  };
+  return (
+    <Panel title="Your alert limits (Crew A)" aside="Stricter than the team value only" className="mt-4">
+      <p className="text-sm text-muted-foreground">Set a limit for your own body. For example, a crew member with a low normal heart rate can get an alert earlier. You cannot set a limit looser than the team value. The CMO sees each change in the log.</p>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        {LIMITS.map(({ ruleId, param, range: r }) => {
+          const v = paramsOf(ruleId, w.personal)[param];
+          const dir = r.strict > r.team ? 1 : -1;
+          const step = (k: number) => Math.round((v + k * dir * r.step) * 100) / 100;
+          return (
+            <li key={`${ruleId}.${param}`} className="rounded-md border p-3">
+              <div className="flex items-center gap-2 text-sm"><span className="font-medium">{r.label}</span><Src k={ruleId} className="ml-auto font-mono text-xs">{ruleId}</Src></div>
+              <div className="mt-2 flex items-center gap-2">
+                <Button size="icon" variant="outline" className="size-9 rounded-md" aria-label={`${r.label}: less strict`} disabled={v === r.team} onClick={() => set(ruleId, param, step(-1), r.label)}><Minus className="size-4" aria-hidden="true" /></Button>
+                <span className="num min-w-20 flex-1 text-center text-lg font-semibold">{v} <span className="text-xs font-normal text-muted-foreground">{r.unit}</span></span>
+                <Button size="icon" variant="outline" className="size-9 rounded-md" aria-label={`${r.label}: more strict`} disabled={v === r.strict} onClick={() => set(ruleId, param, step(1), r.label)}><Plus className="size-4" aria-hidden="true" /></Button>
+              </div>
+              <div className="num mt-1.5 text-[11px] text-muted-foreground">{v === r.team ? 'Team value' : `Team value ${r.team} ${r.unit}`}</div>
+            </li>
+          );
+        })}
+      </ul>
+    </Panel>
   );
 }

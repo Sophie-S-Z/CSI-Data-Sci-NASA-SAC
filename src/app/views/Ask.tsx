@@ -29,7 +29,7 @@ export function AskView() {
 
   return (
     <>
-      <PageHead title="Ask" sub="Answers from the rules, your log, and the source list on board. It works with no link to Earth. It reads the data. It cannot change an alert or a rule." />
+      <PageHead title="Ask" sub="The onboard assistant answers questions from the alert rules, the crew log, and the cited sources. It operates without a link to Earth. It has read-only access, so it cannot change an alert, a rule, or a limit." />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-4">
           <section className="rounded-lg bg-card p-4 ring-hairline md:p-5">

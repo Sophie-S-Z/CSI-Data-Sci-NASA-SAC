@@ -109,7 +109,7 @@ const TOPICS: Topic[] = [
       return {
         lines: [rule,
           `Estimate: the Warning clears between ${stamp(f.earliest)} and ${stamp(f.latest)}. This comes from ${f.analogs.length} other measured RAD events, from the time when they fell to the same dose rate.`,
-          `In a test on the 6 measured events, the real clear time was in the range at ${Math.round((t.hits / t.checks) * 100)}% of checks. Most misses cleared later than the range. A new solar event can also raise the rate again.`],
+          `Test on the 6 measured events (leave one out): the real clear time was in the range at ${Math.round((t.hits / t.checks) * 100)}% of ${t.checks} checks. ${t.late} misses cleared later than the range and ${t.early} earlier. A new solar event can also raise the rate again.`],
         sources: ['R-W1', 'speModel'], estimate: true,
       };
     },

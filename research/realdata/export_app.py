@@ -25,10 +25,17 @@ import realbench as rb  # noqa: E402
 
 APP = HERE.parents[1] / "src" / "data" / "real"
 POLICY_LABEL = {
-    "current": "Old rule: 10 x B, fixed baseline",
-    "lowe": "Löwe 2025: 1.25 x fitted background",
+    "current": "Old rule: 10 × B, fixed baseline",
+    "lowe": "Löwe 2025: 1.25 × fitted background",
     "lowe2": "Löwe 2025, 2 detectors agree",
-    "layered2": "Storm Shelter v2: 2 x background, 2 detectors agree",
+    "layered2": "Storm Shelter v2: 2 × background, 2 detectors agree",
+}
+# Entry and clear limits of each policy, as realbench.policies() runs them.
+POLICY_LIMITS = {
+    "current": {"enter": "Both detectors > 10 × fixed B for 15 min", "clear": "Both < 3 × B for 2 h"},
+    "lowe": {"enter": "E detector > 1.25 × background for 30 min", "clear": "E < 1.25 × background for 30 min"},
+    "lowe2": {"enter": "Both detectors > 1.25 × background for 30 min", "clear": "Both < 1.25 × background for 30 min"},
+    "layered2": {"enter": "Both detectors > 2 × background for 30 min", "clear": "Both < 1.5 × background for 60 min"},
 }
 
 
@@ -92,7 +99,7 @@ def main():
                 "ratio": [r3(x) for x in (ef / be)[lo:hi]],
                 "shelter": shelters, "scores": scores,
             })
-    out = {"policies": POLICY_LABEL, "bin_min": rb.BIN_MIN, "shelter_factor": rb.SHELTER_FACTOR,
+    out = {"policies": POLICY_LABEL, "limits": POLICY_LIMITS, "bin_min": rb.BIN_MIN, "shelter_factor": rb.SHELTER_FACTOR,
            "sets": {k: {kk: v[kk] for kk in ("split", "phase", "days_scored", "gcr_E_uGy_day_median")} |
                     {"policies": {p: {kk: vv for kk, vv in s.items() if kk != "events"} for p, s in v["policies"].items()}}
                     for k, v in report.items()},

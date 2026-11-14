@@ -7,7 +7,7 @@ import {
 import { cn } from '@/lib/utils';
 import rules from '../../data/rules.json';
 import mission from '../../data/mission.json';
-import type { World } from '../../engine/world';
+import { LEVEL_RANK, type Alert, type World } from '../../engine/world';
 import { SENSORS } from '../../engine/doseModel';
 import { at, dayOf, hhmm, stamp, duration, minuteOfDay, MIN_PER_DAY } from '../../engine/time';
 import { fmt } from '../../engine/units';
@@ -20,15 +20,15 @@ const TH = rules.thresholds;
 export function RadiationView() {
   return (
     <>
-      <PageHead title="Cabin radiation" sub="Inside the ship. The dose rate from 6 cabin sensors and your personal dosimeter, with the alert limits and your dose budget." />
+      <PageHead title="Cabin radiation" sub="Inside the ship: your radiation exposure, the dose rate from 6 cabin sensors and your personal dosimeter, and the alert limits." />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-4">
           <DoseChart />
           <Timeline />
         </div>
         <div className="min-w-0 space-y-4">
-          <RateTile />
           <Exposure />
+          <RateTile />
         </div>
       </div>
     </>
@@ -78,6 +78,35 @@ function RateTile() {
 
 // ---------------------------------------------------------------- exposure budget
 
+/**
+ * The dose of one radiation event, with the kind of each number beside it:
+ * the measured RAD rate, the simulated dose to the crew member, and the modeled shelter saving.
+ */
+export function EventDose({ a, w }: { a: Alert; w: World }) {
+  const peak = useMemo(() => w.history.reduce((m, h) => (h.t >= a.openedAt && h.t <= (a.closedAt ?? w.t) ? Math.max(m, h.mean) : m), 0),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+    [a.id, a.closedAt, Math.floor(w.t / 15)]);
+  const before = a.eventDoseMSv - a.shelterDoseMSv;
+  const rows: [string, React.ReactNode, React.ReactNode][] = [
+    ['Peak cabin mean dose rate (RAD event shape × B)', <Src k="speModel">{fmt(peak)} mSv/h</Src>, <Prov kind="measured">Measured RAD</Prov>],
+    ['Your dose before the shelter', `${fmt(before)} mSv`, <Prov kind="simulated">Simulated personal</Prov>],
+    ['Your dose in the shelter', a.shelterMin ? `${fmt(a.shelterDoseMSv)} mSv in ${duration(a.shelterMin)}` : 'Not in the shelter yet', <Prov kind="simulated">Simulated personal</Prov>],
+    ['Your event dose', `${fmt(a.eventDoseMSv)} mSv`, <Prov kind="simulated">Simulated personal</Prov>],
+    ['Dose the shelter saved', <Src k="shelterFactor">{fmt(a.savedMSv)} mSv</Src>, <Prov kind="estimate">Modeled saving</Prov>],
+  ];
+  return (
+    <dl className="divide-y divide-border text-sm">
+      {rows.map(([k, v, tag]) => (
+        <div key={k} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 py-2">
+          <dt className="text-muted-foreground">{k}</dt>
+          <dd className="num text-right font-semibold">{v}</dd>
+          <dd className="col-span-2 -mt-0.5">{tag}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 function Exposure() {
   const { sim } = useUi();
   const w = sim.world;
@@ -85,14 +114,14 @@ function Exposure() {
   const career = w.careerDoseMSv;
   const end = w.projectedEndMSv();
   const cross = w.crossingDay();
-  const ev = w.openAlert('radiation');
-  const lastSaved = [...w.alerts].reverse().find((a) => a.kind === 'radiation' && a.shelterMin > 0);
+  const ev = [...w.alerts].reverse().find((a) => a.kind === 'radiation' && LEVEL_RANK[a.peak] >= LEVEL_RANK.caution);
   const max = Math.max(1100, end * 1.05);
   const pct = (v: number) => `${(v / max) * 100}%`;
   return (
-    <Panel title="Exposure" aside={<Prov kind="estimate" />}>
+    <Panel title="Your exposure" aside={ev && <span className="num">{ev.id}{ev.closedAt === undefined ? ', active' : ', clear'}</span>}>
+      {ev ? <EventDose a={ev} w={w} /> : <p className="text-sm text-muted-foreground">No solar event yet. The event dose shows here when a Caution or a Warning opens.</p>}
+      <h3 className="mt-4 text-xs font-medium text-muted-foreground">Mission and career</h3>
       <Kv rows={[
-        ...(ev && ev.eventDoseMSv > 0.05 ? [[<>This event so far</>, <>{fmt(ev.eventDoseMSv)} mSv</>] as [React.ReactNode, React.ReactNode]] : []),
         ['Next 24 h, unsheltered', <Src k="projection24h">{fmt(w.projection24h())} mSv</Src>],
         ['Mission so far', `${fmt(w.missionDoseMSv)} mSv`],
         ['Career used', <>{fmt(career)} / <Src k="career">{limit}</Src> mSv</>],
@@ -110,8 +139,7 @@ function Exposure() {
           <span className="absolute -translate-x-1/2" style={{ left: pct(rules.limits.intlCareer.mSv) }}><Src k="intlCareer">{rules.limits.intlCareer.mSv}</Src></span>
         </div>
       </div>
-      {end > limit && <p className="mt-3 rounded-xl bg-muted/60 p-3 text-xs leading-relaxed"><b>Waiver case, not an alert.</b> The GCR projection passes {limit} mSv on day <span className="num">{cross}</span>. A Mars crew passes this limit by design.</p>}
-      {lastSaved && <p className="mt-2 rounded-xl bg-nominal/10 p-3 text-xs leading-relaxed text-foreground">The shelter saved about <b className="num">{fmt(lastSaved.savedMSv)} mSv</b> in {lastSaved.id} (<Src k="shelterFactor">estimate</Src>).</p>}
+      {end > limit && <p className="mt-3 rounded-md bg-muted/60 p-3 text-xs leading-relaxed"><b>Waiver case, not an alert.</b> The GCR projection passes {limit} mSv on day <span className="num">{cross}</span>. A Mars crew passes this limit by design.</p>}
     </Panel>
   );
 }
@@ -247,6 +275,8 @@ function Timeline() {
     off: 'bg-muted/60 text-muted-foreground', health: 'bg-nominal/15 text-foreground',
   };
   const now = minuteOfDay(w.t);
+  // A block that starts under a shelter block shows no label, so two labels never overlap.
+  const covered = (t: number) => [...shelters, ...(planned ? [planned] : [])].some((x) => x.s <= t && t < x.e);
   return (
     <Panel title="Crew timeline" aside={<span className="num">Day {String(day).padStart(3, '0')}</span>}>
       <div className="scrollbar-none overflow-x-auto">
@@ -271,7 +301,7 @@ function Timeline() {
                         </button>
                       );
                     }
-                    return <div key={i} className={cn('absolute inset-y-0 flex items-center overflow-hidden rounded-md px-2 text-xs whitespace-nowrap', KIND[b.kind] ?? KIND.ops)} style={{ left: pct(s), width: width(s, e) }} title={b.label}>{c.isUser ? b.label : ''}</div>;
+                    return <div key={i} className={cn('absolute inset-y-0 flex items-center overflow-hidden rounded-md px-2 text-xs whitespace-nowrap', KIND[b.kind] ?? KIND.ops)} style={{ left: pct(s), width: width(s, e) }} title={b.label}>{c.isUser && !covered(s) ? b.label : ''}</div>;
                   })}
                   {shelters.map((x, i) => <div key={`sh${i}`} className="absolute inset-y-0 flex items-center overflow-hidden rounded-md bg-shelter px-2 text-xs font-medium whitespace-nowrap text-shelter-foreground" style={{ left: pct(x.s), width: width(x.s, Math.max(x.e, x.s + 10)) }}>Shelter {duration(x.e - x.s)}</div>)}
                   {planned && <div className="absolute inset-y-0 flex items-center overflow-hidden rounded-md border-2 border-dashed border-shelter bg-card px-2 text-xs font-medium whitespace-nowrap text-shelter" style={{ left: pct(planned.s), width: width(planned.s, planned.e) }}>Shelter (plan)</div>}

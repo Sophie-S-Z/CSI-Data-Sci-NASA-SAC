@@ -3,7 +3,7 @@ import sources from '../data/sources.json';
 import mission from '../data/mission.json';
 import cabin from '../data/cabin-rules.json';
 import { fmt } from '../engine/units';
-import { BODY_RULE } from '../engine/bodyRules';
+import { BODY_RULE, ruleText } from '../engine/bodyRules';
 
 type SourceKey = keyof typeof sources;
 export interface SourceView {
@@ -85,6 +85,18 @@ export function resolveSource(key: string): SourceView[] {
       }];
     case 'priorCareer':
       return [{ title: TH.priorCareerMSv.label, value: `${TH.priorCareerMSv.value} mSv`, sourceKey: 'team', evidence: 'Team value for demo.', team: true }];
+    case 'protons':
+      return [{
+        title: 'Protons at the ship', value: 'Solar energetic protons raise the cabin dose rate to 2 × B or more',
+        basis: 'A large solar flare and a fast CME speed up protons near the Sun. The fastest protons reach a ship near the Earth-Mars path in under 1 h. The event can continue for 1 to 3 days. The ship walls stop part of the protons, but the rest give dose in the cabin. The app shows this label while a radiation Warning (rule R-W1) is open. Go to the shelter: it cuts the event dose.',
+        sourceKey: 'noaaScale', evidence: sources.noaaScale.evidence, team: false,
+      }, ...resolveSource('R-W1').slice(0, 1), ...resolveSource('speModel').slice(0, 1)];
+    case 'solarEvent':
+      return [{
+        title: 'Solar event', value: 'A solar record or a dose rise that can come before a proton event',
+        basis: 'The label shows while an SEP record from DONKI is open, or while a radiation Caution (rule R-C1) is open. The dose rate at the ship can still be normal. Safe your task and stage the shelter.',
+        sourceKey: 'donki', evidence: sources.donki.evidence, team: false,
+      }, ...resolveSource('R-C1').slice(0, 1)];
     case 'speModel':
       return [{
         title: mission.spe.label, value: 'Measured dose-rate ratio, applied to the cruise baseline B',
@@ -108,7 +120,7 @@ export function resolveSource(key: string): SourceView[] {
       const br = BODY_RULE[key];
       if (br) {
         return [{
-          title: `Rule ${br.id}: ${br.title}`, value: `${br.level === 'caution' ? 'Caution' : 'Advisory'}. ${br.text}`,
+          title: `Rule ${br.id}: ${br.title}`, value: `${br.level === 'caution' ? 'Caution' : 'Advisory'}. ${ruleText(br.id)}`,
           basis: 'Body rules give Advisory or Caution only. They do not count toward the radiation alarm limit.',
           sourceKey: s(br.source), evidence: `${sources[s(br.source)]?.evidence ?? ''} Thresholds are team values for the demo.`, team: true,
         }];

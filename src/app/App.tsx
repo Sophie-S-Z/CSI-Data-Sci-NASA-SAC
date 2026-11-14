@@ -12,7 +12,7 @@ import { LINK_LABEL, LINK_DELAY_MIN } from '../engine/world';
 import { dayOf, hhmm } from '../engine/time';
 import { useSim, BEATS, REPLAY_END, beatIndex } from '../ui/useSim';
 import { UiContext, useUi, type Tab, type Theme, type Ui } from './context';
-import { LevelIcon } from './parts';
+import { LEVEL_WORD, LevelIcon } from './parts';
 import { SourceSheet } from './SourceSheet';
 import { MissionPage } from './views/Mission';
 
@@ -60,7 +60,7 @@ const SECTIONS: Section[] = [
       ] },
       { label: 'Mission team', items: [
         { id: 'cmo', label: 'CMO', icon: Stethoscope },
-        { id: 'ground', label: 'Ground link', icon: Satellite },
+        { id: 'ground', label: 'Flight-surgeon handoff', icon: Satellite },
       ] },
       { label: 'What-if', items: [{ id: 'explorer', label: 'Limits explorer', icon: SlidersHorizontal, short: 'What-if' }] },
     ],
@@ -282,16 +282,33 @@ function TopBar({ last }: { last: { t: number; text: string } | null }) {
 }
 
 /** A rule that the crew turned off shows on every view (beta report S-2). */
+/**
+ * A banner on every view while a rule is inhibited or an alert is suppressed.
+ * A suppressed alert stays active: the banner keeps it in sight (beta report S-1).
+ */
 function InhibitBanner() {
-  const { sim, go } = useUi();
-  const off = [...sim.world.inhibited];
-  if (!off.length) return null;
+  const { sim, go, note } = useUi();
+  const w = sim.world;
+  const off = [...w.inhibited];
+  const hidden = w.activeAlerts.filter((a) => a.suppressed);
+  if (!off.length && !hidden.length) return null;
   return (
     <div role="status" className="border-b border-caution/40 bg-caution/15">
-      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-4 py-2 text-sm md:px-6 lg:px-8">
-        <TriangleAlert className="size-4 text-caution-ink" aria-hidden="true" />
-        <span className="flex-1"><b>Inhibited: {off.join(', ')}.</b> The 10 × B floor still gives a Warning.</span>
-        <Button size="sm" variant="outline" className="rounded-md" onClick={() => go('sources')}>Open the rules</Button>
+      <div className="mx-auto max-w-[1400px] space-y-1.5 px-4 py-2 text-sm md:px-6 lg:px-8">
+        {hidden.map((a) => (
+          <div key={a.id} className="flex flex-wrap items-center gap-2">
+            <LevelIcon level={a.level} className="size-4 text-caution-ink" />
+            <span className="flex-1"><b>{a.id} is suppressed, but it is still active.</b> {LEVEL_WORD[a.level]}: {a.reason.replace(/\.$/, '')}.</span>
+            <Button size="sm" variant="outline" className="rounded-md" onClick={() => { sim.act({ type: 'unsuppress', alertId: a.id }); note(`${a.id} shown again`); }}>Show again</Button>
+          </div>
+        ))}
+        {off.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <TriangleAlert className="size-4 text-caution-ink" aria-hidden="true" />
+            <span className="flex-1"><b>Inhibited: {off.join(', ')}.</b> The 10 × B floor still gives a Warning.</span>
+            <Button size="sm" variant="outline" className="rounded-md" onClick={() => go('sources')}>Open the rules</Button>
+          </div>
+        )}
       </div>
     </div>
   );
