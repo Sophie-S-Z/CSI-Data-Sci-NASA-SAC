@@ -1,10 +1,11 @@
 import rules from '../data/rules.json';
 import mission from '../data/mission.json';
+import frontier from '../data/real/frontier.json';
 import { RULES, LINK_LABEL, LINK_DELAY_MIN, PROCEDURE_SH1, VIS_LABEL, VISIBILITY_ORDER, actionSentence, type Alert, type World } from '../engine/world';
 import { SENSORS, SHELTER_FACTOR } from '../engine/doseModel';
 import { BODY_RULE } from '../engine/bodyRules';
 import { cabinAt, cabinFindings, CABIN } from '../engine/cabin';
-import { backtest, warningForecast } from '../engine/forecast';
+import { warningForecast } from '../engine/forecast';
 import { dayOf, stamp, hhmm, duration } from '../engine/time';
 import { flareRank } from '../engine/donki';
 import { fmt } from '../engine/units';
@@ -58,12 +59,8 @@ export const BRIEF_MIN = 12 * 60;
 /** The brief lists at most this many entries. The rest are on the Log. */
 const BRIEF_ITEMS = 6;
 
-let testCache: ReturnType<typeof backtest> | null = null;
-/** Leave-one-out result of the forecast on the 6 measured events. Computed once, on first use. */
-export function forecastTest() {
-  testCache ??= backtest();
-  return testCache;
-}
+/** Held-out test of the clear-time range: measured shelter stays of 2020 to 2026 (research/frontier/RESULTS.md). */
+export const CLEAR_TEST = frontier.outlook.shielded.scores['test, measured']['decay, RAD range'];
 
 function knowledge(key: string): Reply {
   const v = resolveSource(key)[0];
@@ -105,11 +102,11 @@ const TOPICS: Topic[] = [
       }
       const f = warningForecast(w);
       if (!f) return { lines: [rule, 'No estimate yet. The dose rate is still near its peak, and it can still rise.'], sources: ['R-W1'] };
-      const t = forecastTest();
+      const t = CLEAR_TEST;
       return {
         lines: [rule,
           `Estimate: the Warning clears between ${stamp(f.earliest)} and ${stamp(f.latest)}. The estimate fits the decay of the last 8 h of this event. The range comes from ${f.analogs.length} other measured RAD events.`,
-          `Test on the 6 measured events (leave one out): the real clear time was in the range at ${Math.round((t.hits / t.checks) * 100)}% of ${t.checks} checks. ${t.late} misses cleared later than the range and ${t.early} earlier. A new solar event can also raise the rate again.`],
+          `Test of this method on ${t.stays} new shelter stays (CRaTER and RAD, 2020 to 2026): the real clear time was in the range at ${fmt(t.coverage_pct)}% of ${t.checks} hourly checks. At ${fmt(t.too_early_pct)}% the Warning cleared later than the range, and at ${fmt(t.too_late_pct)}% earlier. A new solar event can also raise the rate again.`],
         sources: ['R-W1', 'speModel'], estimate: true,
       };
     },
