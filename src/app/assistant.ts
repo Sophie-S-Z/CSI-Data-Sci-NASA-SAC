@@ -4,7 +4,7 @@ import { RULES, LINK_LABEL, LINK_DELAY_MIN, PROCEDURE_SH1, VIS_LABEL, VISIBILITY
 import { SENSORS, SHELTER_FACTOR } from '../engine/doseModel';
 import { BODY_RULE } from '../engine/bodyRules';
 import { cabinAt, cabinFindings, CABIN } from '../engine/cabin';
-import { backtest, warningForecast, REPLAY_ANALOGS } from '../engine/forecast';
+import { backtest, warningForecast } from '../engine/forecast';
 import { dayOf, stamp, hhmm, duration } from '../engine/time';
 import { flareRank } from '../engine/donki';
 import { fmt } from '../engine/units';
@@ -108,8 +108,8 @@ const TOPICS: Topic[] = [
       const t = forecastTest();
       return {
         lines: [rule,
-          `Estimate: the Warning clears between ${stamp(f.earliest)} and ${stamp(f.latest)}. This comes from ${f.analogs.length} other measured RAD events, from the time when they fell to the same dose rate.`,
-          `In a test on the 6 measured events, the real clear time was in the range at ${Math.round((t.hits / t.checks) * 100)}% of checks. Most misses cleared later than the range. A new solar event can also raise the rate again.`],
+          `Estimate: the Warning clears between ${stamp(f.earliest)} and ${stamp(f.latest)}. The estimate fits the decay of the last 8 h of this event. The range comes from ${f.analogs.length} other measured RAD events.`,
+          `Test on the 6 measured events (leave one out): the real clear time was in the range at ${Math.round((t.hits / t.checks) * 100)}% of ${t.checks} checks. ${t.late} misses cleared later than the range and ${t.early} earlier. A new solar event can also raise the rate again.`],
         sources: ['R-W1', 'speModel'], estimate: true,
       };
     },
@@ -394,5 +394,4 @@ export function suggestions(w: World): string[] {
 export const ASSISTANT_INFO = {
   topics: TOPICS.length,
   examples: TOPICS.reduce((n, t) => n + t.examples.length, 0),
-  analogs: REPLAY_ANALOGS.length,
 };

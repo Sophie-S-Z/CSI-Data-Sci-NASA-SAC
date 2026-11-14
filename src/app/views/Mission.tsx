@@ -10,7 +10,7 @@ import { fmt } from '../../engine/units';
 import { lightMinutes, vehicleAt, TRANSIT_DAYS } from '../../engine/orbit';
 import { BEATS, DEMO_START, REPLAY_END, SPEEDS, beatIndex } from '../../ui/useSim';
 import { useUi } from '../context';
-import { LevelBadge, Panel, Prov, Seg } from '../parts';
+import { InfoBadge, LevelBadge, Panel, Prov, Seg } from '../parts';
 import { Decision } from './Decision';
 
 // three.js is large, so it loads after the first paint.
@@ -78,6 +78,7 @@ function DemoGuide() {
         <Button size="lg" className="h-12 min-w-32 rounded-md px-5 text-base" onClick={togglePlay} aria-pressed={sim.playing}>
           {sim.playing ? <Pause className="size-5" aria-hidden="true" /> : <Play className="size-5" aria-hidden="true" />}
           {sim.playing ? 'Pause' : atEnd ? 'Play again' : 'Play'}
+          <kbd className="ml-1 hidden rounded border border-current/30 px-1.5 font-sans text-[11px] font-medium opacity-70 sm:inline">Space</kbd>
         </Button>
         <div className="flex items-center gap-2 text-xs"><span className="text-muted-foreground">Speed</span>
           <Seg label="Replay speed" value={sim.speed.id} onChange={(id) => sim.setSpeed(SPEEDS.find((s) => s.id === id)!)} options={SPEEDS.map((s) => ({ value: s.id, label: s.label }))} />
@@ -148,7 +149,7 @@ function ShipPanel() {
   const storm = level === 'warning' ? 'hit' : sepActive || level === 'caution' ? 'watch' : 'none';
   const v = vehicleAt(day);
   return (
-    <Panel title="Your ship" aside={storm === 'hit' ? <LevelBadge level="warning">Protons at the ship</LevelBadge> : storm === 'watch' ? <LevelBadge level="caution">Solar event</LevelBadge> : <span>No solar event</span>} bodyClass="px-0 pb-0">
+    <Panel title="Your ship" aside={storm === 'hit' ? <InfoBadge level="warning" k="protons">Protons at the ship</InfoBadge> : storm === 'watch' ? <InfoBadge level="caution" k="solarEvent">Solar event</InfoBadge> : <span>No solar event</span>} bodyClass="px-0 pb-0">
       <div className="relative">
         <Suspense fallback={<div className="mv grid place-items-center text-sm text-muted-foreground">Loading the ship view.</div>}>
           <MissionView day={day} storm={storm} theme={theme} />

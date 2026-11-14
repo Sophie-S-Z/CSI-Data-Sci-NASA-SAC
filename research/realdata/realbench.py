@@ -15,7 +15,9 @@ Runs, for each data set:
   lowe2     D plus a 2-detector vote: both E and B must be > 1.25 x their
             own background. This is the real-data stand-in for the
             median-of-3 rule, because RAD has 2 dose detectors, not 3.
-  layered2  B (dose layer only): 2-detector vote, enter at 2 x background.
+  layered2  The app's R-W1: both detectors > 2 x background for 30 min.
+            Clear after 60 min with both below 1.5 x background. The app's
+            other R-W1 trigger (24 h projection) is not in this test.
 
 Idea C runs on the same events: the crew enters at a fixed offset from the
 time the E rate first passes 2 x background and leaves when the excess falls
@@ -144,15 +146,20 @@ def policies(e, b, phase):
     fb = FIXED_B[phase]
     be, bb = background_fit(e), background_fit(b)
     re_, rb = e / be, b / bb
-    both = np.fmin(re_, rb)  # the smaller of the two ratios: both detectors must agree
+    # Both detectors must agree. np.minimum gives NaN when one detector has no
+    # data, so one detector alone never counts toward an entry.
+    both = np.minimum(re_, rb)
+    hi = np.maximum(re_, rb)  # an exit needs both detectors low
     out = {}
     # current: 2 sensors >= 10 x B for 5 min (one 15 min bin), clear after 120 min below 3 x B
-    cur_in = np.fmin(e / fb, b / fb)
-    cur_out = np.fmax(e / fb, b / fb)
+    cur_in = np.minimum(e / fb, b / fb)
+    cur_out = np.maximum(e / fb, b / fb)
     out["current"] = state_machine(cur_in, 10.0, 1, cur_out, 3.0, 120 // BIN_MIN)
     out["lowe"] = state_machine(re_, 1.25, 2, re_, 1.25, 2)
-    out["lowe2"] = state_machine(both, 1.25, 2, np.fmax(re_, rb), 1.25, 2)
-    out["layered2"] = state_machine(both, 2.0, 2, np.fmax(re_, rb), 1.25, 4)
+    out["lowe2"] = state_machine(both, 1.25, 2, hi, 1.25, 2)
+    # The app's R-W1 (rules.json): enter at 2 x B on both detectors for 30 min,
+    # clear when both stay below 1.5 x B (cautionMultiple) for 60 min.
+    out["layered2"] = state_machine(both, 2.0, 2, hi, 1.5, 4)
     return out, be
 
 

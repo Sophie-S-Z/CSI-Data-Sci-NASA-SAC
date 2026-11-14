@@ -5,7 +5,7 @@ import { stamp, MIN_PER_DAY } from '../../engine/time';
 import { fmt, whole } from '../../engine/units';
 import { vehicleAt, earthAt, lightMinutes, dist, TRANSIT_DAYS } from '../../engine/orbit';
 import { useUi } from '../context';
-import { Kv, LevelBadge, PageHead, Panel, Prov } from '../parts';
+import { InfoBadge, Kv, LevelBadge, PageHead, Panel, Prov } from '../parts';
 
 /** External radiation: the Sun, the solar records, and where the ship is. */
 export function SpaceWeatherView() {
@@ -57,7 +57,7 @@ function Geometry() {
   const sep = Math.min(gap, 360 - gap);
   const warn = w.openAlert('radiation')?.level === 'warning';
   return (
-    <Panel title="Ship and Earth" aside={warn ? <LevelBadge level="warning">Protons at the ship</LevelBadge> : <Prov kind="estimate">Orbit model</Prov>}>
+    <Panel title="Ship and Earth" aside={warn ? <InfoBadge level="warning" k="protons">Protons at the ship</InfoBadge> : <Prov kind="estimate">Orbit model</Prov>}>
       <Kv rows={[
         ['Transit day', `${Math.floor(day)} of ${TRANSIT_DAYS}`],
         ['Distance from the Sun', `${fmt(Math.hypot(v.x, v.y))} AU`],

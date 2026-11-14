@@ -37,6 +37,17 @@ export function LevelBadge({ level, children, className }: { level: AnyLevel; ch
   );
 }
 
+/** A level badge that opens its explanation in the source panel. */
+export function InfoBadge({ level, k, children }: { level: AnyLevel; k: string; children: ReactNode }) {
+  const { openSource } = useUi();
+  return (
+    <button type="button" onClick={() => openSource(k)} aria-label={`${typeof children === 'string' ? children : ''}: what does this mean?`}
+      className="rounded-full focus-visible:ring-2 focus-visible:ring-ring">
+      <LevelBadge level={level} className="cursor-pointer underline decoration-dotted underline-offset-2 hover:opacity-90">{children}<CircleHelp className="size-3.5" aria-hidden="true" /></LevelBadge>
+    </button>
+  );
+}
+
 /** Data label. Every number on screen says where it comes from. */
 export type Provenance = 'measured' | 'simulated' | 'standard' | 'team' | 'replay' | 'estimate';
 const PROV: Record<Provenance, { label: string; cls: string }> = {
@@ -65,7 +76,7 @@ export function Src({ k, children, label, className }: { k: string; children: Re
 
 export function Panel({ title, aside, children, className, bodyClass, id }: { title?: ReactNode; aside?: ReactNode; children: ReactNode; className?: string; bodyClass?: string; id?: string }) {
   return (
-    <section aria-labelledby={id} className={cn('rounded-2xl bg-card text-card-foreground ring-hairline', className)}>
+    <section aria-labelledby={id} className={cn('rounded-xl bg-card text-card-foreground ring-hairline', className)}>
       {(title || aside) && (
         <header className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 px-5 pt-4 pb-2">
           {title && <h2 id={id} className="text-[15px] font-semibold tracking-tight">{title}</h2>}
@@ -81,8 +92,8 @@ export function PageHead({ title, sub, actions }: { title: string; sub?: ReactNo
   return (
     <div className="mb-5 flex flex-wrap items-end gap-3">
       <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-semibold tracking-tight md:text-[28px]">{title}</h1>
-        {sub && <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{sub}</p>}
+        <h1 className="text-2xl font-semibold tracking-tight text-balance md:text-[28px]">{title}</h1>
+        {sub && <p className="mt-1 max-w-3xl text-sm text-pretty text-muted-foreground">{sub}</p>}
       </div>
       {actions}
     </div>
@@ -130,7 +141,7 @@ export function Seg<T extends string>({ value, options, onChange, label }: { val
     <div role="radiogroup" aria-label={label} className="inline-flex flex-wrap rounded-md bg-muted p-0.5">
       {options.map((o) => (
         <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
-          className={cn('h-8 rounded px-2.5 text-xs font-medium whitespace-nowrap transition-colors', value === o.value ? 'bg-card text-foreground ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>
+          className={cn('h-10 rounded px-3 text-xs font-medium whitespace-nowrap transition-colors sm:h-8 sm:px-2.5', value === o.value ? 'bg-card text-foreground ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>
           {o.label}
         </button>
       ))}

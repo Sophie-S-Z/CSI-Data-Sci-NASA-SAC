@@ -30,10 +30,10 @@ const VIS_HELP: Record<Visibility, string> = {
 
 function Scale({ value, set, labels, label }: { value: number; set: (n: number) => void; labels: string[]; label: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="grid grid-cols-5 gap-1 rounded-xl bg-muted p-1">
+    <div role="radiogroup" aria-label={label} className="grid grid-cols-5 gap-1 rounded-md bg-muted p-1">
       {labels.map((l, i) => (
         <button key={l} role="radio" aria-checked={value === i + 1} onClick={() => set(i + 1)}
-          className={cn('h-11 rounded-lg text-sm font-medium transition', value === i + 1 ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>{l}</button>
+          className={cn('h-11 rounded-md text-sm font-medium transition', value === i + 1 ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>{l}</button>
       ))}
     </div>
   );
@@ -73,9 +73,9 @@ export function CheckInView() {
               <div>
                 <div className="mb-2 text-sm font-medium">Sleep last night</div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="size-11 rounded-xl" aria-label="Less sleep" onClick={() => setSleep(Math.max(0, +(sleep - 0.5).toFixed(1)))}><Minus className="size-4" /></Button>
+                  <Button variant="outline" size="icon" className="size-11 rounded-md" aria-label="Less sleep" onClick={() => setSleep(Math.max(0, +(sleep - 0.5).toFixed(1)))}><Minus className="size-4" /></Button>
                   <output className="num flex-1 text-center text-3xl font-semibold" aria-live="polite">{sleep.toFixed(1)}<span className="ml-1 text-sm font-normal text-muted-foreground">h</span></output>
-                  <Button variant="outline" size="icon" className="size-11 rounded-xl" aria-label="More sleep" onClick={() => setSleep(Math.min(12, +(sleep + 0.5).toFixed(1)))}><Plus className="size-4" /></Button>
+                  <Button variant="outline" size="icon" className="size-11 rounded-md" aria-label="More sleep" onClick={() => setSleep(Math.min(12, +(sleep + 0.5).toFixed(1)))}><Plus className="size-4" /></Button>
                 </div>
               </div>
               <div><div className="mb-2 text-sm font-medium">Sleep quality</div><Scale value={sleepQ} set={setSleepQ} labels={SCALE5.sleep} label="Sleep quality" /></div>
@@ -87,7 +87,7 @@ export function CheckInView() {
               <p className="text-xs text-muted-foreground">Mark only what is new or worse. No marks means no symptoms.</p>
               <div className="mt-3 grid gap-3 lg:grid-cols-3">
                 {GROUPS.map((g) => (
-                  <fieldset key={g.id} className="rounded-2xl bg-muted/40 p-3 ring-1 ring-border">
+                  <fieldset key={g.id} className="rounded-md bg-muted/40 p-3 ring-1 ring-border">
                     <legend className="sr-only">{g.title}</legend>
                     <div className="text-sm font-semibold">{g.title}</div>
                     <p className="mt-0.5 text-xs text-muted-foreground">{g.hint}</p>
@@ -114,7 +114,7 @@ export function CheckInView() {
               </div>
               <div>
                 <label htmlFor="note" className="mb-2 block text-sm font-medium">Note (optional)</label>
-                <Textarea id="note" value={text} onChange={(e) => setText(e.target.value)} placeholder="Anything the CMO should know" className="min-h-20 rounded-xl" />
+                <Textarea id="note" value={text} onChange={(e) => setText(e.target.value)} placeholder="Anything the CMO should know" className="min-h-20 rounded-md" />
                 {fromNote.length > 0 && (
                   <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label="Symptoms named in your note">
                     <span className="text-xs text-muted-foreground">Your note names:</span>
@@ -137,7 +137,7 @@ export function CheckInView() {
                   const I = VIS_ICON[v];
                   return (
                     <button key={v} role="radio" aria-checked={vis === v} onClick={() => setVis(v)}
-                      className={cn('flex flex-col items-start gap-1 rounded-xl p-3 text-left ring-1 transition', vis === v ? 'bg-primary/8 ring-2 ring-primary' : 'ring-border hover:bg-muted/50')}>
+                      className={cn('flex flex-col items-start gap-1 rounded-md p-3 text-left ring-1 transition', vis === v ? 'bg-primary/8 ring-2 ring-primary' : 'ring-border hover:bg-muted/50')}>
                       <span className="flex items-center gap-1.5 text-sm font-semibold"><I className="size-4" aria-hidden="true" />{VIS_LABEL[v]}</span>
                       <span className="text-xs text-muted-foreground">{VIS_HELP[v]}</span>
                     </button>
@@ -147,7 +147,7 @@ export function CheckInView() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 border-t pt-4">
-              <Button size="lg" className="h-12 rounded-xl px-6 text-base" onClick={save}><Check className="size-5" aria-hidden="true" />Save check-in</Button>
+              <Button size="lg" className="h-12 rounded-md px-6 text-base" onClick={save}><Check className="size-5" aria-hidden="true" />Save check-in</Button>
               <span className="text-sm text-muted-foreground">{sym.length === 0 ? 'No symptoms marked.' : `${sym.length} marked: ${sym.join(', ')}.`}</span>
             </div>
           </div>
@@ -157,7 +157,7 @@ export function CheckInView() {
             {flags.length === 0 ? <p className="text-sm text-muted-foreground">No findings. A marked symptom shows here with the next step and its source.</p> : (
               <ul className="space-y-2">
                 {flags.map((f) => (
-                  <li key={f.ruleId} className="rounded-xl bg-muted/50 p-3 text-sm">
+                  <li key={f.ruleId} className="rounded-md bg-muted/50 p-3 text-sm">
                     <LevelBadge level={f.level} /> <b className="ml-1">{f.title}.</b> {f.text}
                     <div className="mt-1 text-xs text-muted-foreground">Seen: {f.why} · Rule <Src k={f.ruleId}><span className="font-mono">{f.ruleId}</span></Src> · <Src k={f.source}>{(sources as Record<string, { short: string }>)[f.source]?.short ?? f.source}</Src></div>
                   </li>

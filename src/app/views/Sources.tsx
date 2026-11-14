@@ -3,17 +3,17 @@ import { Button } from '@/components/ui/button';
 import rules from '../../data/rules.json';
 import cabin from '../../data/cabin-rules.json';
 import { REPLAY_PROVENANCE } from '../../engine/donki';
-import { BODY_RULES } from '../../engine/bodyRules';
+import { BODY_RULES, ruleText } from '../../engine/bodyRules';
 import { useUi } from '../context';
 import { LevelBadge, PageHead, Panel, Src } from '../parts';
 import { sources } from '../sources';
 
 export function SourcesView() {
-  const { sim, openSource, note } = useUi();
+  const { sim, openSource, note, go } = useUi();
   const w = sim.world;
   return (
     <>
-      <PageHead title="Rules and sources" sub={rules.note} />
+      <PageHead title="Rules and sources" sub={rules.note} actions={<Button variant="outline" className="rounded-md" onClick={() => go('body')}>Set personal body limits</Button>} />
       <div className="space-y-4">
         <Panel title="Radiation rules" aside={<>Baseline B: <Src k="B">{rules.baselines.cruise.mSvPerHour} mSv/h in cruise</Src></>} bodyClass="px-0 pb-2">
           <div className="overflow-x-auto">
@@ -56,7 +56,7 @@ export function SourcesView() {
               {BODY_RULES.map((r) => (
                 <li key={r.id} className="flex gap-3 px-5 py-2.5">
                   <span className="w-14 shrink-0 font-mono text-xs">{r.id}</span>
-                  <span className="flex-1">{r.text}</span>
+                  <span className="flex-1">{ruleText(r.id, w.personal)}</span>
                   <LevelBadge level={r.level} />
                 </li>
               ))}

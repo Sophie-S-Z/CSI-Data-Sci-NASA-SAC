@@ -1,6 +1,6 @@
 {
  "version": "PRD Rev D (Phase 4 real-data test, November 2026)",
- "note": "Thresholds are team values for a Mars cruise. They are not NASA flight rules. Edit this file to change a rule. No code change is necessary.",
+ "note": "Alert thresholds for a crewed Mars transit. The team set each value from the cited sources and from a test on measured MSL RAD data. They are not NASA flight rules. The mission team controls the radiation rules in src/data/rules.json. Each crew member can set stricter personal body limits on the Body systems page.",
  "units": {
   "storedAs": "mGy (absorbed dose) from each sensor",
   "shownAs": "mSv (dose equivalent)",

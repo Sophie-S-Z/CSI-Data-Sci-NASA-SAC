@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ev from '../../data/real/rad-events.json';
 import rules from '../../data/rules.json';
 import { AREAS, FACTORS, baselineOf, doseInArea, levelAt, type AreaId, type Factor, type Zone, type ZoneLevel } from '../../engine/limits';
 import { fmt, whole } from '../../engine/units';
@@ -7,9 +8,16 @@ import { LevelBadge, PageHead, Panel, Prov, Seg, Src, ZoneBar } from '../parts';
 type Values = Record<Factor['key'], number>;
 const START = Object.fromEntries(FACTORS.map((f) => [f.key, f.start])) as Values;
 
-const PRESETS: { label: string; values: Partial<Values> }[] = [
+// Measured peaks: MSL RAD dose rate over its background (rad-events.json), on the baseline of the area.
+const peak = (id: string, area: AreaId) => {
+  const e = ev.events.find((x) => x.id === id)!;
+  return { label: `${new Date(e.onset_utc + 'Z').toLocaleString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' })} peak, measured`, area, values: { dose: Number(fmt(e.peak_ratio * baselineOf(area))) } };
+};
+
+const PRESETS: { label: string; area?: AreaId; values: Partial<Values> }[] = [
   { label: 'Normal day', values: START },
-  { label: 'March 2012 storm peak', values: { dose: 2.77 } },
+  peak('cruise_2012-1', 'cabin'),
+  peak('surface_2024-0', 'surface'),
   { label: 'Crowded shelter air', values: { co2mmHg: 3.4, tempC: 24.1, rhPct: 58 } },
   { label: 'Hot and dry cabin', values: { tempC: 28, rhPct: 22 } },
 ];
@@ -54,7 +62,7 @@ export function ExplorerView() {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">Examples</span>
           {PRESETS.map((p) => (
-            <button key={p.label} type="button" onClick={() => setV({ ...START, ...p.values })} className="h-9 rounded-md border px-3 text-sm hover:bg-accent">{p.label}</button>
+            <button key={p.label} type="button" onClick={() => { setV({ ...START, ...p.values }); if (p.area) setArea(p.area); }} className="h-9 rounded-md border px-3 text-sm hover:bg-accent">{p.label}</button>
           ))}
         </div>
       </Panel>

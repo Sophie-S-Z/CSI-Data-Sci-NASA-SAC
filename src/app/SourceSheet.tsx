@@ -24,7 +24,7 @@ export function SourceSheet({ k, onClose }: { k: string | null; onClose: () => v
             {views.map((v, i) => {
               const src = sources[v.sourceKey];
               return (
-                <section key={i} className="rounded-xl bg-muted/50 p-4 ring-1 ring-border">
+                <section key={i} className="rounded-md bg-muted/50 p-4 ring-1 ring-border">
                   <div className="flex items-start gap-2">
                     <h3 className="flex-1 text-sm font-semibold">{v.title}</h3>
                     {v.team ? <Prov kind="team" /> : <Prov kind={v.sourceKey === 'rad2012' || v.sourceKey === 'phase4' ? 'measured' : 'standard'}>{v.sourceKey === 'rad2012' || v.sourceKey === 'phase4' ? 'Measured data' : 'Published'}</Prov>}
@@ -32,7 +32,7 @@ export function SourceSheet({ k, onClose }: { k: string | null; onClose: () => v
                   {v.value && <p className="num mt-2 text-[15px] font-medium">{v.value}</p>}
                   {v.team && <p className="mt-2 text-xs text-muted-foreground">Team value for the demo. Not a NASA flight rule.</p>}
                   {v.basis && <p className="mt-2 text-sm leading-relaxed">{v.basis}</p>}
-                  {v.formula && <p className="mt-2 rounded-lg bg-card p-2 font-mono text-xs">{v.formula}</p>}
+                  {v.formula && <p className="mt-2 rounded-md bg-card p-2 font-mono text-xs">{v.formula}</p>}
                   <p className="mt-3 text-sm"><span className="font-medium">Citation.</span> {src?.citation}</p>
                   {src?.url && <a href={src.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">Open the source <ExternalLink className="size-3.5" aria-hidden="true" /></a>}
                   <p className="mt-2 text-xs text-muted-foreground"><span className="font-medium">Evidence.</span> {v.evidence}</p>

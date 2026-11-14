@@ -141,7 +141,7 @@
     "false_entries": 0,
     "false_per_100d": 0.0,
     "entries_per_100d": 2.56,
-    "shelter_h_per_100d": 171.9,
+    "shelter_h_per_100d": 133.1,
     "missed": 0,
     "events": [
      {
@@ -149,7 +149,7 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 74.6
+      "dose_avoided_pct": 71.5
      },
      {
       "onset": "2012-03-07T08:30:00",
@@ -163,7 +163,7 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 74.0
+      "dose_avoided_pct": 73.7
      }
     ]
    }
@@ -282,7 +282,7 @@
     "false_entries": 0,
     "false_per_100d": 0.0,
     "entries_per_100d": 0.85,
-    "shelter_h_per_100d": 27.8,
+    "shelter_h_per_100d": 21.6,
     "missed": 0,
     "events": [
      {
@@ -290,7 +290,7 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 69.0
+      "dose_avoided_pct": 66.9
      }
     ]
    }
@@ -419,7 +419,7 @@
     "false_entries": 0,
     "false_per_100d": 0.0,
     "entries_per_100d": 0.64,
-    "shelter_h_per_100d": 25.4,
+    "shelter_h_per_100d": 21.2,
     "missed": 0,
     "events": [
      {
@@ -427,14 +427,14 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": -15,
-      "dose_avoided_pct": 74.1
+      "dose_avoided_pct": 73.5
      },
      {
       "onset": "2024-07-23T02:30:00",
       "entered_before_peak": true,
       "lead_vs_2xB_min": -45,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 67.3
+      "dose_avoided_pct": 53.8
      }
     ]
    }

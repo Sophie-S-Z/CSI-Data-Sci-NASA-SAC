@@ -227,3 +227,40 @@ describe('safety controls (beta report S-1, S-2)', () => {
     expect(w.activeAlerts[0]?.level).toBe('warning');
   });
 });
+
+describe('flight-surgeon handoff across a blackout', () => {
+  it('keeps a summary built offline and delivers each entry one time', () => {
+    const w = new World(undefined, () => 0);
+    w.advanceTo(at(94, '08:00'));
+    w.apply({ type: 'link', link: 'blackout' }, 0);
+    w.apply({ type: 'checkin', data: { sleepH: 7, symptoms: [], note: 'shared before the queue' }, visibility: 'ground' }, 0);
+    const queued = (w.apply({ type: 'summary' }, 0), w.log.filter((e) => e.kind === 'summary').pop()!);
+    expect(queued.summary!.arriveT).toBeNull();
+    w.advanceTo(at(94, '09:00'));
+    w.apply({ type: 'checkin', data: { sleepH: 7, symptoms: [], note: 'shared after the queue' }, visibility: 'ground' }, 0);
+    w.apply({ type: 'link', link: 'd5' }, 0);
+    w.apply({ type: 'link', link: 'blackout' }, 0);
+    w.apply({ type: 'link', link: 'live' }, 0);
+    w.advanceTo(at(94, '10:00'));
+    const received = w.log.filter((e) => e.kind === 'summary' && e.summary!.arriveT !== null && e.summary!.arriveT <= w.t);
+    const lines = received.flatMap((e) => e.summary!.lines.map((l) => l.text));
+    for (const note of ['shared before the queue', 'shared after the queue']) {
+      expect(lines.filter((l) => l.includes(note))).toHaveLength(1);
+    }
+  });
+});
+
+describe('personal limits', () => {
+  it('make a body rule stricter and never looser', () => {
+    const w = new World(undefined, () => 0);
+    const sleep = (h: number) => ({ sleepH: h, symptoms: [], note: '' });
+    for (const d of [92, 93, 94]) { w.advanceTo(at(d, '07:00')); w.apply({ type: 'checkin', data: sleep(6.5), visibility: 'cmo' }, 0); }
+    expect(w.bodyFindings().map((f) => f.ruleId)).not.toContain('B-S1');
+    w.apply({ type: 'limit', ruleId: 'B-S1', param: 'underH', value: 7 }, 0);
+    expect(w.bodyFindings().find((f) => f.ruleId === 'B-S1')?.text).toMatch(/under 7 h/);
+    w.apply({ type: 'limit', ruleId: 'B-S1', param: 'underH', value: 3 }, 0);
+    expect(w.personal['B-S1'].underH).toBe(6);
+    w.apply({ type: 'limit', ruleId: 'B-RAD1', param: 'windowH', value: 1 }, 0);
+    expect(w.personal['B-RAD1']).toBeUndefined();
+  });
+});

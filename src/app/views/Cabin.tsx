@@ -50,7 +50,7 @@ export function CabinView() {
       <PageHead title="Cabin air" sub={<>The air the crew breathes. Limits come from NASA-STD-3001 Volume 2. The crew values are <b>simulated</b>, because no open database gives a live crew cabin stream.</>}
         actions={<Prov kind="standard">Limits: NASA-STD-3001 Vol 2</Prov>} />
       {shelterMin > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-shelter/40 bg-shelter/10 p-4 text-sm">
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-shelter/40 bg-shelter/10 p-4 text-sm">
           <LevelBadge level="advisory">Shelter effect</LevelBadge>
           <span className="flex-1">Four crew share the small shelter volume. The model raises CO2, temperature, and humidity as the stay gets longer. Run the shelter fan. Log any headache.</span>
         </div>
@@ -62,7 +62,7 @@ export function CabinView() {
           const st = levelAt(x.zones('cabin'), v);
           return (
             <button key={key} onClick={() => setSel(key)} aria-pressed={sel === key}
-              className={cn('rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring', sel === key && 'border-primary')}>
+              className={cn('rounded-xl border bg-card p-4 text-left transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring', sel === key && 'border-primary')}>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><I className="size-4" aria-hidden="true" /><span className="truncate">{x.title}</span></div>
               <div className={cn('num mt-2 text-3xl font-semibold tracking-tight', st === 'caution' && 'text-caution-ink')}>{fmt(v)}<span className="ml-1 text-sm font-normal text-muted-foreground">{x.unit}</span></div>
               <ZoneBar f={x} zones={x.zones('cabin')} v={v} className="mt-3" />

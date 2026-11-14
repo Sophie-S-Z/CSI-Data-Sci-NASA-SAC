@@ -7,7 +7,7 @@ import {
 import { REPLAY, flareRank, type DonkiRecord } from './donki';
 import { at, dayOf, stamp, duration } from './time';
 import { toMSv, fmt } from './units';
-import { evaluateBody, simVitals, type BodyFinding, type BodyInput } from './bodyRules';
+import { evaluateBody, simVitals, limitRange, BODY_RULE, type BodyFinding, type BodyInput } from './bodyRules';
 
 export type Level = 'advisory' | 'verify' | 'caution' | 'warning';
 export const LEVEL_RANK: Record<Level, number> = { advisory: 1, verify: 2, caution: 3, warning: 4 };
@@ -37,6 +37,8 @@ export interface Alert {
   levelWall: number;
   shelterWall?: number;
   eventDoseMSv: number;
+  /** Part of eventDoseMSv that the crew member got in the shelter. */
+  shelterDoseMSv: number;
   savedMSv: number;
   shelterMin: number;
 }
@@ -88,7 +90,8 @@ export type Action =
   | { type: 'checkin'; data: CheckIn; visibility: Visibility }
   | { type: 'visibility'; seq: number; visibility: Visibility }
   | { type: 'link'; link: LinkState }
-  | { type: 'summary' };
+  | { type: 'summary' }
+  | { type: 'limit'; ruleId: string; param: string; value: number };
 
 export interface RecordedAction { t: number; wall: number; action: Action }
 
@@ -139,7 +142,10 @@ export class World {
   link: LinkState = 'd5';
   actions: RecordedAction[] = [];
   consumed = new Set<string>();
+  /** Seq of the last summary sent on the link. A summary built offline waits on board. */
   lastSummarySeq = 0;
+  /** The crew member's own body-rule limits. They can only be stricter than the team values. */
+  personal: Record<string, Record<string, number>> = {};
   /** Real seconds from Warning to "Go to the shelter" confirmed (metric M-1). */
   m1Seconds: number[] = [];
 
@@ -318,6 +324,7 @@ export class World {
       ev.eventDoseMSv += excess / 60;
       if (this.inShelter) {
         ev.shelterMin += 1;
+        ev.shelterDoseMSv += excess / 60;
         // Estimate: what the same minute gives outside the shelter, minus what it gave inside.
         ev.savedMSv += (excess / SHELTER_FACTOR - excess) / 60;
       }
@@ -381,7 +388,7 @@ export class World {
       acked: false, suppressed: false,
       quality: s.quality.includes('missing') ? 'missing' : s.quality.includes('poor') ? 'poor' : 'good',
       measured: `${fmt(s.mean)} mSv/h cabin mean`,
-      donkiRefs: [], levelWall: this.now(), eventDoseMSv: 0, savedMSv: 0, shelterMin: 0,
+      donkiRefs: [], levelWall: this.now(), eventDoseMSv: 0, shelterDoseMSv: 0, savedMSv: 0, shelterMin: 0,
     };
     this.alerts.push(a);
     this.logAlert(a, `${cap(a.level)} opened. ${RULES[a.ruleId].title}. ${stripDot(a.reason)}.`, s);
@@ -550,17 +557,29 @@ export class World {
       case 'summary':
         this.buildSummary(wall);
         break;
+      case 'limit': {
+        const r = limitRange(action.ruleId, action.param);
+        if (!r) break;
+        const value = Math.min(r.max, Math.max(r.min, action.value));
+        (this.personal[action.ruleId] ??= {})[action.param] = value;
+        ui(`Personal limit ${action.ruleId} ${r.label}: ${value} ${r.unit} (team value ${BODY_RULE[action.ruleId].params[action.param]} ${r.unit}).`, 'cmo');
+        break;
+      }
     }
   }
 
-  /** FR-11: a short summary for the ground. Private entries stay out. */
+  /**
+   * FR-11: a short summary for the ground. Private entries stay out.
+   * Offline, the summary waits on board. The next summary sent on the link holds
+   * the same entries, so the flight surgeon gets each entry one time.
+   */
   buildSummary(wall = this.now()): LogEntry {
     const since = this.log.filter((e) => e.seq > this.lastSummarySeq && e.kind !== 'visibility' && e.kind !== 'summary');
     const shared = since.filter((e) => this.visibilityOf(e) === 'ground');
     const delay = LINK_DELAY_MIN[this.link];
     const entry = this.push({
       kind: 'summary', visibility: 'ground', wall,
-      text: `Ground summary built: ${shared.length} entries. ${since.length - shared.length} entries not sent by crew choice.`,
+      text: `Ground summary ${delay === null ? 'queued on board (no link)' : 'sent'}: ${shared.length} entries. ${since.length - shared.length} entries not sent by crew choice.`,
       summary: {
         sentT: this.t,
         arriveT: delay === null ? null : this.t + delay,
@@ -569,7 +588,7 @@ export class World {
         withheld: since.length - shared.length,
       },
     });
-    this.lastSummarySeq = entry.seq;
+    if (delay !== null) this.lastSummarySeq = entry.seq;
     return entry;
   }
 
@@ -618,6 +637,7 @@ export class World {
     return {
       checkins,
       lastEvent: ev ? { t: ev.openedAt, doseMSv: ev.eventDoseMSv } : null,
+      params: this.personal,
       hr: vit.map((v) => v.hr),
       exercise: vit.map((v) => v.exercise),
     };

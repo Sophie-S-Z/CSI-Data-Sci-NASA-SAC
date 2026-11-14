@@ -29,15 +29,15 @@ export function AskView() {
 
   return (
     <>
-      <PageHead title="Ask" sub="Answers from the rules, your log, and the source list on board. It works with no link to Earth. It reads the data. It cannot change an alert or a rule." />
+      <PageHead title="Ask" sub="The onboard assistant answers questions from the alert rules, the crew log, and the cited sources. It operates without a link to Earth. It has read-only access, so it cannot change an alert, a rule, or a limit." />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-4">
-          <section className="rounded-lg bg-card p-4 ring-hairline md:p-5">
+          <section className="rounded-xl bg-card p-4 ring-hairline md:p-5">
             <form onSubmit={onSubmit} className="flex gap-2">
               <label htmlFor="ask-q" className="sr-only">Your question</label>
               <input id="ask-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type a question" autoComplete="off" enterKeyHint="send"
-                className="h-12 min-w-0 flex-1 rounded-2xl border border-input bg-transparent px-4 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30" />
-              <Button type="submit" disabled={!q.trim()} className="h-12 rounded-2xl px-5 text-base transition-transform active:scale-[0.97]">
+                className="h-12 min-w-0 flex-1 rounded-md border border-input bg-transparent px-4 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30" />
+              <Button type="submit" disabled={!q.trim()} className="h-12 rounded-md px-5 text-base">
                 Ask<CornerDownLeft className="size-4" aria-hidden="true" />
               </Button>
             </form>
@@ -66,7 +66,7 @@ function AnswerCard({ it, onGo }: { it: Item; onGo: (t: NonNullable<Answer['go']
   const { a } = it;
   return (
     <motion.article layout initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.16 } }} transition={{ duration: 0.2, ease: 'easeOut' }}
-      className={cn('rounded-2xl bg-card p-4 ring-hairline md:p-5', a.kind === 'refusal' && 'ring-2 ring-verify/40')}>
+      className={cn('rounded-xl bg-card p-4 ring-hairline md:p-5', a.kind === 'refusal' && 'ring-2 ring-verify/40')}>
       <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h2 className="min-w-0 flex-1 text-[15px] font-semibold">{it.q}</h2>
         {a.estimate && <Prov kind="estimate" />}
@@ -82,7 +82,7 @@ function AnswerCard({ it, onGo }: { it: Item; onGo: (t: NonNullable<Answer['go']
         <footer className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
           {a.sources.length > 0 && <>Sources {a.sources.map((k) => <Src key={k} k={k} className={cn(isRuleId(k) && 'font-mono')}>{isRuleId(k) ? k : resolveSource(k)[0].title}</Src>)}</>}
           {a.go && (
-            <Button variant="outline" size="sm" className="ml-auto h-9 rounded-xl transition-transform active:scale-[0.97]" onClick={() => onGo(a.go!.tab)}>
+            <Button variant="outline" size="sm" className="ml-auto h-9 rounded-md" onClick={() => onGo(a.go!.tab)}>
               {a.go.label}<ArrowRight className="size-3.5" aria-hidden="true" />
             </Button>
           )}
@@ -104,12 +104,12 @@ function HowItWorks() {
         ['Refuses', 'Diagnosis, treatment, changes to alerts or rules'],
         ['Last 12 h brief', 'Alerts, findings, dose, shelter time, solar records'],
         ['Check-in note', 'Names the symptoms in your note. You mark them.'],
-        ['Clear-time estimate', `${ASSISTANT_INFO.analogs} measured RAD events`],
+        ['Clear-time estimate', 'Decay fit of the last 8 h. Range from the other measured RAD events'],
         ['Estimate test', `${Math.round((t.hits / t.checks) * 100)}% in range, ${t.checks} checks`],
       ]} />
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        The clear-time estimate uses the other measured events as analogs. At the dose rate now, it takes the time that each event needed to reach the clear line.
-        In a leave-one-out test on the 6 events, {t.late} misses cleared later than the range and {t.early} earlier. The estimate never opens, holds, or clears an alert.
+        The clear-time estimate fits the decay of the last 8 h of the event and projects the time to the clear line. The other measured events set the width of the range.
+        In a leave-one-out test on the 6 events, {t.late} checks cleared later than the range and {t.early} earlier. The estimate never opens, holds, or clears an alert.
       </p>
     </Panel>
   );

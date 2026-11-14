@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Check, CornerDownRight, LogOut, Timer } from 'lucide-react';
+import { ArrowRight, Check, CornerDownRight, LogOut, Square, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import rules from '../../data/rules.json';
 import { RULES, LINK_LABEL, LINK_DELAY_MIN, LEVEL_RANK, PROCEDURE_SH1, actionSentence, type Alert, type World } from '../../engine/world';
 import { SENSORS } from '../../engine/doseModel';
-import { hhmm, stamp, duration } from '../../engine/time';
+import { hhmm, duration } from '../../engine/time';
 import { fmt } from '../../engine/units';
-import { warningForecast } from '../../engine/forecast';
 import { useUi } from '../context';
 import { LevelBadge, LevelIcon, LEVEL_WORD, Src } from '../parts';
 
@@ -67,7 +66,7 @@ export function Decision() {
   const say = main ? `${LEVEL_WORD[level]}. ${actionSentence(main, w)}` : 'Nominal. No action.';
 
   return (
-    <section aria-labelledby="dec-h" className="overflow-hidden rounded-lg border bg-card">
+    <section aria-labelledby="dec-h" className="overflow-hidden rounded-xl border bg-card">
       {/* Screen readers hear a level change only, not each minute of the replay (beta report U-2). */}
       <p className="sr-only" aria-live="assertive">{say}</p>
       <div className={cn('p-5 md:p-6', HERO[level])}>
@@ -94,7 +93,7 @@ export function Decision() {
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-black/20" role="progressbar" aria-label="Clear rule progress" aria-valuemin={0} aria-valuemax={clear.need} aria-valuenow={clear.have}>
               <div className="h-full rounded-full bg-white transition-[width]" style={{ width: `${(clear.have / clear.need) * 100}%` }} />
             </div>
-            {clear.have === 0 && <ClearEstimate w={w} />}
+            {clear.have === 0 && <ClearEstimate />}
           </div>
         )}
         <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -149,7 +148,7 @@ export function Decision() {
               </Button>
               {/* A Warning cannot be suppressed. Rule inhibit is on Rules and sources (beta report S-1, S-2). */}
               {a.level !== 'warning' && (
-                <Button size="sm" variant="outline" className="rounded-md" onClick={() => { sim.act({ type: a.suppressed ? 'unsuppress' : 'suppress', alertId: a.id }); note(`${a.id} ${a.suppressed ? 'shown again' : 'suppressed'}`); }}>
+                <Button size="sm" variant="outline" className="rounded-md" onClick={() => { const was = a.suppressed; sim.act({ type: was ? 'unsuppress' : 'suppress', alertId: a.id }); note(`${a.id} ${was ? 'shown again' : 'suppressed'}`); }}>
                   {a.suppressed ? 'Show again' : 'Suppress'}
                 </Button>
               )}
@@ -161,14 +160,15 @@ export function Decision() {
   );
 }
 
-/** Clear-time estimate from the measured RAD events. It never changes the alert. */
-function ClearEstimate({ w }: { w: World }) {
+/**
+ * The clear-time estimate is on Ask, next to its test result (coverage and late misses).
+ * The alert panel shows only the clear rule, which is the fact that ends the Warning.
+ */
+function ClearEstimate() {
   const { go } = useUi();
-  const f = warningForecast(w);
   return (
     <button type="button" onClick={() => go('ask')} className="mt-2 block text-left text-xs opacity-90 underline decoration-dotted underline-offset-4 hover:opacity-100">
-      {f ? <>Estimate: clear between <span className="num">{stamp(f.earliest)}</span> and <span className="num">{stamp(f.latest)}</span>, from {f.analogs.length} measured events</>
-        : 'Clear time: no estimate while the rate is near its peak'}
+      Clear-time estimate and its test result: open Ask
     </button>
   );
 }
@@ -203,7 +203,7 @@ function Procedure() {
           <Timer className="size-4" aria-hidden="true" />{shelterWall ? 'Your time to shelter ' : 'Your time '}{Math.floor(elapsed / 60)}:{String(Math.floor(elapsed % 60)).padStart(2, '0')}
         </span>
       </div>
-      <div className="mt-3 h-1 overflow-hidden rounded-full bg-muted"><motion.div className="h-full bg-primary" animate={{ width: `${(done / PROCEDURE_SH1.steps.length) * 100}%` }} /></div>
+      <div className="mt-3 h-1 overflow-hidden rounded-full bg-warning/30"><motion.div className="h-full bg-nominal" animate={{ width: `${(done / PROCEDURE_SH1.steps.length) * 100}%` }} /></div>
       <ol className="mt-4 space-y-2">
         {PROCEDURE_SH1.steps.map((s) => {
           const c = confirmed[s.n];
@@ -211,13 +211,17 @@ function Procedure() {
           const blocked = s.waitsForClear && warnActive;
           return (
             <li key={s.n} aria-current={isCur ? 'step' : undefined}
-              className={cn('flex flex-wrap items-center gap-3 rounded-2xl p-3 transition-colors', isCur ? 'bg-accent ring-2 ring-primary/40' : c ? 'opacity-70' : 'opacity-60')}>
-              <span className={cn('num grid size-9 shrink-0 place-items-center rounded-full text-sm font-semibold', c ? 'bg-nominal text-white' : isCur ? 'bg-primary text-primary-foreground' : 'bg-muted')} aria-hidden="true">
-                {c ? <Check className="size-4" /> : s.n}
+              className={cn('flex flex-wrap items-center gap-3 rounded-md border-l-4 p-3 transition-colors',
+                c ? 'border-nominal bg-nominal/8' : isCur ? 'border-warning bg-warning/10 ring-1 ring-warning/40' : 'border-warning/40 bg-muted/40')}>
+              {/* Red number: not done. Green check: done. The color and the icon both give the state. */}
+              <span className={cn('num grid size-9 shrink-0 place-items-center rounded-full text-sm font-semibold', c ? 'bg-nominal text-white' : isCur ? 'bg-warning text-white' : 'border-2 border-warning/60 text-warning')} aria-hidden="true">
+                {c ? <motion.span initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.2, ease: 'easeOut' }}><Check className="size-4" /></motion.span> : s.n}
               </span>
               <div className="min-w-0 flex-1">
-                <div className={cn('text-[15px]', isCur && 'text-lg font-semibold')}><span className="sr-only">Step {s.n}. </span>{s.text}</div>
-                {c && <div className="num text-xs text-muted-foreground">Done at {hhmm(c.t)}{c.choice === 'branch' ? ' · vest not found, CMO told' : ''}</div>}
+                <div className={cn('text-[15px]', isCur && 'text-lg font-semibold', !c && !isCur && 'text-muted-foreground')}><span className="sr-only">Step {s.n}. </span>{s.text}</div>
+                <div className={cn('num text-xs font-medium', c ? 'text-nominal' : 'text-warning')}>
+                  {c ? `Done at ${hhmm(c.t)}${c.choice === 'branch' ? ' · vest not found, CMO told' : ''}` : isCur ? 'Not done. Do this step now.' : 'Not done'}
+                </div>
                 {isCur && s.waitsForClear && (
                   <div className="text-sm text-muted-foreground">
                     {blocked ? `The Warning is active. It clears when all sensors stay below ${fmt(TH.cautionMultiple.x * w.B)} mSv/h for ${TM.warningClearMin} min.` : 'The Warning is clear. You can leave the shelter.'}
@@ -227,14 +231,14 @@ function Procedure() {
               </div>
               {isCur && (
                 <div className="flex w-full gap-2 sm:w-auto">
-                  {s.branch && <Button variant="outline" className="h-12 flex-1 rounded-xl sm:flex-none" onClick={() => { sim.act({ type: 'procStep', step: s.n, choice: 'branch' }); note(`SH-1 step ${s.n}: ${s.branch!.label}`); }}><CornerDownRight className="size-4" aria-hidden="true" />{s.branch.label}</Button>}
+                  {s.branch && <Button variant="outline" className="h-12 flex-1 rounded-md sm:flex-none" onClick={() => { sim.act({ type: 'procStep', step: s.n, choice: 'branch' }); note(`SH-1 step ${s.n}: ${s.branch!.label}`); }}><CornerDownRight className="size-4" aria-hidden="true" />{s.branch.label}</Button>}
                   {s.waitsForClear ? (
-                    <Button className="h-12 flex-1 rounded-xl px-6 text-base sm:flex-none" disabled={blocked} onClick={() => { sim.act({ type: 'procStep', step: s.n }); sim.act({ type: 'shelterExit' }); setProcOpen(false); note('SH-1 done. Left the shelter'); }}>
+                    <Button className="h-12 flex-1 rounded-md px-6 text-base sm:flex-none" disabled={blocked} onClick={() => { sim.act({ type: 'procStep', step: s.n }); sim.act({ type: 'shelterExit' }); setProcOpen(false); note('SH-1 done. Left the shelter'); }}>
                       <LogOut className="size-4" aria-hidden="true" />{blocked ? 'Wait for clear' : 'Leave the shelter'}
                     </Button>
                   ) : (
-                    <Button className="h-12 flex-1 rounded-xl px-6 text-base sm:flex-none" onClick={() => { sim.act({ type: 'procStep', step: s.n }); note(`SH-1 step ${s.n} done: ${s.text}`); }}>
-                      <Check className="size-5" aria-hidden="true" />Done
+                    <Button className="h-12 flex-1 rounded-md bg-foreground px-5 text-base text-background hover:bg-foreground/90 sm:flex-none" onClick={() => { sim.act({ type: 'procStep', step: s.n }); note(`SH-1 step ${s.n} done: ${s.text}`); }}>
+                      <Square className="size-5" aria-hidden="true" />Mark as done
                     </Button>
                   )}
                 </div>
