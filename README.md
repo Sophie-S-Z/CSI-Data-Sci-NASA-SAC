@@ -8,7 +8,7 @@ The tool answers one question when Earth cannot answer in time:
 
 **Not for clinical use.** The radiation event is measured data: the MSL RAD detector on the 2012 cruise to Mars. The solar event records are the real records of 5 to 7 March 2012. The sensor spread, cabin air, and crew vitals are simulated, and the app labels them "Simulated".
 
-The rules come from tests on 6 real solar particle events. See `research/realdata/RESULTS.md`.
+The rules come from tests on 6 real solar particle events. See `research/realdata/RESULTS.md`. A later study tested the rules on 40 years of GOES proton data, the full MSL RAD record, and 17 years of LRO CRaTER data, with a held-out test on 2020 to 2026. See `research/frontier/RESULTS.md` and the Research view in the app.
 
 ## Run it
 
@@ -116,7 +116,7 @@ The assistant runs on the crew laptop with no network and no model download. It 
 - **Refusals.** A request for a diagnosis, a treatment, or a change to an alert or a rule gets a fixed refusal that points to the CMO or to the alert controls.
 - **Last 12 h brief (Phase 6).** "What happened in the last 12 h?" lists the alerts, clears, and findings from the log, the dose and the shelter time in the window, one line on the solar records (count, strongest flare, fastest CME, proton event start), and the alert that is open now. It is for a crew member who wakes up during an event. At day 94 06:00 in the replay, it shows the Caution from the X5.4 flare, the false S3 spike that opened and cleared a Verify, and the proton event.
 - **Check-in note reader (Phase 6).** The health check reads the free-text note and shows the symptom chips that it names, for example "head feels full" gives Stuffy head. A cue word earlier in the same sentence ("no", "not", "without", "n't") cancels a match, up to "but" or a full stop. It only suggests. The crew taps to mark, and the body rules read marked symptoms only. A missed symptom is the safe error, because the crew can still mark it by hand.
-- **Clear-time estimate.** After the peak of a Warning, the estimate fits the decay time of the last 8 h of the event (a straight line through the log of the dose rate). It projects the fall to the clear line, plus the 1 h clear hold. The range comes from the other measured RAD events: the smallest and the largest ratio of the real time left to the projected time left. The replayed March 2012 event is not in its own range. In a leave-one-out test on the 6 events, the real clear time was in the range at 98% of 525 checks (514 hits, 6 later, 5 earlier). The old analog method reached 60%. The range is wide: its median width is about 38 h, for a median of about 19 h left. The estimate never opens, holds, or clears an alert.
+- **Clear-time estimate.** After the peak of a Warning, the estimate fits the decay time of the last 8 h of the event (a straight line through the log of the dose rate). It projects the fall to the clear line, plus the 1 h clear hold. The range comes from the other measured RAD events: the smallest and the largest ratio of the real time left to the projected time left. The replayed March 2012 event is not in its own range. In a leave-one-out test on the 6 events, the real clear time was in the range at 98% of 525 checks (514 hits, 6 later, 5 earlier). The old analog method reached 60%. A later test on 34 new shelter stays (CRaTER and RAD, 2020 to 2026) gave 90%. See `research/frontier/RESULTS.md`. The range is wide: its median width is about 38 h, for a median of about 19 h left. The estimate never opens, holds, or clears an alert.
 
 `npm test` checks the matching on new wordings, the brief on the replay night, the note reader with negation, the refusals, the no-answer case, the read-only rule, the source of each answer, and the forecast test.
 
@@ -130,6 +130,7 @@ The mission, sensors, schedule, sensor faults, and the SPE dose profile are in `
 
 - `src/data/real/rad-replay.json`: RAD dose rate, 5 to 11 March 2012, 15-min bins. `research/realdata/export_app.py` writes it.
 - `src/data/real/rad-events.json` and `l1-summary.json`: the test results for the Measured events view.
+- `src/data/real/frontier.json`: the results of the frontier study for the Research view. `research/frontier/summary.py` writes it.
 - `src/data/replay-donki.json`: the real flare, CME, and SEP records of March 2012, in the DONKI schema.
 - `src/data/cabin-rules.json`: cabin air limits from NASA-STD-3001 Vol 2.
 
