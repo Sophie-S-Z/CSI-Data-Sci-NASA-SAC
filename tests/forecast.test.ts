@@ -3,7 +3,7 @@ import { ANALOGS, REPLAY_ANALOGS, PAST_PEAK, backtest, eventSeries, forecastClea
 import { World } from '../src/engine/world';
 import { at } from '../src/engine/time';
 
-describe('clear-time forecast (analogs from measured RAD events)', () => {
+describe('clear-time forecast (decay fit, range from measured RAD events)', () => {
   it('uses all 6 measured events, and leaves the replayed March 2012 event out of the replay analogs', () => {
     expect(ANALOGS).toHaveLength(6);
     expect(REPLAY_ANALOGS.map((a) => a.id)).not.toContain('cruise_2012-1');
@@ -25,12 +25,11 @@ describe('clear-time forecast (analogs from measured RAD events)', () => {
     expect(f.analogs.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('leave-one-out on the 6 events: most checks hit, and a miss is mostly a late clear', () => {
+  it('leave-one-out on the 6 events: the real clear time is in the range at 97% of checks or more', () => {
     const b = backtest();
-    expect(b.checks).toBeGreaterThan(300);
+    expect(b.checks).toBeGreaterThan(500);
     expect(b.hits + b.late + b.early).toBe(b.checks);
-    expect(b.hits / b.checks).toBeGreaterThan(0.55);
-    expect(b.late).toBeGreaterThan(b.early);
+    expect(b.hits / b.checks).toBeGreaterThan(0.97);
   });
 
   it('on the replay, abstains before the 8 March peak and brackets the real clear time after it', () => {

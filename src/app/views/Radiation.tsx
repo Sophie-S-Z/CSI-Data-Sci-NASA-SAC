@@ -66,7 +66,7 @@ function RateTile() {
           ['Caution', fmt(TH.cautionMultiple.x * s.B), 'cautionMultiple'],
           ['Warning', fmt(TH.warningMultiple.x * s.B), 'warningMultiple'],
         ].map(([k, v, src]) => (
-          <div key={k} className="rounded-xl bg-muted/60 px-2 py-2">
+          <div key={k} className="rounded-md bg-muted/60 px-2 py-2">
             <div className="text-muted-foreground">{k}</div>
             <Src k={src} className="num text-sm font-semibold">{v}</Src>
           </div>
@@ -159,9 +159,9 @@ function DoseChart() {
   return (
     <Panel title="Cabin dose rate" aside={<>
       <Prov kind="measured">Event: MSL RAD, Mar 2012</Prov>
-      <div role="radiogroup" aria-label="Chart window" className="flex rounded-lg bg-muted p-0.5">
+      <div role="radiogroup" aria-label="Chart window" className="flex rounded-md bg-muted p-0.5">
         {WINDOWS.map((o) => (
-          <button key={o.h} role="radio" aria-checked={span === o.h} onClick={() => setSpan(o.h)} className={cn('h-7 rounded-md px-2.5 text-xs font-medium', span === o.h ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground')}>{o.label}</button>
+          <button key={o.h} role="radio" aria-checked={span === o.h} onClick={() => setSpan(o.h)} className={cn('h-10 rounded-md px-3 text-xs font-medium sm:h-7 sm:px-2.5', span === o.h ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground')}>{o.label}</button>
         ))}
       </div>
     </>}>
@@ -243,7 +243,7 @@ function SensorStrip() {
   return (
     <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
       {cells.map((c) => (
-        <div key={c.id} className={cn('rounded-xl p-2.5 ring-1 ring-inset', tone(c.v))}>
+        <div key={c.id} className={cn('rounded-md p-2.5 ring-1 ring-inset', tone(c.v))}>
           <div className="flex items-center justify-between text-[11px]"><span className="font-mono font-medium">{c.id}</span>
             <span className={cn(c.q === 'good' ? 'text-nominal' : c.q === 'poor' ? 'text-verify' : c.q === 'missing' ? 'text-muted-foreground' : 'text-advisory')}>{c.q === 'good' ? 'Good' : c.q === 'poor' ? 'Poor' : c.q === 'missing' ? 'No data' : 'Personal'}</span>
           </div>

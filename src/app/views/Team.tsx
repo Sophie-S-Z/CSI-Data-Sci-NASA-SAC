@@ -40,11 +40,11 @@ export function CmoView() {
           </Panel>
           <Panel title="Shared symptoms" aside={hidden ? `${hidden} private ${hidden === 1 ? 'entry' : 'entries'} not shown` : undefined}>
             {infectionWatch && (
-              <p className="mb-3 rounded-xl bg-advisory/10 p-3 text-sm"><LevelBadge level="advisory" /> <b>Infection watch.</b> Event dose plus short sleep ({lastShared!.checkin!.sleepH} h). Watch for signs of infection. Evidence: emerging (herpesvirus shedding in 61% of ISS crew, n = 23).</p>
+              <p className="mb-3 rounded-md bg-advisory/10 p-3 text-sm"><LevelBadge level="advisory" /> <b>Infection watch.</b> Event dose plus short sleep ({lastShared!.checkin!.sleepH} h). Watch for signs of infection. Evidence: emerging (herpesvirus shedding in 61% of ISS crew, n = 23).</p>
             )}
             {shared.length === 0 ? <p className="text-sm text-muted-foreground">No shared check-ins.</p> : (
               <ul className="space-y-2">{[...shared].reverse().map((e) => (
-                <li key={e.seq} className="rounded-xl bg-muted/50 p-3 text-sm"><div className="num text-xs text-muted-foreground">{stamp(e.t)} · {VIS_LABEL[w.visibilityOf(e)]}</div>{e.text}</li>
+                <li key={e.seq} className="rounded-md bg-muted/50 p-3 text-sm"><div className="num text-xs text-muted-foreground">{stamp(e.t)} · {VIS_LABEL[w.visibilityOf(e)]}</div>{e.text}</li>
               ))}</ul>
             )}
           </Panel>

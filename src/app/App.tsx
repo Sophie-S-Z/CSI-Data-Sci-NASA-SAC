@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState, type ComponentType } from 'react';
-import { MotionConfig } from 'motion/react';
+import { MotionConfig, motion } from 'motion/react';
 import {
   Radiation, Wind, HeartPulse, ClipboardCheck, ScrollText, FlaskConical, Orbit, Stethoscope, Satellite, BookOpen,
   Sun, Moon, Ellipsis, MessagesSquare, SunMedium, SlidersHorizontal, Play, Pause, TriangleAlert,
@@ -101,6 +101,18 @@ export function App() {
     if (procOpen && !sim.world.procedure) setProcOpen(false);
   }, [procOpen, sim.world.procedure]);
 
+  // Space plays or pauses the replay, except while the focus is on a control or a text field.
+  const { playing, setPlaying } = sim;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat || (e.target as HTMLElement).closest('input, textarea, select, button, [role="radio"], [role="tab"]')) return;
+      e.preventDefault();
+      setPlaying(!playing);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [playing, setPlaying]);
+
   const go = useCallback((t: Tab) => { setTab(t); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, []);
 
   const ui: Ui = useMemo(() => ({
@@ -124,7 +136,10 @@ export function App() {
               <TopBar last={last} />
               <InhibitBanner />
               <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-5 pb-28 md:px-6 lg:px-8 lg:pb-10">
-                <Suspense fallback={<p className="text-muted-foreground">Loading.</p>}><View /></Suspense>
+                <Suspense fallback={<ViewSkeleton />}>
+                  {/* Each view comes in with a short ease-out fade. No exit animation, so a tap feels instant. */}
+                  <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}><View /></motion.div>
+                </Suspense>
               </main>
             </div>
           </div>
@@ -133,6 +148,17 @@ export function App() {
         </UiContext.Provider>
       </TooltipProvider>
     </MotionConfig>
+  );
+}
+
+/** Placeholder with the shape of a view, while its code loads. */
+function ViewSkeleton() {
+  return (
+    <div aria-busy="true" aria-label="Loading the view" className="animate-pulse motion-reduce:animate-none">
+      <div className="h-8 w-56 rounded-md bg-muted" />
+      <div className="mt-3 h-4 w-full max-w-xl rounded-md bg-muted" />
+      <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]"><div className="h-80 rounded-xl bg-muted" /><div className="h-80 rounded-xl bg-muted" /></div>
+    </div>
   );
 }
 

@@ -25,7 +25,7 @@ export function LogRow({ e }: { e: LogEntry }) {
       </div>
       <div className="col-start-2 sm:col-start-auto">
         {canShare ? (
-          <select aria-label={`Who can see entry ${e.seq}`} value={vis} className="h-8 rounded-lg border bg-card px-2 text-xs"
+          <select aria-label={`Who can see entry ${e.seq}`} value={vis} className="h-8 rounded-md border bg-card px-2 text-xs"
             onChange={(ev) => { sim.act({ type: 'visibility', seq: e.seq, visibility: ev.target.value as Visibility }); note(`Entry ${e.seq} shared with: ${VIS_LABEL[ev.target.value as Visibility]}`); }}>
             {VISIBILITY_ORDER.map((v) => <option key={v} value={v}>{VIS_LABEL[v]}</option>)}
           </select>
@@ -59,7 +59,7 @@ export function LogView() {
 
   return (
     <>
-      <PageHead title="Event log" sub="Append-only. Each entry has a time, the rule, the inputs, and the crew action." actions={<Button variant="outline" className="rounded-xl" onClick={download}><Download className="size-4" aria-hidden="true" />Export JSON</Button>} />
+      <PageHead title="Event log" sub="Append-only. Each entry has a time, the rule, the inputs, and the crew action." actions={<Button variant="outline" className="rounded-md" onClick={download}><Download className="size-4" aria-hidden="true" />Export JSON</Button>} />
       <Panel title="Alarm burden" aside="Metric M-3: 3 or fewer Caution or Warning events per 7 days" className="mb-4">
         <div className="flex flex-wrap items-end gap-6">
           <div className="flex items-end gap-1.5" role="img" aria-label={`${total} Caution or Warning events in ${days.length} days`}>
@@ -77,9 +77,9 @@ export function LogView() {
           <p className="text-sm"><b className="num text-2xl">{total}</b> Caution or Warning {total === 1 ? 'event' : 'events'} in {days.length} days.</p>
         </div>
       </Panel>
-      <div role="radiogroup" aria-label="Filter the log" className="mb-3 inline-flex rounded-xl bg-muted p-1">
+      <div role="radiogroup" aria-label="Filter the log" className="mb-3 inline-flex rounded-md bg-muted p-1">
         {([['all', 'All'], ['alerts', 'Alerts'], ['actions', 'Actions'], ['checkins', 'Check-ins'], ['ground', 'Link']] as [F, string][]).map(([v, l]) => (
-          <button key={v} role="radio" aria-checked={f === v} onClick={() => setF(v)} className={cn('h-8 rounded-lg px-3 text-sm font-medium', f === v ? 'bg-card shadow-sm ring-1 ring-border' : 'text-muted-foreground')}>{l}</button>
+          <button key={v} role="radio" aria-checked={f === v} onClick={() => setF(v)} className={cn('h-10 rounded-md px-3 text-sm font-medium sm:h-8', f === v ? 'bg-card shadow-sm ring-1 ring-border' : 'text-muted-foreground')}>{l}</button>
         ))}
       </div>
       <Panel bodyClass="px-0 pb-0">

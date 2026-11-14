@@ -78,6 +78,7 @@ function DemoGuide() {
         <Button size="lg" className="h-12 min-w-32 rounded-md px-5 text-base" onClick={togglePlay} aria-pressed={sim.playing}>
           {sim.playing ? <Pause className="size-5" aria-hidden="true" /> : <Play className="size-5" aria-hidden="true" />}
           {sim.playing ? 'Pause' : atEnd ? 'Play again' : 'Play'}
+          <kbd className="ml-1 hidden rounded border border-current/30 px-1.5 font-sans text-[11px] font-medium opacity-70 sm:inline">Space</kbd>
         </Button>
         <div className="flex items-center gap-2 text-xs"><span className="text-muted-foreground">Speed</span>
           <Seg label="Replay speed" value={sim.speed.id} onChange={(id) => sim.setSpeed(SPEEDS.find((s) => s.id === id)!)} options={SPEEDS.map((s) => ({ value: s.id, label: s.label }))} />

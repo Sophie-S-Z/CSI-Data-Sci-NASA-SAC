@@ -83,7 +83,7 @@ export function EvidenceView() {
           <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="radiogroup" aria-label="Event">
             {ev.events.map((x) => (
               <button key={x.id} role="radio" aria-checked={sel === x.id} onClick={() => setSel(x.id)}
-                className={cn('shrink-0 rounded-xl px-3 py-2 text-left ring-1 transition', sel === x.id ? 'bg-primary/8 ring-2 ring-primary' : 'ring-border hover:bg-muted/50')}>
+                className={cn('shrink-0 rounded-md px-3 py-2 text-left ring-1 transition', sel === x.id ? 'bg-primary/8 ring-2 ring-primary' : 'ring-border hover:bg-muted/50')}>
                 <div className="text-xs font-semibold">{fmtUtc(x.onset_utc).split(',')[0]}</div>
                 <div className="num text-[11px] text-muted-foreground">{SET_LABEL[x.set].split(',')[0]} · peak {fmt(x.peak_ratio)}×</div>
               </button>
@@ -91,7 +91,7 @@ export function EvidenceView() {
           </div>
           <div className="mt-3 flex flex-wrap gap-1" role="radiogroup" aria-label="Rule">
             {POLICY_ORDER.map((p) => (
-              <button key={p} role="radio" aria-checked={pol === p} onClick={() => setPol(p)} className={cn('h-8 rounded-lg px-3 text-xs font-medium', pol === p ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground')}>{SHORT[p]}</button>
+              <button key={p} role="radio" aria-checked={pol === p} onClick={() => setPol(p)} className={cn('h-10 rounded-md px-3 text-xs font-medium sm:h-8', pol === p ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground')}>{SHORT[p]}</button>
             ))}
           </div>
           <div className="mt-3 h-72 w-full" role="img" aria-label={`Measured dose rate ratio for the event of ${fmtUtc(e.onset_utc)}, with shelter time for ${SHORT[pol]}.`}>
@@ -128,7 +128,7 @@ export function EvidenceView() {
                 ['Split', e.split === 'tune' ? 'Tune (cycle 24)' : 'Test (cycle 25)'],
               ].map(([k, v]) => <div key={k}><dt className="text-xs text-muted-foreground">{k}</dt><dd className="num font-medium">{v}</dd></div>)}
             </dl>
-            <div className={cn('mt-4 rounded-xl p-3 text-sm', score.entered_before_peak ? 'bg-nominal/10' : 'bg-warning/10')}>
+            <div className={cn('mt-4 rounded-md p-3 text-sm', score.entered_before_peak ? 'bg-nominal/10' : 'bg-warning/10')}>
               <b>{SHORT[pol]}:</b> {score.entered_before_peak
                 ? <>sheltered {score.lead_vs_2xB_min !== null && score.lead_vs_2xB_min >= 0 ? `${score.lead_vs_2xB_min} min before` : `${Math.abs(score.lead_vs_2xB_min ?? 0)} min after`} the 2× crossing, before the peak. Avoided {whole(score.dose_avoided_pct ?? 0)}% of the event dose.</>
                 : <>no shelter entry before the peak. The crew got the full event dose.</>}
@@ -156,7 +156,7 @@ export function EvidenceView() {
         <p className="text-sm leading-relaxed">{l1.headline}</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {l1.tiles.map((t) => (
-            <div key={t.label} className="rounded-xl bg-muted/50 p-3">
+            <div key={t.label} className="rounded-md bg-muted/50 p-3">
               <div className="text-xs text-muted-foreground">{t.label}</div>
               <div className="num mt-1 text-2xl font-semibold">{t.value}</div>
               <div className="text-[11px] text-muted-foreground">{t.sub}</div>

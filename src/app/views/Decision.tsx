@@ -66,7 +66,7 @@ export function Decision() {
   const say = main ? `${LEVEL_WORD[level]}. ${actionSentence(main, w)}` : 'Nominal. No action.';
 
   return (
-    <section aria-labelledby="dec-h" className="overflow-hidden rounded-lg border bg-card">
+    <section aria-labelledby="dec-h" className="overflow-hidden rounded-xl border bg-card">
       {/* Screen readers hear a level change only, not each minute of the replay (beta report U-2). */}
       <p className="sr-only" aria-live="assertive">{say}</p>
       <div className={cn('p-5 md:p-6', HERO[level])}>
@@ -215,7 +215,7 @@ function Procedure() {
                 c ? 'border-nominal bg-nominal/8' : isCur ? 'border-warning bg-warning/10 ring-1 ring-warning/40' : 'border-warning/40 bg-muted/40')}>
               {/* Red number: not done. Green check: done. The color and the icon both give the state. */}
               <span className={cn('num grid size-9 shrink-0 place-items-center rounded-full text-sm font-semibold', c ? 'bg-nominal text-white' : isCur ? 'bg-warning text-white' : 'border-2 border-warning/60 text-warning')} aria-hidden="true">
-                {c ? <Check className="size-4" /> : s.n}
+                {c ? <motion.span initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.2, ease: 'easeOut' }}><Check className="size-4" /></motion.span> : s.n}
               </span>
               <div className="min-w-0 flex-1">
                 <div className={cn('text-[15px]', isCur && 'text-lg font-semibold', !c && !isCur && 'text-muted-foreground')}><span className="sr-only">Step {s.n}. </span>{s.text}</div>
@@ -231,9 +231,9 @@ function Procedure() {
               </div>
               {isCur && (
                 <div className="flex w-full gap-2 sm:w-auto">
-                  {s.branch && <Button variant="outline" className="h-12 flex-1 rounded-xl sm:flex-none" onClick={() => { sim.act({ type: 'procStep', step: s.n, choice: 'branch' }); note(`SH-1 step ${s.n}: ${s.branch!.label}`); }}><CornerDownRight className="size-4" aria-hidden="true" />{s.branch.label}</Button>}
+                  {s.branch && <Button variant="outline" className="h-12 flex-1 rounded-md sm:flex-none" onClick={() => { sim.act({ type: 'procStep', step: s.n, choice: 'branch' }); note(`SH-1 step ${s.n}: ${s.branch!.label}`); }}><CornerDownRight className="size-4" aria-hidden="true" />{s.branch.label}</Button>}
                   {s.waitsForClear ? (
-                    <Button className="h-12 flex-1 rounded-xl px-6 text-base sm:flex-none" disabled={blocked} onClick={() => { sim.act({ type: 'procStep', step: s.n }); sim.act({ type: 'shelterExit' }); setProcOpen(false); note('SH-1 done. Left the shelter'); }}>
+                    <Button className="h-12 flex-1 rounded-md px-6 text-base sm:flex-none" disabled={blocked} onClick={() => { sim.act({ type: 'procStep', step: s.n }); sim.act({ type: 'shelterExit' }); setProcOpen(false); note('SH-1 done. Left the shelter'); }}>
                       <LogOut className="size-4" aria-hidden="true" />{blocked ? 'Wait for clear' : 'Leave the shelter'}
                     </Button>
                   ) : (

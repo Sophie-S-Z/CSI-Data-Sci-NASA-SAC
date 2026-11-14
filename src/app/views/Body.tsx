@@ -57,9 +57,9 @@ export function BodyView() {
           const d = data[r.id];
           const I = r.icon;
           return (
-            <section key={r.id} className={cn('flex flex-col rounded-2xl bg-card p-4 ring-hairline', top?.level === 'caution' && 'ring-2 ring-caution')}>
+            <section key={r.id} className={cn('flex flex-col rounded-xl bg-card p-4 ring-hairline', top?.level === 'caution' && 'ring-2 ring-caution')}>
               <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-xl bg-muted"><I className="size-4" aria-hidden="true" /></span>
+                <span className="grid size-8 place-items-center rounded-md bg-muted"><I className="size-4" aria-hidden="true" /></span>
                 <h2 className="text-sm font-semibold">{r.title}</h2>
                 <span className="ml-auto">{top ? <LevelBadge level={top.level} /> : <LevelBadge level="nominal">In range</LevelBadge>}</span>
               </div>
@@ -68,9 +68,9 @@ export function BodyView() {
                 {d.trend && <Spark values={d.trend} min={d.min} max={d.max} limit={d.limit} label={`${r.title}, 8-day trend`} className="h-9 w-28" />}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{r.risk}</p>
-              {top && <p className="mt-2 rounded-lg bg-muted/60 p-2 text-xs">{top.title}. {top.why}</p>}
+              {top && <p className="mt-2 rounded-md bg-muted/60 p-2 text-xs">{top.title}. {top.why}</p>}
               <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3 text-[11px] text-muted-foreground">
-                <Prov kind={r.prov}>{r.prov === 'replay' ? 'Check-ins' : undefined}</Prov>
+                <Prov kind={r.prov}>{r.prov === 'replay' ? 'Self-reported' : undefined}</Prov>
                 <span className="truncate">{r.from}</span>
                 {ids.length > 0 && <span className="ml-auto font-mono">{ids.map((id, i) => <span key={id}>{i ? ', ' : ''}<Src k={id}>{id}</Src></span>)}</span>}
               </div>
