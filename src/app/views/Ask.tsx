@@ -75,7 +75,6 @@ export function AskView() {
           </section>
 
           <div aria-live="polite" className="space-y-3">
-            {items.length === 0 && <p className="px-1 text-sm text-muted-foreground">Tap a question, or ask your own. Each answer shows its sources.</p>}
             <AnimatePresence initial={false}>
               {items.map((it) => <AnswerCard key={it.id} it={it} onGo={go} />)}
             </AnimatePresence>

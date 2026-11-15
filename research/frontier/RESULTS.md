@@ -6,7 +6,7 @@ Labels: **measured** = instrument data. **modeled** = GOES flux through a fitted
 
 ## 1. Why we did this study
 
-Storm Shelter makes 2 decisions for the crew: when to enter the shelter, and when to leave it. The earlier tests used 6 solar particle events from one instrument (MSL RAD). This study starts again with 3 questions:
+Vigil makes 2 decisions for the crew: when to enter the shelter, and when to leave it. The earlier tests used 6 solar particle events from one instrument (MSL RAD). This study starts again with 3 questions:
 
 1. How much do 6 events prove?
 2. Is the current entry rule the best rule? Earlier work compared rules at different alarm rates, so a rule could win only because it alarms more.

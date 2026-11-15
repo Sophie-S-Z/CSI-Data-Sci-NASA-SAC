@@ -7,7 +7,7 @@ import { displayName, type Profile } from './profile';
 
 /** The daily report: what needs attention, and each alert, solar event, check-in, and crew action of one mission day. */
 export interface DailyReport {
-  app: 'Storm Shelter';
+  app: 'Vigil';
   crew: { name: string; role: string };
   day: number;
   /** Mission time of the last data in the report. */
@@ -42,7 +42,7 @@ export function buildReport(w: World, day: number, p: Profile, now = new Date())
   ];
 
   return {
-    app: 'Storm Shelter',
+    app: 'Vigil',
     crew: { name: displayName(p), role: p.role },
     day,
     through: stamp(to - 1),

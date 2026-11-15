@@ -1,8 +1,10 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
 import { OctagonAlert, TriangleAlert, CircleHelp, Info, CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Level, LinkState } from '../engine/world';
 import { scalePos, type Factor, type Zone, type ZoneLevel } from '../engine/limits';
+import { fmt } from '../engine/units';
 import { useUi } from './context';
 
 export type AnyLevel = Level | 'clear' | 'nominal';
@@ -29,7 +31,7 @@ export function LevelIcon({ level, className }: { level: AnyLevel; className?: s
 
 const BADGE: Record<AnyLevel, string> = {
   warning: 'bg-warning text-white',
-  caution: 'bg-caution text-[oklch(0.22_0.04_70)]',
+  caution: 'bg-caution text-caution-foreground',
   verify: 'bg-verify/12 text-verify ring-1 ring-inset ring-verify/25',
   advisory: 'bg-advisory/12 text-advisory ring-1 ring-inset ring-advisory/25',
   clear: 'bg-nominal/12 text-nominal ring-1 ring-inset ring-nominal/25',
@@ -54,6 +56,19 @@ export function InfoBadge({ level, k, children }: { level: AnyLevel; k: string; 
       <LevelBadge level={level} className="cursor-pointer underline decoration-dotted underline-offset-2 hover:opacity-90">{children}<CircleHelp className="size-3.5" aria-hidden="true" /></LevelBadge>
     </button>
   );
+}
+
+/** A number that glides to each new value (200 ms, ease-out), so a live reading changes smoothly. */
+export function LiveNum({ value, format = fmt }: { value: number; format?: (v: number) => string }) {
+  const mv = useMotionValue(value);
+  const text = useTransform(mv, format);
+  const still = useReducedMotion();
+  useEffect(() => {
+    if (still) { mv.set(value); return; }
+    const c = animate(mv, value, { duration: 0.2, ease: 'easeOut' });
+    return () => c.stop();
+  }, [mv, value, still]);
+  return <motion.span className="num">{text}</motion.span>;
 }
 
 /** Data label. Every number on screen says where it comes from. */

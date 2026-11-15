@@ -1,12 +1,14 @@
-# Storm Shelter
+# Vigil
 
-A radiation health tool for one astronaut on a Mars transit. CSI entry for NASA Space Apps 2026, challenge "Create Health Monitoring Software for Astronauts on Space Missions."
+<img src="public/icon.svg" alt="Vigil logo: a pulse trace inside a watch ring" width="64" />
+
+A crew health monitor for one astronaut on a Mars transit. It watches radiation, cabin air, and body systems, and tells the crew what to do. CSI entry for NASA Space Apps 2026, challenge "Create Health Monitoring Software for Astronauts on Space Missions."
 
 The tool answers one question when Earth cannot answer in time:
 
 > What is my radiation risk now, and what do I do?
 
-**Not for clinical use.** The radiation event is measured data: the MSL RAD detector on the 2012 cruise to Mars. The solar event records are the real records of 5 to 7 March 2012. The sensor spread, cabin air, and crew vitals are simulated, and the app labels them "Simulated".
+**Not for clinical use.** The radiation event is measured data: the MSL RAD detector on the 2012 cruise to Mars. The solar event records are the real records of 5 to 7 March 2012. The sensor spread, cabin air, and crew vitals are simulated, and the app marks them with the Simulation band on every view.
 
 The rules come from tests on 6 real solar particle events. See `research/realdata/RESULTS.md`. A later study tested the rules on 40 years of GOES proton data, the full MSL RAD record, and 17 years of LRO CRaTER data, with a held-out test on 2020 to 2026. See `research/frontier/RESULTS.md` and the Research view in the app.
 
@@ -77,7 +79,7 @@ The team used Super Intelligence (SI) tools on this project, as listed below.
 
 ## Layout
 
-The app has 2 modes. The **Simulation | Real-world data** switch is in the top bar on every screen. A line under the top bar says what the data in the mode is, so the panels need no "Simulated" labels.
+The app has 2 modes. The **Simulation | Real-world data** switch is at the top of the sidebar on a wide screen and in the top bar on a phone. A band under the top bar names the mode on every view, so the panels need no "Simulated" labels.
 
 - **Simulation.** Mission replay (the landing page), Cabin radiation (inside the ship: sensors, dose chart, dose budget, crew timeline), Space weather (outside the ship: solar records, distance and angle to Earth), Cabin air, the crew views (Ask AI, Health check, Body, Log, Daily report), the team views (CMO, Ground link), and the **Limits explorer**.
 - **Real-world data.** Measured events (the rule test on 6 RAD events), Research, and Rules and sources.
@@ -103,7 +105,7 @@ The **Limits explorer** is a what-if tool. Type a value for each factor (radiati
 | FR-05 Timeline band | Crew timeline on **Cabin radiation** |
 | FR-06 Source panel | Tap any underlined value or a **Source** button |
 | FR-07 Delay switch | Link control in the demo panel and on **Ground** |
-| FR-08 Replay mode, labels | Demo panel on **Mission replay**. "Replay" and "Simulated" tags. |
+| FR-08 Replay mode, labels | Demo panel on **Mission replay**. "Replay" tags and the Simulation band. |
 | FR-09 Alert counter | Alert bar, and the alarm-burden card on **Log** |
 | FR-10 Privacy control | Health check "Who can see this entry", and the selector on each log entry |
 | FR-11 Ground summary | **Ground**. Built when the link returns from a blackout. |
@@ -131,7 +133,9 @@ The **Limits explorer** is a what-if tool. Type a value for each factor (radiati
 
 React 19, Tailwind CSS 4, shadcn/ui (Radix), Motion, Recharts, and three.js. See `docs/design-notes.md`.
 
-- **Colors.** Dark (default) is a flight-display palette for a dim cabin: a near-black neutral ground, soft white text, one cyan accent for controls. Red is only for Warning, amber only for Caution, slate blue only for shelter time. Light mode is in the profile.
+- **Colors.** Dark (default) is a muted clinical palette for a dim cabin: a graphite ground, soft white text, and one steel-blue accent for controls. The status colors have low saturation. Only the Warning red is bright. Amber is only for Caution, and slate blue is only for shelter time. Light mode is in the profile.
+- **Data mode.** The app has 2 modes: Simulation and Real-world data. Each mode has its own color (indigo or teal), icon, and name. A band under the top bar names the mode on every view. Simulation also has diagonal stripes, so the mode does not depend on color alone.
+- **Live replay.** A new replay starts by itself at 1 min/s, so the mission clock moves on the first screen. At the first alert it pauses and switches to 1 h/s. The top bar shows "Live" while time moves, and the readings glide to each new value.
 - **Alert panel.** It fills with red or yellow during an alert. SH-1 opens in place. A Warning cannot be suppressed. Rule inhibit is on **Rules and sources** only, a banner shows each inhibited rule on every view, and 2 sensors at 10 × B for 5 min always give a Warning.
 - **Speed.** Each view except the landing page loads on first use. The dose chart rebuilds each 10 to 30 replay minutes, not each tick, and the panels have no blur. With the CPU slowed 4 times, the replay runs at about 60 frames per second on Mission replay.
 - **Offline.** A service worker keeps the app after the first load.

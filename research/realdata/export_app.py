@@ -28,7 +28,7 @@ POLICY_LABEL = {
     "current": "Old rule: 10 × B, fixed baseline",
     "lowe": "Löwe 2025: 1.25 × fitted background",
     "lowe2": "Löwe 2025, 2 detectors agree",
-    "layered2": "Storm Shelter v2: 2 × background, 2 detectors agree",
+    "layered2": "Vigil v2: 2 × background, 2 detectors agree",
 }
 # Entry and clear limits of each policy, as realbench.policies() runs them.
 POLICY_LIMITS = {

@@ -16,7 +16,7 @@ export function ReportView() {
   const [day, setDay] = useState(last);
   const d = Math.min(day, last);
   const r = buildReport(w, d, profile);
-  const file = `storm-shelter-day${d}`;
+  const file = `vigil-day${d}`;
 
   function json() {
     const a = document.createElement('a');

@@ -6,12 +6,11 @@ import { Switch } from '@/components/ui/switch';
 import { LINK_LABEL, type LinkState } from '../../engine/world';
 import { REPLAY } from '../../engine/donki';
 import { MIN_PER_DAY, stamp } from '../../engine/time';
-import { fmt } from '../../engine/units';
 import { lightMinutes, vehicleAt, TRANSIT_DAYS } from '../../engine/orbit';
 import { BEATS, DEMO_START, REPLAY_END, SPEEDS, beatIndex } from '../../ui/useSim';
 import { useUi } from '../context';
 import { displayName } from '../profile';
-import { InfoBadge, LINK_OPTIONS, LevelBadge, Panel, Prov, Seg } from '../parts';
+import { InfoBadge, LINK_OPTIONS, LevelBadge, LiveNum, Panel, Prov, Seg } from '../parts';
 import { Decision } from './Decision';
 
 // three.js is large, so it loads after the first paint.
@@ -88,11 +87,11 @@ function DemoGuide() {
         <div className="relative mx-4 h-10">
           <button type="button" aria-label="Jump to a time on the replay" className="absolute inset-x-0 top-3.5 h-3 cursor-pointer rounded-full bg-muted"
             onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); sim.jumpTo(timeAt((e.clientX - r.left) / r.width)); }}>
-            <span className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${posOf(w.t) * 100}%` }} />
+            <span className="absolute inset-y-0 left-0 rounded-full bg-primary transition-[width] duration-100 ease-linear" style={{ width: `${posOf(w.t) * 100}%` }} />
           </button>
           {BEATS.map((b, i) => (
             <button key={b.label} type="button" onClick={() => sim.jumpTo(b.t)} aria-label={`Step ${i + 1}: ${b.label}`}
-              className={cn('num absolute top-1 grid size-8 -translate-x-1/2 place-items-center rounded-full border-2 text-sm font-semibold sm:top-0 sm:size-10',
+              className={cn('num absolute top-1 grid size-8 -translate-x-1/2 place-items-center rounded-full border-2 text-sm font-semibold transition-colors duration-200 sm:top-0 sm:size-10',
                 i === cur ? 'border-primary bg-primary text-primary-foreground' : i < cur ? 'border-primary bg-card text-primary' : 'border-border bg-card text-muted-foreground')}
               style={{ left: `${posOf(b.t) * 100}%` }}>{i + 1}</button>
           ))}
@@ -150,13 +149,13 @@ function ShipPanel() {
           <MissionView day={day} storm={storm} shelter={w.inShelter} theme={theme} />
         </Suspense>
         <dl className="num grid grid-cols-2 gap-x-4 gap-y-0.5 border-b px-5 py-2 text-xs sm:pointer-events-none sm:absolute sm:top-3 sm:left-3 sm:rounded-md sm:border-0 sm:bg-background/85 sm:px-3">
-          <div><dt className="inline text-muted-foreground">Day </dt><dd className="inline font-semibold">{fmt(day)} of {TRANSIT_DAYS}</dd></div>
-          <div><dt className="inline text-muted-foreground">From the Sun </dt><dd className="inline font-semibold">{fmt(Math.hypot(v.x, v.y))} AU</dd></div>
-          <div><dt className="inline text-muted-foreground">Light time to Earth </dt><dd className="inline font-semibold">{fmt(lightMinutes(day))} min</dd></div>
+          <div><dt className="inline text-muted-foreground">Day </dt><dd className="inline font-semibold"><LiveNum value={day} /> of {TRANSIT_DAYS}</dd></div>
+          <div><dt className="inline text-muted-foreground">From the Sun </dt><dd className="inline font-semibold"><LiveNum value={Math.hypot(v.x, v.y)} /> AU</dd></div>
+          <div><dt className="inline text-muted-foreground">Light time to Earth </dt><dd className="inline font-semibold"><LiveNum value={lightMinutes(day)} /> min</dd></div>
           <div><dt className="inline text-muted-foreground">Link </dt><dd className="inline font-semibold">{LINK_LABEL[w.link]}</dd></div>
         </dl>
       </div>
-      <p className="px-5 py-3 text-xs text-muted-foreground">Drag to turn the view. The yellow shell is a CME. The particles are solar protons. They curve along the Sun's magnetic field to the ship. The blue bubble is the shelter.</p>
+      <p className="px-5 py-3 text-xs text-muted-foreground">Drag to turn the view. The shell is a CME, the particles are solar protons, and the blue bubble is the shelter.</p>
     </Panel>
   );
 }

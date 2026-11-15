@@ -86,11 +86,17 @@ function raisedNow(w: World): boolean {
   });
 }
 
+/** True for a new replay: the demo start with no crew action. */
+const isFresh = (w: World) => w.t === DEMO_START && w.actions.length === 0;
+
 export function useSim() {
   const [world, setWorld] = useState(load);
   const [, setVersion] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(SPEEDS[2]);
+  // A new replay starts by itself at 1 min/s, so the clock moves on the first screen. At the first alert it pauses
+  // and switches to 1 h/s, so the next Play reaches the later steps fast.
+  const [playing, setPlaying] = useState(() => isFresh(world));
+  const [speed, setSpeedState] = useState<(typeof SPEEDS)[number]>(() => SPEEDS[isFresh(world) ? 0 : 2]);
+  const intro = useRef(playing);
   const [pauseOnAlert, setPauseOnAlert] = useState(true);
   const carry = useRef(0);
   const bump = useCallback(() => setVersion((v) => v + 1), []);
@@ -106,6 +112,8 @@ export function useSim() {
         w.step();
         if (pauseOnAlert && raisedNow(w)) {
           setPlaying(false);
+          if (intro.current) setSpeedState(SPEEDS[2]);
+          intro.current = false;
           break;
         }
       }
@@ -117,6 +125,8 @@ export function useSim() {
     }, 100);
     return () => window.clearInterval(id);
   }, [world, playing, speed, pauseOnAlert, bump]);
+
+  const setSpeed = useCallback((s: (typeof SPEEDS)[number]) => { intro.current = false; setSpeedState(s); }, []);
 
   const act = useCallback((a: Action) => {
     world.apply(a);

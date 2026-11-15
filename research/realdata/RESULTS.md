@@ -48,11 +48,11 @@ The NASA press release gives 8,100 µGy for an astronaut next to Curiosity on 20
 | Old rule: 10 × fixed baseline | 2 of 6 | 0 | 21% |
 | Löwe 2025: 1.25 × fitted background | 6 of 6 | 9 | 75% |
 | Löwe, 2 detectors agree | 6 of 6 | 6 | 75% |
-| Storm Shelter v2 (the app's R-W1): 2 × background, 2 detectors agree | 6 of 6 | 0 | 69% |
+| Vigil v2 (the app's R-W1): 2 × background, 2 detectors agree | 6 of 6 | 0 | 69% |
 
 The old rule sheltered only for March 2012 and May 2024. Each time, it started 15 min after the 10 × crossing.
 
-The app uses Storm Shelter v2 as Warning rule R-W1 and 1.5 × as Caution rule R-C1. The test uses the same limits as the app: entry when both detectors read above 2 × background for 30 min, and clear when both read below 1.5 × background for 60 min. When 1 detector has no data, the bin does not count toward an entry. (Before 14 November 2026, the test cleared at 1.25 × and accepted 1 detector when the other had no data. That version avoided 72% of the dose.) The app's second R-W1 trigger, a 24 h dose projection, is not in this test.
+The app uses Vigil v2 as Warning rule R-W1 and 1.5 × as Caution rule R-C1. The test uses the same limits as the app: entry when both detectors read above 2 × background for 30 min, and clear when both read below 1.5 × background for 60 min. When 1 detector has no data, the bin does not count toward an entry. (Before 14 November 2026, the test cleared at 1.25 × and accepted 1 detector when the other had no data. That version avoided 72% of the dose.) The app's second R-W1 trigger, a 24 h dose projection, is not in this test.
 
 ### Cost of late entry (Idea C)
 
