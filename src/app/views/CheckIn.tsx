@@ -70,7 +70,7 @@ export function CheckInView() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
         <Panel>
           <div className="grid gap-6 pt-5">
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
               <div>
                 <div className="mb-2 text-sm font-medium">Sleep last night</div>
                 <div className="flex items-center gap-2">

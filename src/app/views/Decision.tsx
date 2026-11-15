@@ -39,8 +39,9 @@ function qualityLine(a: Alert, w: World): string {
   const q = w.current.quality;
   const good = q.filter((x) => x === 'good').length;
   if (a.quality === 'good') return `Good. ${good} of ${q.length} sensors agree.`;
-  if (a.quality === 'poor') return `Poor on ${q.length - good} sensor. ${good} of ${q.length} agree.`;
-  return `Missing data on ${q.filter((x) => x === 'missing').length} sensor. ${good} of ${q.length} agree.`;
+  const n = q.filter((x) => x === (a.quality === 'poor' ? 'poor' : 'missing')).length;
+  const sensors = `${n} sensor${n === 1 ? '' : 's'}`;
+  return `${a.quality === 'poor' ? 'Poor on' : 'Missing data on'} ${sensors}. ${good} of ${q.length} agree.`;
 }
 
 const HERO: Record<string, string> = {

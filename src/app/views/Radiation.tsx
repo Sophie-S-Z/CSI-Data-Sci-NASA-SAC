@@ -21,14 +21,15 @@ export function RadiationView() {
   return (
     <>
       <PageHead title="Cabin radiation" sub="Your dose, the 6 cabin sensors, and the alert limits." />
+      {/* Below xl the 2 columns dissolve, so "Your dose rate" comes first on a phone. The wide layout does not change. */}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="min-w-0 space-y-4">
-          <DoseChart />
-          <Timeline />
+        <div className="min-w-0 space-y-4 max-xl:contents">
+          <div className="min-w-0 max-xl:order-2"><DoseChart /></div>
+          <div className="min-w-0 max-xl:order-4"><Timeline /></div>
         </div>
-        <div className="min-w-0 space-y-4">
-          <Exposure />
-          <RateTile />
+        <div className="min-w-0 space-y-4 max-xl:contents">
+          <div className="min-w-0 max-xl:order-3"><Exposure /></div>
+          <div className="min-w-0 max-xl:order-1"><RateTile /></div>
         </div>
       </div>
     </>
@@ -51,7 +52,7 @@ function RateTile() {
     const step = Math.max(1, Math.floor(h.length / 60));
     return h.filter((_, i) => i % step === 0).map((p) => p.personal);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sparkBucket]);
+  }, [w, sparkBucket]);
   return (
     <Panel title="Your dose rate" aside={<><Prov kind="measured">RAD event data</Prov></>}>
       <div className="flex items-end justify-between gap-3">
@@ -87,7 +88,7 @@ export function EventDose({ a, w }: { a: Alert; w: World }) {
   const bucket = Math.floor(w.t / 15);
   const peak = useMemo(() => w.history.reduce((m, h) => (h.t >= a.openedAt && h.t <= (a.closedAt ?? w.t) ? Math.max(m, h.mean) : m), 0),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-    [a.id, a.closedAt, bucket]);
+    [w, a.id, a.closedAt, bucket]);
   const before = a.eventDoseMSv - a.shelterDoseMSv;
   const rows: [string, React.ReactNode, React.ReactNode][] = [
     ['Peak cabin mean dose rate (RAD event shape × B)', <Src k="speModel">{fmt(peak)} mSv/h</Src>, <Prov kind="measured">Measured RAD</Prov>],
@@ -157,7 +158,7 @@ function DoseChart() {
   // Rebuild the series at most each 10 to 30 replay minutes. A rebuild each tick made the demo lag.
   const bucket = Math.floor(w.t / (span <= 8 ? 10 : span <= 24 ? 15 : 30));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const data = useMemo(() => buildSeries(w, span), [bucket, span, w.inShelter]);
+  const data = useMemo(() => buildSeries(w, span), [w, bucket, span, w.inShelter]);
   return (
     <Panel title="Cabin dose rate" aside={<>
       <Prov kind="measured">Event: MSL RAD, Mar 2012</Prov>
@@ -314,6 +315,7 @@ function Timeline() {
           </div>
         </div>
       </div>
+      <p className="mt-2 text-xs text-muted-foreground md:hidden">Swipe sideways to see the full day.</p>
     </Panel>
   );
 }

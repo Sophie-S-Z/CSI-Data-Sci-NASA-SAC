@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { dayOf } from '../../engine/time';
 import { fmt } from '../../engine/units';
+import { actionSentence } from '../../engine/world';
 import { BODY_RULES, jitter, limitRange, paramsOf, type BodySystem } from '../../engine/bodyRules';
 import { cabinAt } from '../../engine/cabin';
 import { useUi } from '../context';
@@ -53,22 +54,26 @@ export function BodyView() {
         {ROWS.map((r) => {
           const mine = findings.filter((f) => r.systems.includes(f.system));
           const top = mine.find((f) => f.level === 'caution') ?? mine[0];
+          // The radiation card follows the open radiation alert, so it never reads "In range" during a Warning.
+          const storm = r.id === 'rad' ? w.openAlert('radiation') : undefined;
+          const level = storm?.level ?? top?.level;
           const ids = BODY_RULES.filter((b) => r.systems.includes(b.system)).map((b) => b.id);
           const d = data[r.id];
           const I = r.icon;
           return (
-            <section key={r.id} className={cn('flex flex-col rounded-xl bg-card p-4 ring-hairline', top?.level === 'caution' && 'ring-2 ring-caution')}>
+            <section key={r.id} className={cn('flex flex-col rounded-xl bg-card p-4 ring-hairline', level === 'warning' ? 'ring-2 ring-warning' : level === 'caution' && 'ring-2 ring-caution')}>
               <div className="flex items-center gap-2">
                 <span className="grid size-8 place-items-center rounded-md bg-muted"><I className="size-4" aria-hidden="true" /></span>
                 <h2 className="text-sm font-semibold">{r.title}</h2>
-                <span className="ml-auto">{top ? <LevelBadge level={top.level} /> : <LevelBadge level="nominal">In range</LevelBadge>}</span>
+                <span className="ml-auto">{level ? <LevelBadge level={level} /> : <LevelBadge level="nominal">In range</LevelBadge>}</span>
               </div>
               <div className="mt-3 flex items-end justify-between gap-2">
                 <div className="num text-2xl font-semibold tracking-tight">{d.latest}</div>
                 {d.trend && <Spark values={d.trend} min={d.min} max={d.max} limit={d.limit} label={`${r.title}, 8-day trend`} className="h-9 w-28" />}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{r.risk}</p>
-              {top && <p className="mt-2 rounded-md bg-muted/60 p-2 text-xs">{top.title}. {top.why}</p>}
+              {storm ? <p className="mt-2 rounded-md bg-muted/60 p-2 text-xs">{storm.id} is open. {actionSentence(storm, w)}</p>
+                : top && <p className="mt-2 rounded-md bg-muted/60 p-2 text-xs">{top.title}. {top.why}</p>}
               <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3 text-[11px] text-muted-foreground">
                 <span className="truncate">{r.from}</span>
                 {ids.length > 0 && <span className="ml-auto font-mono">{ids.map((id, i) => <span key={id}>{i ? ', ' : ''}<Src k={id}>{id}</Src></span>)}</span>}
