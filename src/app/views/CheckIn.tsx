@@ -10,7 +10,7 @@ import { useUi } from '../context';
 import { LevelBadge, PageHead, Panel, Src } from '../parts';
 import { sources } from '../sources';
 import { LogRow } from './Log';
-import { readNote, type Symptom } from '../noteReader';
+import { readNote, spokenNumber, spokenStep, type Symptom } from '../noteReader';
 import { Mic } from '../Mic';
 
 /** One page, no wizard: a normal day takes about 30 s. */
@@ -31,11 +31,14 @@ const VIS_HELP: Record<Visibility, string> = {
 
 function Scale({ value, set, labels, label }: { value: number; set: (n: number) => void; labels: string[]; label: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="grid grid-cols-5 gap-1 rounded-md bg-muted p-1">
-      {labels.map((l, i) => (
-        <button key={l} role="radio" aria-checked={value === i + 1} onClick={() => set(i + 1)}
-          className={cn('h-11 rounded-md text-sm font-medium transition', value === i + 1 ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>{l}</button>
-      ))}
+    <div className="flex items-center gap-2">
+      <div role="radiogroup" aria-label={label} className="grid flex-1 grid-cols-5 gap-1 rounded-md bg-muted p-1">
+        {labels.map((l, i) => (
+          <button key={l} role="radio" aria-checked={value === i + 1} onClick={() => set(i + 1)}
+            className={cn('h-11 rounded-md text-sm font-medium transition', value === i + 1 ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>{l}</button>
+        ))}
+      </div>
+      <Mic label={`Say your ${label.toLowerCase()}: ${labels.join(', ')}`} onText={(t) => { const n = spokenStep(t, labels); if (n) set(n); }} />
     </div>
   );
 }
@@ -77,6 +80,7 @@ export function CheckInView() {
                   <Button variant="outline" size="icon" className="size-11 rounded-md" aria-label="Less sleep" onClick={() => setSleep(Math.max(0, +(sleep - 0.5).toFixed(1)))}><Minus className="size-4" /></Button>
                   <output className="num flex-1 text-center text-3xl font-semibold" aria-live="polite">{sleep.toFixed(1)}<span className="ml-1 text-sm font-normal text-muted-foreground">h</span></output>
                   <Button variant="outline" size="icon" className="size-11 rounded-md" aria-label="More sleep" onClick={() => setSleep(Math.min(12, +(sleep + 0.5).toFixed(1)))}><Plus className="size-4" /></Button>
+                  <Mic label="Say your hours of sleep" onText={(t) => { const h = spokenNumber(t); if (h >= 0 && h <= 12) setSleep(Math.round(h * 2) / 2); }} />
                 </div>
               </div>
               <div><div className="mb-2 text-sm font-medium">Sleep quality</div><Scale value={sleepQ} set={setSleepQ} labels={SCALE5.sleep} label="Sleep quality" /></div>
@@ -111,7 +115,10 @@ export function CheckInView() {
             <div className="grid gap-5 md:grid-cols-[260px_1fr]">
               <div>
                 <div className="mb-3 flex items-baseline justify-between text-sm font-medium">Pain<span className="num text-2xl font-semibold">{pain}<span className="text-sm font-normal text-muted-foreground"> of 10</span></span></div>
-                <Slider value={[pain]} min={0} max={10} step={1} onValueChange={(v) => setPain(v[0])} aria-label="Pain, 0 to 10" />
+                <div className="flex items-center gap-3">
+                  <Slider value={[pain]} min={0} max={10} step={1} onValueChange={(v) => setPain(v[0])} aria-label="Pain, 0 to 10" />
+                  <Mic label="Say your pain, 0 to 10" onText={(t) => { const n = spokenNumber(t); if (n >= 0 && n <= 10) setPain(Math.round(n)); }} />
+                </div>
               </div>
               <div>
                 <label htmlFor="note" className="mb-2 block text-sm font-medium">Note (optional)</label>

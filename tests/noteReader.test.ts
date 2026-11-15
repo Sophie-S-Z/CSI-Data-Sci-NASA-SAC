@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readNote, NOTE_SYMPTOMS } from '../src/app/noteReader';
+import { readNote, NOTE_SYMPTOMS, spokenNumber, spokenStep } from '../src/app/noteReader';
 import { evaluateBody } from '../src/engine/bodyRules';
 
 describe('check-in note reader', () => {
@@ -34,5 +34,26 @@ describe('check-in note reader', () => {
     expect(s.every((x) => NOTE_SYMPTOMS.includes(x))).toBe(true);
     const f = evaluateBody({ checkins: [{ t: 0, c: { sleepH: 7, symptoms: s, note: '' } }], lastEvent: null, hr: [], exercise: [] });
     expect(f.map((x) => x.ruleId)).toContain('B-A1');
+  });
+});
+
+describe('spoken number', () => {
+  it.each([
+    ['6.5', 6.5], ['6,5 hours', 6.5], ['six and a half hours', 6.5], ['six point five hours', 6.5], ['pain is three', 3],
+    ['7 and a half', 7.5], ['twenty five', 25], ['about 1,200 ppm', 1200], ['minus 4', -4], ['-2.5', -2.5], ['zero', 0],
+    ['7 hours, no negative effects', 7], ['seven hours, woke up 2 times', 7], ['between 2 - 3', 2], ['someone', NaN], ['', NaN],
+  ])('%s gives %s', (phrase, n) => {
+    expect(spokenNumber(phrase)).toBe(n);
+  });
+});
+
+describe('spoken scale step', () => {
+  const mood = ['Low', 'Flat', 'Steady', 'Good', 'High'];
+  const sleep = ['Poor', 'Fair', 'OK', 'Good', 'Great'];
+  it.each([
+    ['pretty good', mood, 4], ['not low, pretty high', mood, 5], ['not good', sleep, 0], ['okay I guess', sleep, 3],
+    ['four', mood, 4], ['nine', mood, 0], ['great, not poor', sleep, 5],
+  ] as const)('%s gives %s', (phrase, labels, n) => {
+    expect(spokenStep(phrase, labels)).toBe(n);
   });
 });

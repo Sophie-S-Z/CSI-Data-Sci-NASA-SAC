@@ -92,8 +92,9 @@ const isFresh = (w: World) => w.t === DEMO_START && w.actions.length === 0;
 export function useSim() {
   const [world, setWorld] = useState(load);
   const [, setVersion] = useState(0);
-  // A new replay starts by itself at 1 min/s, so the clock moves on the first screen. At the first alert it pauses
-  // and switches to 1 h/s, so the next Play reaches the later steps fast.
+  // A new replay starts by itself at 1 min/s, so the clock moves on the first screen. At the first alert it switches
+  // to 1 h/s (and pauses, if "Pause at each new alert" is on), so the next Play reaches the later steps fast.
+  // A speed choice, a jump, or a reset ends this intro. Reset demo leaves the replay paused.
   const [playing, setPlaying] = useState(() => isFresh(world));
   const [speed, setSpeedState] = useState<(typeof SPEEDS)[number]>(() => SPEEDS[isFresh(world) ? 0 : 2]);
   const intro = useRef(playing);
@@ -110,10 +111,13 @@ export function useSim() {
       carry.current -= n;
       for (let i = 0; i < n && w.t < REPLAY_END; i++) {
         w.step();
-        if (pauseOnAlert && raisedNow(w)) {
-          setPlaying(false);
-          if (intro.current) setSpeedState(SPEEDS[2]);
+        const raised = raisedNow(w);
+        if (raised && intro.current) {
           intro.current = false;
+          setSpeedState(SPEEDS[2]);
+        }
+        if (pauseOnAlert && raised) {
+          setPlaying(false);
           break;
         }
       }
@@ -135,6 +139,7 @@ export function useSim() {
   }, [world, bump]);
 
   const jumpTo = useCallback((t: number) => {
+    intro.current = false;
     if (t >= world.t) {
       world.advanceTo(Math.min(t, REPLAY_END));
       save(world);
@@ -147,6 +152,7 @@ export function useSim() {
   }, [world, bump]);
 
   const restart = useCallback(() => {
+    intro.current = false;
     const w = rebuild([], DEMO_START);
     setPlaying(false);
     save(w);

@@ -47,3 +47,56 @@ export function readNote(note: string): Symptom[] {
   }
   return NOTE_SYMPTOMS.filter((s) => found.has(s));
 }
+
+const UNITS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS: Record<string, number> = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+
+/** The value of one spoken word or digit group. NaN when it is not a number. */
+function tokenValue(tok: string | undefined): number {
+  if (tok === undefined) return NaN;
+  if (/^-?\d/.test(tok)) return Number(tok);
+  const u = UNITS.indexOf(tok);
+  return u >= 0 ? u : TENS[tok] ?? NaN;
+}
+
+/**
+ * The first number in a spoken phrase, for a voice entry in a number field. NaN when there is no number.
+ * It reads digits ("6.5", "6,5", "1,200") and words ("six", "twenty five", "six point five", "six and a half").
+ * "minus" or "negative" just before the number makes it negative.
+ */
+export function spokenNumber(phrase: string): number {
+  const toks = phrase.toLowerCase()
+    .replace(/(\d),(\d{3})(?!\d)/g, '$1$2') // 1,200 is a thousands separator
+    .replace(/(\d),(\d)/g, '$1.$2') // 6,5 is a decimal comma
+    .match(/-?\d+(?:\.\d+)?|[a-z]+/g) ?? [];
+  for (let i = 0; i < toks.length; i++) {
+    let n = tokenValue(toks[i]);
+    if (Number.isNaN(n)) continue;
+    let j = i + 1;
+    const unit = UNITS.indexOf(toks[j]);
+    if (toks[i] in TENS && unit >= 1 && unit <= 9) { n += unit; j++; }
+    const frac = tokenValue(toks[j + 1]);
+    if (toks[j] === 'point' && Number.isInteger(frac) && frac >= 0) n = Number(`${n}.${frac}`);
+    else if (toks[j] === 'and' && toks[j + 1] === 'a' && toks[j + 2] === 'half') n += 0.5;
+    return toks[i - 1] === 'minus' || toks[i - 1] === 'negative' ? -n : n;
+  }
+  return NaN;
+}
+
+/**
+ * The step of a word scale that a spoken phrase names: the first label in the phrase that is not negated
+ * ("not good" does not count), or a number from 1 to the scale length. 0 when it names none.
+ */
+export function spokenStep(phrase: string, labels: readonly string[]): number {
+  const s = phrase.toLowerCase().replace(/\bokay\b/g, 'ok');
+  let best = -1, at = Infinity;
+  labels.forEach((l, i) => {
+    for (const m of s.matchAll(new RegExp(`\\b${l.toLowerCase()}\\b`, 'g'))) {
+      if (m.index < at && !/\b(not|no|never)\s+(\w+\s+)?$/.test(s.slice(0, m.index))) { best = i; at = m.index; }
+    }
+  });
+  if (best >= 0) return best + 1;
+  const n = spokenNumber(s);
+  return n >= 1 && n <= labels.length ? Math.round(n) : 0;
+}

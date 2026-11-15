@@ -4,11 +4,9 @@ import ev from '../../data/real/rad-events.json';
 import rules from '../../data/rules.json';
 import { AREAS, FACTORS, baselineOf, doseInArea, levelAt, type AreaId, type Factor, type Zone, type ZoneLevel } from '../../engine/limits';
 import { fmt, whole } from '../../engine/units';
+import { spokenNumber } from '../noteReader';
 import { FIELD, LEVEL_WORD, LevelBadge, PageHead, Panel, Prov, Seg, Src, ZoneBar } from '../parts';
 import { Mic } from '../Mic';
-
-/** The first number in a spoken phrase, for example "3.4" in "about 3.4 millimeters". */
-const spokenNumber = (t: string) => Number(t.replace(',', '.').match(/-?\d+(\.\d+)?/)?.[0] ?? NaN);
 
 type Values = Record<Factor['key'], number>;
 const START = Object.fromEntries(FACTORS.map((f) => [f.key, f.start])) as Values;

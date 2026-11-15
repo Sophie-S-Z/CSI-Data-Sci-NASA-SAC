@@ -119,7 +119,12 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [playing, setPlaying]);
 
-  const go = useCallback((t: Tab) => { setTab(t); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, []);
+  // Real-world data views do not show the replay, so the replay pauses there and does not move unseen.
+  const go = useCallback((t: Tab) => {
+    if (sectionOf(t).id === 'real') setPlaying(false);
+    setTab(t);
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, [setPlaying]);
 
   const ui: Ui = useMemo(() => ({
     sim, tab, go,
