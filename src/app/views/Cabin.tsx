@@ -37,7 +37,7 @@ export function CabinView() {
     for (let t = w.t - 72 * 60; t <= w.t; t += 20) out.push({ t, v: cabinAt(t, w.shelterMinAt(t))[sel] });
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bucket, sel, w.shelterIntervals.length]);
+  }, [w, bucket, sel, w.shelterIntervals.length]);
 
   return (
     <>

@@ -3,6 +3,9 @@ import { fmt, whole } from '../engine/units';
 import { Src, type AnyLevel } from './parts';
 import { DOSE_LADDER, LEVEL_EFFECT, STORM_LIMIT } from './health';
 
+/** A dose share as a percent. A small dose reads "under 1%", not "0%". */
+const pctText = (p: number) => (p > 0 && p < 1 ? 'under 1%' : `${whole(p)}%`);
+
 /** The body effects beside an alert: one sentence for the level, your storm dose, and the dose steps. */
 export function BodyEffects({ level, stormDose, className }: { level: AnyLevel; stormDose?: number; className?: string }) {
   const e = LEVEL_EFFECT[level];
@@ -12,7 +15,7 @@ export function BodyEffects({ level, stormDose, className }: { level: AnyLevel; 
       <p className="mt-1 text-sm leading-relaxed">{e.text} <Src k={e.src} className="text-xs text-muted-foreground">Source</Src></p>
       {stormDose !== undefined && (
         <div className="mt-3">
-          <div className="flex justify-between text-xs"><span>Your dose in this storm</span><span className="num font-semibold">{fmt(stormDose)} mSv · {whole((stormDose / STORM_LIMIT) * 100)}% of the storm limit</span></div>
+          <div className="flex justify-between text-xs"><span>Your dose in this storm</span><span className="num font-semibold">{fmt(stormDose)} mSv · {pctText((stormDose / STORM_LIMIT) * 100)} of the storm limit</span></div>
           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
             <div className="h-full rounded-full bg-warning" style={{ width: `${Math.min(100, (stormDose / STORM_LIMIT) * 100)}%` }} />
           </div>

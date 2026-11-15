@@ -53,7 +53,7 @@ export function AskView() {
           <section className="rounded-xl bg-card p-4 ring-hairline md:p-5">
             <form onSubmit={onSubmit} className="flex gap-2">
               <label htmlFor="ask-q" className="sr-only">Your question</label>
-              <input id="ask-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type or speak a question" autoComplete="off" enterKeyHint="send"
+              <input id="ask-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask a question" autoComplete="off" enterKeyHint="send"
                 className={cn(FIELD, 'h-12 flex-1 px-4')} />
               <Mic label="Speak a question" className="size-12" onText={(t) => setQ((x) => (x ? `${x} ${t}` : t))} />
               <Button type="submit" disabled={!q.trim()} aria-label="Ask" className="h-12 rounded-md px-4 text-base sm:px-5">

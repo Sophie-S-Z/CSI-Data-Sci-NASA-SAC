@@ -81,6 +81,14 @@ describe('onboard assistant: answers from the state', () => {
     expect(a.lines[0]).toContain('R-W1');
   });
 
+  it('a suppressed Caution still gets its action, as on the alert panel (beta report S-1)', () => {
+    const w = worldAt(94, '00:30', false);
+    const c = w.openAlert('radiation')!;
+    expect(c.level).toBe('caution');
+    w.apply({ type: 'suppress', alertId: c.id }, 0);
+    expect(ask('What do I do now?', w).lines[0]).toContain('Safe your task.');
+  });
+
   it('during the Warning, before the peak: tells the crew to stay, and gives no clear-time estimate', () => {
     const w = worldAt(95, '12:00');
     expect(ask('What do I do now?', w).lines[0]).toContain('Stay in the shelter.');

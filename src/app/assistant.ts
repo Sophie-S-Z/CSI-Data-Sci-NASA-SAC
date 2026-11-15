@@ -51,10 +51,9 @@ const TH = rules.thresholds;
 const TM = rules.timing;
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const dot = (s: string) => (/[.!?]$/.test(s) ? s : `${s}.`);
-const shown = (w: World) => w.activeAlerts.filter((a) => !a.suppressed);
 
 /** The brief covers this many minutes before now. */
-export const BRIEF_MIN = 12 * 60;
+const BRIEF_MIN = 12 * 60;
 /** The brief lists at most this many entries. The rest are on the Log. */
 const BRIEF_ITEMS = 6;
 
@@ -71,7 +70,7 @@ const TOPICS: Topic[] = [
     id: 'now', ask: 'What do I do now?',
     examples: ['what do I do now', 'what should I do', 'what is my action', 'next step', 'what is happening', 'status', 'am I safe', 'what is my radiation risk now', 'is there an alert'],
     answer: (w) => {
-      const a = shown(w)[0];
+      const a = w.activeAlerts[0];
       if (!a) {
         return {
           lines: [w.inShelter ? 'The Warning is clear. You can leave the shelter.' : 'Dose rate normal. No action.',
@@ -122,7 +121,7 @@ const TOPICS: Topic[] = [
       const sep = solar.find((r) => r.kind === 'SEP');
       const dose = w.history.filter((h) => h.t > from).reduce((sum, h) => sum + h.personal / 60, 0);
       const shelter = w.shelterIntervals.reduce((sum, iv) => sum + Math.max(0, Math.min(iv.end ?? w.t, w.t) - Math.max(iv.start, from)), 0);
-      const a = shown(w)[0];
+      const a = w.activeAlerts[0];
       return {
         lines: [
           `Your dose in the last 12 h: ${fmt(dose)} mSv.${shelter ? ` Time in the shelter: ${duration(shelter)}.` : ''}`,
@@ -194,7 +193,7 @@ const TOPICS: Topic[] = [
     id: 'why', ask: 'Why did this alert start?',
     examples: ['why did this alert start', 'why the warning', 'why this alert', 'which rule', 'what is the reason', 'what triggered the alarm', 'explain the alert', 'why caution'],
     answer: (w) => {
-      const a: Alert | undefined = shown(w)[0];
+      const a: Alert | undefined = w.activeAlerts[0];
       if (!a) return { lines: [`No alert is open. The rules check all ${SENSORS.length} sensors each minute.`], sources: ['R-W1'] };
       const r = RULES[a.ruleId];
       return {
@@ -270,7 +269,7 @@ const TOPICS: Topic[] = [
     examples: ['what is still open', 'what did I forget', 'open items', 'what do I still need to do', 'anything left to do', 'checklist', 'what is missing'],
     answer: (w) => {
       const items: string[] = [];
-      for (const a of shown(w)) if (!a.acked && a.level !== 'advisory') items.push(`${cap(a.level)} ${a.id} is not acknowledged.`);
+      for (const a of w.activeAlerts) if (!a.acked && a.level !== 'advisory') items.push(`${cap(a.level)} ${a.id} is not acknowledged.`);
       if (w.procedure) {
         const open = PROCEDURE_SH1.steps.filter((s) => !w.procedure!.confirmed[s.n]);
         if (open.length) items.push(`${PROCEDURE_SH1.id} step ${open[0].n} is next: ${open[0].text}`);
@@ -378,7 +377,7 @@ export function ask(question: string, w: World): Answer {
 
 /** Questions that fit the state now, for the suggestion buttons. */
 export function suggestions(w: World): string[] {
-  const a = shown(w)[0];
+  const a = w.activeAlerts[0];
   const ids = !a ? ['now', 'brief', 'dose', 'missing']
     : a.level === 'warning' ? ['clear', 'leave', 'why', 'sensor']
     : a.level === 'caution' ? ['now', 'brief', 'solar', 'why']

@@ -23,16 +23,20 @@ export function ReportView() {
     a.href = URL.createObjectURL(new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' }));
     a.download = `${file}.json`;
     a.click();
-    URL.revokeObjectURL(a.href);
+    // Some browsers start the download after click() returns, so the URL must live a moment longer.
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   // The print view uses the light theme, so the PDF is dark text on white paper.
+  // Restore after the print dialog closes: on iOS Safari, print() returns before the page prints.
   function pdf() {
     const title = document.title;
     document.title = file;
     document.documentElement.dataset.theme = 'light';
+    window.addEventListener('afterprint', () => {
+      document.documentElement.dataset.theme = theme;
+      document.title = title;
+    }, { once: true });
     window.print();
-    document.documentElement.dataset.theme = theme;
-    document.title = title;
   }
 
   return (
@@ -73,7 +77,7 @@ export function ReportView() {
               {r.alerts.map((a) => (
                 <li key={a.id} className="px-5 py-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2"><LevelBadge level={a.peak} /><b>{a.id}</b><span className="text-muted-foreground">{a.rule}</span></div>
-                  <div className="num mt-1 text-xs text-muted-foreground">{a.opened} to {a.closed ?? 'still open'} · event dose {fmt(a.eventDoseMSv)} mSv</div>
+                  <div className="num mt-1 text-xs text-muted-foreground">{a.closed ? `${a.opened} to ${a.closed}` : `${a.opened}, still open`} · event dose {fmt(a.eventDoseMSv)} mSv</div>
                   <p className="mt-1">{a.bodyEffect}</p>
                 </li>
               ))}
