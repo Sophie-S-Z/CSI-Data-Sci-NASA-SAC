@@ -102,8 +102,8 @@
   "evidence": "Preprint with a method tested on RAD data. Background: linear fit to the previous 5 days."
  },
  "phase4": {
-  "short": "Storm Shelter Phase 4 test",
-  "citation": "Storm Shelter team. Phase 4 real-data test of shelter rules on MSL RAD events. research/realdata/RESULTS.md in this repository.",
+  "short": "Vigil Phase 4 test",
+  "citation": "Vigil team. Phase 4 real-data test of shelter rules on MSL RAD events. research/realdata/RESULTS.md in this repository.",
   "url": "",
   "evidence": "Measured data, 6 events, 554 days scored. Tuned on cycle 24 events, tested once on cycle 25 events. Small sample."
  },

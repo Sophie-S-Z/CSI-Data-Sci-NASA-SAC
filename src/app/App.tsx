@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { LINK_LABEL, LINK_DELAY_MIN } from '../engine/world';
 import { dayOf, hhmm } from '../engine/time';
 import { useSim, BEATS, REPLAY_END, beatIndex } from '../ui/useSim';
 import { UiContext, useUi, type Tab, type Theme, type Ui } from './context';
@@ -40,6 +39,7 @@ const VIEWS: Record<Tab, ComponentType> = {
   sources: view(() => import('./views/Sources'), 'SourcesView'),
 };
 
+// The storage keys keep their old prefix, so a saved theme, profile, or replay survives the rename.
 const THEME_KEY = 'storm-shelter.theme.v3';
 
 /** `short` marks the 4 views in the phone tab bar, with the short label. */
@@ -103,7 +103,7 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#F4F5F6' : '#08090B');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#F5F6F8' : '#111418');
     try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
   }, [theme]);
 
@@ -171,16 +171,17 @@ function ViewSkeleton() {
   );
 }
 
+/** The logo: a pulse trace inside a watch ring. Same drawing as public/icon.svg. */
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
       <svg viewBox="0 0 64 64" className="size-8 shrink-0" aria-hidden="true">
-        <rect x="0" y="0" width="64" height="64" rx="10" fill="var(--primary)" />
-        <path d="M16 36 L32 20 L48 36" fill="none" stroke="var(--background)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="24" y="34" width="16" height="11" rx="2" fill="var(--background)" />
+        <rect width="64" height="64" rx="14" fill="var(--secondary)" />
+        <path d="M13.4 24A20 20 0 0 1 50.6 24M50.6 40A20 20 0 0 1 13.4 40" fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" />
+        <path d="M8 32H21L25 24L31 42L37 18L41 32H56" fill="none" stroke="var(--foreground)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div className="hidden leading-tight sm:block">
-        <div className="text-[15px] font-semibold tracking-tight">Storm Shelter</div>
+        <div className="text-[15px] font-semibold tracking-tight">Vigil</div>
         <div className="text-[11px] text-muted-foreground">Crew health monitor</div>
       </div>
     </div>
@@ -194,24 +195,24 @@ function useCounts() {
 }
 
 /**
- * Simulation or Real-world data: the first choice in the app, in the top bar on every screen.
+ * Simulation or Real-world data: the first choice in the app. It sits at the top of the sidebar on a wide screen and in the top bar on a narrow one.
  * A tap opens the first view of that mode.
  */
-function ModeSwitch() {
+function ModeSwitch({ short }: { short?: boolean }) {
   const { tab, go } = useUi();
   const cur = sectionOf(tab).id;
   return (
-    <div role="tablist" aria-label="Data mode" className="grid h-10 grid-cols-2 rounded-full bg-muted p-1">
+    <div role="tablist" aria-label="Data mode" className="grid h-11 grid-cols-2 rounded-lg bg-background p-1 ring-1 ring-border">
       {SECTIONS.map((s) => {
         const I = s.icon;
         const on = cur === s.id;
         return (
           <button key={s.id} type="button" role="tab" aria-selected={on} onClick={() => !on && go(s.groups[0].items[0].id)}
-            className={cn('flex items-center justify-center gap-1.5 rounded-full px-3 text-[13px] font-semibold whitespace-nowrap transition-colors',
-              on ? (s.id === 'sim' ? 'bg-primary text-primary-foreground' : 'bg-nominal text-background') : 'text-muted-foreground hover:text-foreground')}>
-            <I className="size-4" aria-hidden="true" />
-            <span className="sm:hidden">{s.id === 'sim' ? 'Simulation' : 'Real data'}</span>
-            <span className="hidden sm:inline">{s.label}</span>
+            className={cn('flex items-center justify-center gap-1.5 rounded-md px-3 text-[13px] font-semibold whitespace-nowrap transition-colors duration-200 active:scale-[0.97]',
+              on ? MODE_FILL[s.id] : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
+            <I className="size-4 shrink-0" aria-hidden="true" />
+            <span className={cn(!short && 'sm:hidden')}>{s.id === 'sim' ? 'Simulation' : 'Real data'}</span>
+            {!short && <span className="hidden sm:inline">{s.label}</span>}
           </button>
         );
       })}
@@ -219,19 +220,30 @@ function ModeSwitch() {
   );
 }
 
-/** One line under the top bar: what the data in this mode is. It replaces a "Simulated" label on each panel. */
+/** Mode colors. Simulation also gets diagonal stripes, so the mode never depends on color alone. */
+const MODE_FILL = { sim: 'bg-sim text-background', real: 'bg-real text-background' } as const;
+const MODE_TEXT = { sim: 'text-sim', real: 'text-real' } as const;
+
+/** A band under the top bar on every view: the mode name, its icon, and what the data is. It replaces a "Simulated" label on each panel. */
 function ModeBanner() {
   const { tab } = useUi();
   const s = sectionOf(tab);
+  const I = s.icon;
   return (
-    <div className={cn('border-b text-xs print:hidden', s.id === 'sim' ? 'bg-primary/8' : 'bg-nominal/10')}>
-      <p className="mx-auto max-w-[1400px] px-4 py-1.5 md:px-6 lg:px-8"><b>{s.label}.</b> {s.about} Not for clinical use.</p>
+    <div className={cn('border-b print:hidden', s.id === 'sim' ? 'sim-stripes border-sim/40 bg-sim/10' : 'border-real/40 bg-real/12')}>
+      <div className="mx-auto flex max-w-[1400px] items-center gap-2.5 px-4 py-2 text-xs md:px-6 lg:px-8">
+        <span className={cn('inline-flex h-6 shrink-0 items-center gap-1.5 rounded px-2 font-semibold tracking-wide uppercase', MODE_FILL[s.id])}>
+          <I className="size-3.5" aria-hidden="true" />{s.id === 'sim' ? 'Simulation' : 'Real data'}
+        </span>
+        <p className="min-w-0">{s.about} Not for clinical use.</p>
+      </div>
     </div>
   );
 }
 
 function NavButton({ item, onPick }: { item: NavItem; onPick?: () => void }) {
   const { tab, go } = useUi();
+  const mode = sectionOf(tab).id;
   const c = useCounts();
   const active = tab === item.id;
   const I = item.icon;
@@ -239,7 +251,7 @@ function NavButton({ item, onPick }: { item: NavItem; onPick?: () => void }) {
   return (
     <button onClick={() => { go(item.id); onPick?.(); }} aria-current={active ? 'page' : undefined}
       className={cn('relative flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
-        active ? 'bg-accent text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded before:bg-primary' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground')}>
+        active ? cn('bg-accent text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded', mode === 'sim' ? 'before:bg-sim' : 'before:bg-real') : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground')}>
       <I className="size-[18px]" strokeWidth={2} aria-hidden="true" />
       <span>{item.label}</span>
       {dot && <span className={cn('ml-auto size-2 rounded-full', dot)} aria-label="Active alert" />}
@@ -252,7 +264,7 @@ function NavGroups({ section, onPick }: { section: Section; onPick?: () => void 
     <>
       {section.groups.map((g) => (
         <nav key={g.label} aria-label={g.label} className="mt-4 space-y-0.5">
-          <div className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{g.label}</div>
+          <div className={cn('px-3 pb-1 text-[11px] font-semibold tracking-wide uppercase', MODE_TEXT[section.id])}>{g.label}</div>
           {g.items.map((n) => <NavButton key={n.id} item={n} onPick={onPick} />)}
         </nav>
       ))}
@@ -264,7 +276,8 @@ function Sidebar() {
   const { tab } = useUi();
   return (
     <aside className="sticky top-0 hidden print:hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r bg-sidebar px-3 py-4 lg:flex">
-      <div className="px-2 pb-2"><Brand /></div>
+      <div className="px-2 pb-3"><Brand /></div>
+      <ModeSwitch short />
       <NavGroups section={sectionOf(tab)} />
     </aside>
   );
@@ -302,18 +315,18 @@ function TopBar({ last }: { last: { t: number; text: string } | null }) {
   const { sim, tab } = useUi();
   const w = sim.world;
   const c = useCounts();
-  const inSim = sectionOf(tab).id === 'sim';
-  const delay = LINK_DELAY_MIN[w.link];
+  const mode = sectionOf(tab).id;
+  const inSim = mode === 'sim';
   const title = ITEMS.find((i) => i.id === tab)!.label;
   return (
-    <header className="sticky top-0 z-30 border-b print:hidden bg-background pt-[env(safe-area-inset-top)]">
+    <header className={cn('sticky top-0 z-30 border-t-[3px] border-b print:hidden bg-background pt-[env(safe-area-inset-top)]', mode === 'sim' ? 'border-t-sim' : 'border-t-real')}>
       <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center gap-2 px-4 md:gap-3 md:px-6 lg:px-8">
         <div className="lg:hidden"><Brand /></div>
         <div className="hidden min-w-0 lg:block xl:w-56">
           <div className="truncate text-sm font-semibold">{title}</div>
-          {inSim && <div className="truncate text-xs text-muted-foreground" aria-live="polite">{last ? <>Last action <span className="num">{hhmm(last.t)}</span>: {last.text}</> : 'No crew action yet.'}</div>}
+          {inSim && last && <div className="truncate text-xs text-muted-foreground" aria-live="polite">Last action <span className="num">{hhmm(last.t)}</span>: {last.text}</div>}
         </div>
-        <div className="hidden sm:block"><ModeSwitch /></div>
+        <div className="hidden sm:block lg:hidden"><ModeSwitch /></div>
         {inSim && tab !== 'mission' && <MiniReplay />}
         {inSim && (
           <>
@@ -321,17 +334,26 @@ function TopBar({ last }: { last: { t: number; text: string } | null }) {
               <CountPill level="warning" n={c.warning} />
               <CountPill level="caution" n={c.caution} />
             </div>
-            <div className="hidden items-center gap-2 rounded-md bg-muted px-2.5 py-1 text-xs font-medium whitespace-nowrap 2xl:flex" title="Link to Earth">
-              <span className={cn('size-2 rounded-full', delay === null ? 'bg-muted-foreground' : delay === 0 ? 'bg-nominal' : 'bg-advisory')} aria-hidden="true" />
-              {LINK_LABEL[w.link]}
-            </div>
-            <div className="num text-right text-sm leading-tight font-semibold whitespace-nowrap" aria-label="Mission time">Day {dayOf(w.t)}<br className="sm:hidden" /> <span className="sm:text-base">{hhmm(w.t)}</span></div>
+            <MissionClock t={w.t} playing={sim.playing} />
           </>
         )}
         <div className={cn(!inSim && 'ml-auto')}><ProfileButton /></div>
       </div>
       <div className="px-4 pb-2 sm:hidden"><ModeSwitch /></div>
     </header>
+  );
+}
+
+/** Mission day and time. While the replay plays, a pulsing dot and the word "Live" show that time moves. */
+function MissionClock({ t, playing }: { t: number; playing: boolean }) {
+  return (
+    <div className="flex items-center gap-2 whitespace-nowrap" aria-label="Mission time">
+      <span className={cn('inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase', playing ? 'text-sim' : 'text-muted-foreground')}>
+        {playing ? <span className="relative flex size-2"><span className="absolute inset-0 animate-ping rounded-full bg-sim opacity-60 motion-reduce:hidden" /><span className="size-2 rounded-full bg-sim" /></span> : <Pause className="size-3" aria-hidden="true" />}
+        <span className="hidden sm:inline">{playing ? 'Live' : 'Paused'}</span>
+      </span>
+      <span className="num text-right text-sm leading-tight font-semibold">Day {dayOf(t)}<br className="sm:hidden" /> <span className="sm:text-base">{hhmm(t)}</span></span>
+    </div>
   );
 }
 
@@ -388,7 +410,7 @@ function MobileTabs() {
   const inMore = !main.some((m) => m.id === tab);
   const cell = (on: boolean) => cn('flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium', on ? 'text-foreground' : 'text-muted-foreground');
   // The active view gets a filled pill behind its icon, as in a native tab bar.
-  const pill = (on: boolean) => cn('relative grid h-7 w-14 place-items-center rounded-full transition-colors', on && 'bg-primary/20 text-primary');
+  const pill = (on: boolean) => cn('relative grid h-7 w-14 place-items-center rounded-full transition-colors', on && (section.id === 'sim' ? 'bg-sim/20 text-sim' : 'bg-real/20 text-real'));
   return (
     <>
       <nav aria-label="Views" className="fixed print:hidden inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden">

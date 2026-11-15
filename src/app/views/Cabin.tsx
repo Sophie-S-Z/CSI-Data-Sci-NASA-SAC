@@ -7,7 +7,7 @@ import { FACTOR, levelAt, type Factor, type ZoneLevel } from '../../engine/limit
 import { dayOf, hhmm, stamp } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { useUi } from '../context';
-import { LevelBadge, PageHead, Panel, Prov, Src, ZoneBar } from '../parts';
+import { LevelBadge, LiveNum, PageHead, Panel, Prov, Src, ZoneBar } from '../parts';
 
 const PARAMS: { key: keyof CabinReading & Factor['key']; icon: typeof Wind }[] = [
   { key: 'co2mmHg', icon: Wind },
@@ -58,7 +58,7 @@ export function CabinView() {
             <button key={key} onClick={() => setSel(key)} aria-pressed={sel === key}
               className={cn('rounded-xl border bg-card p-4 text-left transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring', sel === key && 'border-primary')}>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><I className="size-4" aria-hidden="true" /><span className="truncate">{x.title}</span></div>
-              <div className={cn('num mt-2 text-3xl font-semibold tracking-tight', st === 'caution' && 'text-caution-ink')}>{fmt(v)}<span className="ml-1 text-sm font-normal text-muted-foreground">{x.unit}</span></div>
+              <div className={cn('num mt-2 text-3xl font-semibold tracking-tight', st === 'caution' && 'text-caution-ink')}><LiveNum value={v} /><span className="ml-1 text-sm font-normal text-muted-foreground">{x.unit}</span></div>
               <ZoneBar f={x} zones={x.zones('cabin')} v={v} className="mt-3" />
               <div className="mt-2 flex items-center justify-between text-[11px]">
                 <span className={cn('font-medium', st === 'nominal' ? 'text-nominal' : st === 'advisory' ? 'text-advisory' : 'text-caution-ink')}>{STATUS[st]}</span>

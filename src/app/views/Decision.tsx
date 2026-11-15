@@ -9,7 +9,7 @@ import { SENSORS } from '../../engine/doseModel';
 import { hhmm, duration } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { useUi } from '../context';
-import { LevelBadge, LevelIcon, LEVEL_WORD, Src } from '../parts';
+import { LevelBadge, LiveNum, LevelIcon, LEVEL_WORD, Src } from '../parts';
 import { BodyEffects } from '../BodyEffects';
 
 const TH = rules.thresholds;
@@ -88,7 +88,7 @@ export function Decision() {
           {main ? actionSentence(main, w) : w.inShelter ? 'All clear. You can leave the shelter.' : 'Dose rate normal. No action.'}
         </h2>
         <p className={cn('mt-2 max-w-2xl text-[15px]', loud ? 'opacity-90' : 'text-muted-foreground')}>
-          {main ? whyLine(main, w) : <>Cabin mean <span className="num font-medium text-foreground">{fmt(w.current.mean)} mSv/h</span>, <span className="num">{fmt(w.current.mean / w.B)} ×</span> the baseline <Src k="B"><span className="num">B</span></Src>. The rules check all {SENSORS.length} sensors each minute.</>}
+          {main ? whyLine(main, w) : <>Cabin mean <span className="font-medium text-foreground"><LiveNum value={w.current.mean} /> mSv/h</span>, <LiveNum value={w.current.mean / w.B} /> × the baseline <Src k="B"><span className="num">B</span></Src>. The rules check all {SENSORS.length} sensors each minute.</>}
         </p>
         {clear && w.inShelter && (
           <div className="mt-4 max-w-md">

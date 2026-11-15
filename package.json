@@ -1,9 +1,9 @@
 {
-  "name": "storm-shelter",
+  "name": "vigil",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Storm Shelter: an offline radiation health tool for one astronaut on a Mars transit (NASA Space Apps 2026, CSI).",
+  "description": "Vigil: an offline crew health monitor for one astronaut on a Mars transit (NASA Space Apps 2026, CSI).",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

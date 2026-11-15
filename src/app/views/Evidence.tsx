@@ -10,7 +10,7 @@ const l1 = l1raw as { headline: string; tiles: { label: string; value: string; s
 
 type PolicyId = keyof typeof ev.policies;
 const POLICY_ORDER: PolicyId[] = ['current', 'lowe', 'lowe2', 'layered2'];
-const SHORT: Record<PolicyId, string> = { current: 'Old rule', lowe: 'Löwe 2025', lowe2: 'Löwe, 2 detectors', layered2: 'Storm Shelter v2' };
+const SHORT: Record<PolicyId, string> = { current: 'Old rule', lowe: 'Löwe 2025', lowe2: 'Löwe, 2 detectors', layered2: 'Vigil v2' };
 const SET_LABEL: Record<string, string> = { cruise_2012: 'Cruise to Mars, 2012', surface_2017: 'Mars surface, 2017', surface_2024: 'Mars surface, 2024' };
 
 interface Score { entered_before_peak: boolean; lead_vs_2xB_min: number | null; lead_vs_10xB_min: number | null; dose_avoided_pct: number | null }
@@ -75,15 +75,15 @@ export function EvidenceView() {
             </tbody>
           </table>
         </div>
-        <p className="px-5 pt-2 text-xs text-muted-foreground">Dose avoided uses a shelter factor of <Src k="shelterFactor">0.25</Src> (team value), so 75% is the most a rule can save. "Storm Shelter v2" uses the same limits as the app's Warning rule R-W1 (<Src k="R-W1">rule</Src>): both RAD detectors must agree, and a bin with 1 detector missing does not count. The test leaves out the second R-W1 trigger, the 24 h dose projection.</p>
+        <p className="px-5 pt-2 text-xs text-muted-foreground">Dose avoided uses a shelter factor of <Src k="shelterFactor">0.25</Src> (team value), so 75% is the most a rule can save. "Vigil v2" uses the same limits as the app's Warning rule R-W1 (<Src k="R-W1">rule</Src>): both RAD detectors must agree, and a bin with 1 detector missing does not count. The test leaves out the second R-W1 trigger, the 24 h dose projection.</p>
       </Panel>
 
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <Panel title="Replay one event" aside={<Prov kind="measured">RAD E detector</Prov>}>
-          <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="radiogroup" aria-label="Event">
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3" role="radiogroup" aria-label="Event">
             {ev.events.map((x) => (
               <button key={x.id} role="radio" aria-checked={sel === x.id} onClick={() => setSel(x.id)}
-                className={cn('shrink-0 rounded-md px-3 py-2 text-left ring-1 transition', sel === x.id ? 'bg-primary/8 ring-2 ring-primary' : 'ring-border hover:bg-muted/50')}>
+                className={cn('min-w-0 rounded-md px-3 py-2 text-left ring-1 transition-colors duration-150', sel === x.id ? 'bg-primary/8 ring-2 ring-primary' : 'ring-border hover:bg-muted/50')}>
                 <div className="text-xs font-semibold">{fmtUtc(x.onset_utc).split(',')[0]}</div>
                 <div className="num text-[11px] text-muted-foreground">{SET_LABEL[x.set].split(',')[0]} · peak {fmt(x.peak_ratio)}×</div>
               </button>
@@ -134,7 +134,7 @@ export function EvidenceView() {
                 : <>no shelter entry before the peak. The crew got the full event dose.</>}
             </div>
           </Panel>
-          <Panel title="Cost of a late entry" aside="Idea C">
+          <Panel title="Cost of a late entry">
             <p className="text-xs text-muted-foreground">Share of this event's dose that the crew still gets, by entry time after the 2× crossing.</p>
             <div className="mt-3 space-y-1.5">
               {['+0h', '+0.5h', '+1h', '+2h', '+4h'].map((k) => {

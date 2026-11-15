@@ -12,7 +12,7 @@ import { SENSORS } from '../../engine/doseModel';
 import { at, dayOf, hhmm, stamp, duration, minuteOfDay, MIN_PER_DAY } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { useUi } from '../context';
-import { PageHead, Panel, Prov, Seg, Src, Spark, Kv } from '../parts';
+import { LiveNum, PageHead, Panel, Prov, Seg, Src, Spark, Kv } from '../parts';
 
 const TH = rules.thresholds;
 
@@ -57,8 +57,8 @@ function RateTile() {
     <Panel title="Your dose rate" aside={<><Prov kind="measured">RAD event data</Prov></>}>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <div className={cn('num text-5xl font-semibold tracking-tight', tone)}>{fmt(s.personal)}<span className="ml-1.5 text-base font-medium text-muted-foreground">mSv/h</span></div>
-          <div className="num mt-1 text-sm text-muted-foreground">{fmt(x)} × cruise baseline{w.inShelter && <span className="ml-1.5 inline-flex items-center gap-1 text-nominal"><ShieldCheck className="size-3.5" aria-hidden="true" />in shelter</span>}</div>
+          <div className={cn('num text-5xl font-semibold tracking-tight', tone)}><LiveNum value={s.personal} /><span className="ml-1.5 text-base font-medium text-muted-foreground">mSv/h</span></div>
+          <div className="num mt-1 text-sm text-muted-foreground"><LiveNum value={x} /> × cruise baseline{w.inShelter && <span className="ml-1.5 inline-flex items-center gap-1 text-nominal"><ShieldCheck className="size-3.5" aria-hidden="true" />in shelter</span>}</div>
         </div>
         <Spark values={spark} label="Your dose rate, last 8 hours" className="h-12 w-36" stroke={tone === 'text-warning' ? 'var(--warning)' : 'var(--chart-1)'} />
       </div>
