@@ -148,7 +148,7 @@ export function Seg<T extends string>({ value, options, onChange, label }: { val
     <div role="radiogroup" aria-label={label} className="inline-flex flex-wrap rounded-md bg-muted p-0.5">
       {options.map((o) => (
         <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
-          className={cn('h-10 rounded px-3 text-xs font-medium whitespace-nowrap transition-colors sm:h-8 sm:px-2.5', value === o.value ? 'bg-card text-foreground ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>
+          className={cn('h-8 rounded px-2.5 text-xs font-medium whitespace-nowrap transition-colors pointer-coarse:h-10 pointer-coarse:px-3', value === o.value ? 'bg-card text-foreground ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>
           {o.label}
         </button>
       ))}

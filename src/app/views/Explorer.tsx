@@ -66,7 +66,7 @@ export function ExplorerView() {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">Examples</span>
           {PRESETS.map((p) => (
-            <button key={p.label} type="button" onClick={() => { setV({ ...START, ...p.values }); if (p.area) setArea(p.area); }} className="h-9 rounded-md border px-3 text-sm hover:bg-accent">{p.label}</button>
+            <button key={p.label} type="button" onClick={() => { setV({ ...START, ...p.values }); if (p.area) setArea(p.area); }} className="h-9 rounded-md border px-3 text-sm transition-[transform,background-color] hover:bg-accent active:scale-[0.97] pointer-coarse:h-11">{p.label}</button>
           ))}
         </div>
       </Panel>

@@ -25,7 +25,7 @@ export function LogRow({ e }: { e: LogEntry }) {
       </div>
       <div className="col-start-2 sm:col-start-auto">
         {canShare ? (
-          <select aria-label={`Who can see entry ${e.seq}`} value={vis} className={cn(FIELD, 'h-10 w-auto bg-card px-2 sm:h-8 sm:text-xs')}
+          <select aria-label={`Who can see entry ${e.seq}`} value={vis} className={cn(FIELD, 'h-8 w-auto bg-card px-2 text-xs pointer-coarse:h-10 pointer-coarse:text-base')}
             onChange={(ev) => { sim.act({ type: 'visibility', seq: e.seq, visibility: ev.target.value as Visibility }); note(`Entry ${e.seq} shared with: ${VIS_LABEL[ev.target.value as Visibility]}`); }}>
             {VISIBILITY_ORDER.map((v) => <option key={v} value={v}>{VIS_LABEL[v]}</option>)}
           </select>

@@ -91,7 +91,7 @@ export function EvidenceView() {
           </div>
           <div className="mt-3 flex flex-wrap gap-1" role="radiogroup" aria-label="Rule">
             {POLICY_ORDER.map((p) => (
-              <button key={p} role="radio" aria-checked={pol === p} onClick={() => setPol(p)} className={cn('h-10 rounded-md px-3 text-xs font-medium sm:h-8', pol === p ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground')}>{SHORT[p]}</button>
+              <button key={p} role="radio" aria-checked={pol === p} onClick={() => setPol(p)} className={cn('h-8 rounded-md px-3 text-xs font-medium pointer-coarse:h-10', pol === p ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground')}>{SHORT[p]}</button>
             ))}
           </div>
           <div className="mt-3 h-72 w-full" role="img" aria-label={`Measured dose rate ratio for the event of ${fmtUtc(e.onset_utc)}, with shelter time for ${SHORT[pol]}.`}>
