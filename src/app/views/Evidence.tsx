@@ -78,7 +78,7 @@ export function EvidenceView() {
         <p className="px-5 pt-2 text-xs text-muted-foreground">Dose avoided uses a shelter factor of <Src k="shelterFactor">0.25</Src> (team value), so 75% is the most a rule can save. "Storm Shelter v2" uses the same limits as the app's Warning rule R-W1 (<Src k="R-W1">rule</Src>): both RAD detectors must agree, and a bin with 1 detector missing does not count. The test leaves out the second R-W1 trigger, the 24 h dose projection.</p>
       </Panel>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <Panel title="Replay one event" aside={<Prov kind="measured">RAD E detector</Prov>}>
           <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="radiogroup" aria-label="Event">
             {ev.events.map((x) => (
