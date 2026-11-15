@@ -129,7 +129,7 @@ export function Decision() {
             ['Why does it matter?', main.level === 'warning'
               ? <>Unsheltered, the next 24 h give about <Src k="projection24h"><span className="num">{fmt(w.projection24h())} mSv</span></Src> (estimate). The shelter cuts the event dose. NASA asks for doses as low as reasonably achievable.</>
               : RULES[main.ruleId].basis],
-            ['What do I do now?', w.inShelter && LEVEL_RANK[main.level] >= LEVEL_RANK.caution ? 'Stay in the shelter. Finish procedure SH-1. Leave when the Warning clears.' : RULES[main.ruleId].action],
+            ['What do I do now?', w.inShelter && main.level === 'warning' ? 'Stay in the shelter. Finish procedure SH-1. Leave when the Warning clears.' : RULES[main.ruleId].action],
             ['When do I tell the CMO or the ground?', tellLine(main, w)],
             ['Data', <>Rule <Src k={main.ruleId}><span className="font-mono">{main.ruleId}</span></Src> · data {main.quality} · {main.donkiRefs.length ? `${main.donkiRefs.length} solar records` : 'onboard sensors'} · dose from <Src k="speModel">measured RAD data</Src></>],
           ].map(([q, a], i) => (

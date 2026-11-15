@@ -662,7 +662,7 @@ export class World {
 /** The one action sentence for an alert. The decision panel and the assistant both use it. */
 export function actionSentence(a: Alert, w: World): string {
   if (a.level === 'warning') return w.inShelter ? 'Stay in the shelter.' : 'Go to the shelter now.';
-  if (a.level === 'caution') return w.inShelter ? 'Stay in the shelter until the Caution clears.' : 'Safe your task. Stage the shelter.';
+  if (a.level === 'caution') return w.inShelter ? 'You can leave the shelter. Stay ready to go back.' : 'Safe your task. Stage the shelter.';
   if (a.level === 'verify') return 'Check the sensor. Read your dosimeter.';
   return 'No action now. Read at the daily review.';
 }
