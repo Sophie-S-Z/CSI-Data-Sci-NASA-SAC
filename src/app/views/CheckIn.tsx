@@ -11,6 +11,7 @@ import { LevelBadge, PageHead, Panel, Src } from '../parts';
 import { sources } from '../sources';
 import { LogRow } from './Log';
 import { readNote, type Symptom } from '../noteReader';
+import { Mic } from '../Mic';
 
 /** One page, no wizard: a normal day takes about 30 s. */
 const GROUPS = [
@@ -114,7 +115,10 @@ export function CheckInView() {
               </div>
               <div>
                 <label htmlFor="note" className="mb-2 block text-sm font-medium">Note (optional)</label>
-                <Textarea id="note" value={text} onChange={(e) => setText(e.target.value)} placeholder="Anything the CMO should know" className="min-h-20 rounded-md" />
+                <div className="flex gap-2">
+                  <Textarea id="note" value={text} onChange={(e) => setText(e.target.value)} placeholder="Type or speak. For example: headache since lunch" className="min-h-20 rounded-md" />
+                  <Mic label="Speak your note" onText={(t) => setText((x) => (x ? `${x} ${t}` : t))} />
+                </div>
                 {fromNote.length > 0 && (
                   <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label="Symptoms named in your note">
                     <span className="text-xs text-muted-foreground">Your note names:</span>

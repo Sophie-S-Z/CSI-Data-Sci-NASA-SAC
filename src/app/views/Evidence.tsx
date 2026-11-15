@@ -52,7 +52,7 @@ export function EvidenceView() {
 
   return (
     <>
-      <PageHead title="Measured events" sub={<>Validation on measured data. We applied 4 shelter-entry rules to each solar particle event in the record of the Radiation Assessment Detector (RAD) on NASA's Curiosity rover: the 2012 cruise to Mars and 2 periods on the Mars surface. We tuned the rules on the 2012 cruise and 2017 surface data (solar cycle 24). We then ran each rule one time on the 2024 surface data (solar cycle 25) as an independent test.</>}
+      <PageHead title="Measured events" sub={<>We ran 4 shelter rules on each solar storm that the RAD detector on NASA's Curiosity measured: in cruise in 2012 and on Mars. We tuned the rules on 2012 and 2017 data, then tested them one time on 2024 data.</>}
         actions={<Prov kind="measured">MSL RAD, NASA PDS</Prov>} />
 
       <Panel title="Result on 6 real events" aside={<span className="num">{Math.round(totals[0].days)} days of RAD data scored</span>} bodyClass="px-0 pb-2">

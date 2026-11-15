@@ -16,6 +16,9 @@ export default defineConfig({
       workbox: {
         // NFR-01: fonts, rules, procedures, and replay data ship with the app.
         globPatterns: ['**/*.{js,css,html,svg,woff,woff2,json,webmanifest}'],
+        // The AI runtimes (WebLLM, 6 MB, and the Anthropic SDK) load only when a crew member picks them. They are cached on first use.
+        globIgnores: ['**/assets/{lib,sdk}-*.js'],
+        runtimeCaching: [{ urlPattern: /\/assets\/(lib|sdk)-[\w-]+\.js$/, handler: 'CacheFirst', options: { cacheName: 'ai-runtime' } }],
         navigateFallback: 'index.html',
       },
       manifest: {

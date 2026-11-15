@@ -126,7 +126,10 @@
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+  /* App feel on touch screens: no double-tap zoom delay on controls, no rubber-band scroll behind the tab bar. */
+  button, a, input, select, textarea, [role="tab"], [role="radio"] { touch-action: manipulation; }
+  body { overscroll-behavior-y: none; }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01", "tnum" 0;

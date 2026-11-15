@@ -20,7 +20,7 @@ const TH = rules.thresholds;
 export function RadiationView() {
   return (
     <>
-      <PageHead title="Cabin radiation" sub="Inside the ship: your radiation exposure, the dose rate from 6 cabin sensors and your personal dosimeter, and the alert limits." />
+      <PageHead title="Cabin radiation" sub="Your dose, the 6 cabin sensors, and the alert limits." />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-4">
           <DoseChart />
@@ -89,9 +89,9 @@ export function EventDose({ a, w }: { a: Alert; w: World }) {
   const before = a.eventDoseMSv - a.shelterDoseMSv;
   const rows: [string, React.ReactNode, React.ReactNode][] = [
     ['Peak cabin mean dose rate (RAD event shape × B)', <Src k="speModel">{fmt(peak)} mSv/h</Src>, <Prov kind="measured">Measured RAD</Prov>],
-    ['Your dose before the shelter', `${fmt(before)} mSv`, <Prov kind="simulated">Simulated personal</Prov>],
-    ['Your dose in the shelter', a.shelterMin ? `${fmt(a.shelterDoseMSv)} mSv in ${duration(a.shelterMin)}` : 'Not in the shelter yet', <Prov kind="simulated">Simulated personal</Prov>],
-    ['Your event dose', `${fmt(a.eventDoseMSv)} mSv`, <Prov kind="simulated">Simulated personal</Prov>],
+    ['Your dose before the shelter', `${fmt(before)} mSv`, null],
+    ['Your dose in the shelter', a.shelterMin ? `${fmt(a.shelterDoseMSv)} mSv in ${duration(a.shelterMin)}` : 'Not in the shelter yet', null],
+    ['Your event dose', `${fmt(a.eventDoseMSv)} mSv`, null],
     ['Dose the shelter saved', <Src k="shelterFactor">{fmt(a.savedMSv)} mSv</Src>, <Prov kind="estimate">Modeled saving</Prov>],
   ];
   return (

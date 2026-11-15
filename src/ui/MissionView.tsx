@@ -7,13 +7,35 @@ function prefersReducedMotion(): boolean {
 }
 
 /**
- * Mission view (three.js). Sun, Earth, Mars, the transfer path, the vehicle, and the signal path to Earth.
- * During a solar particle event, protons stream from the Sun toward the vehicle.
+ * Mission view (three.js). Sun, Earth, Mars, the transfer path, the ship, and the signal path to Earth.
+ * - During a solar event, a CME shell grows from the Sun, and protons stream to the ship.
+ *   The protons follow the Parker spiral: the Sun's magnetic field turns as the Sun rotates,
+ *   so the particles curve on their way out, as real solar protons do.
+ * - In the shelter, a shield shows around the ship.
  * The scene renders only when something changes, or while particles move or the user turns the view.
  */
-export interface MissionViewProps { day: number; storm: 'none' | 'watch' | 'hit'; theme: string }
+export interface MissionViewProps { day: number; storm: 'none' | 'watch' | 'hit'; shelter: boolean; theme: string }
 
-const P_COUNT = 420;
+const P_COUNT = 900;
+const STAR_COUNT = 1200;
+/** Parker spiral turn, in radians per AU: the Sun's spin rate times 1 AU, over a 400 km/s solar wind. */
+const SPIRAL = 1.0;
+
+/** A soft round glow, drawn once on a small canvas. Points and sprites use it so they look like light, not squares. */
+function glowTexture(): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.25, 'rgba(255,255,255,0.6)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
 
 /** Read a CSS color token. The tokens use OKLCH, which THREE.Color cannot parse, so the browser paints one pixel and we read it back. */
 let probe: CanvasRenderingContext2D | null = null;
@@ -34,13 +56,14 @@ function cssColor(name: string, fallback: string): THREE.Color {
 /** Map the orbit plane (x, y) to three.js (x, -z). */
 const v3 = (p: { x: number; y: number }, h = 0) => new THREE.Vector3(p.x, h, -p.y);
 
-export default function MissionView({ day, storm, theme }: MissionViewProps) {
+export default function MissionView({ day, storm, shelter, theme }: MissionViewProps) {
   const host = useRef<HTMLDivElement>(null);
   const labels = useRef<HTMLDivElement>(null);
   const api = useRef<{ update: (p: MissionViewProps) => void; dispose: () => void } | null>(null);
 
   useEffect(() => {
     const el = host.current!;
+    const glow = glowTexture();
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
@@ -67,7 +90,7 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
     controls.maxPolarAngle = 1.25;
     controls.update();
 
-    let props: MissionViewProps = { day, storm, theme };
+    let props: MissionViewProps = { day, storm, shelter, theme };
 
     // ---- materials (theme aware) ----
     const mat = {
@@ -75,12 +98,16 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
       pathDone: new THREE.LineBasicMaterial(),
       pathNext: new THREE.LineDashedMaterial({ dashSize: 0.035, gapSize: 0.03 }),
       link: new THREE.LineDashedMaterial({ dashSize: 0.02, gapSize: 0.02 }),
-      sun: new THREE.MeshBasicMaterial({ color: 0xffc35a }),
-      halo: new THREE.MeshBasicMaterial({ color: 0xffc35a, transparent: true, opacity: 0.12, depthWrite: false }),
-      earth: new THREE.MeshBasicMaterial({ color: 0x5aa7e8 }),
-      mars: new THREE.MeshBasicMaterial({ color: 0xd2774a }),
-      ship: new THREE.MeshBasicMaterial(),
-      particles: new THREE.PointsMaterial({ size: 0.018, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true }),
+      sun: new THREE.MeshBasicMaterial({ color: 0xffd27a }),
+      halo: new THREE.SpriteMaterial({ map: glow, color: 0xffb347, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }),
+      earth: new THREE.MeshStandardMaterial({ color: 0x4f9be0, roughness: 0.7, emissive: 0x0b2440 }),
+      mars: new THREE.MeshStandardMaterial({ color: 0xd2774a, roughness: 0.9, emissive: 0x2a0f05 }),
+      ship: new THREE.MeshStandardMaterial({ color: 0xdde4ec, metalness: 0.4, roughness: 0.4, emissive: 0x30363e }),
+      panel: new THREE.MeshStandardMaterial({ color: 0x2a4f8a, metalness: 0.6, roughness: 0.3, emissive: 0x0c1830 }),
+      shield: new THREE.MeshBasicMaterial({ color: 0x8fb4ff, transparent: true, opacity: 0.18, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }),
+      cme: new THREE.MeshBasicMaterial({ color: 0xffc35a, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.BackSide }),
+      stars: new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, color: 0xaab4c4, transparent: true, opacity: 0.8, depthWrite: false }),
+      particles: new THREE.PointsMaterial({ map: glow, size: 0.035, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending }),
     };
     function applyTheme() {
       // The scene is always space, so it keeps dark-sky colors in both themes.
@@ -104,12 +131,33 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
     };
     scene.add(circle(R_EARTH), circle(R_MARS));
 
-    const sun = new THREE.Mesh(new THREE.SphereGeometry(0.075, 32, 16), mat.sun);
-    const halo = new THREE.Mesh(new THREE.SphereGeometry(0.16, 32, 16), mat.halo);
-    const earth = new THREE.Mesh(new THREE.SphereGeometry(0.035, 24, 12), mat.earth);
-    const mars = new THREE.Mesh(new THREE.SphereGeometry(0.03, 24, 12), mat.mars);
-    const ship = new THREE.Mesh(new THREE.OctahedronGeometry(0.028), mat.ship);
-    scene.add(sun, halo, earth, mars, ship);
+    // Background stars on a far sphere. They do not move, so they cost nothing after the first frame.
+    const starPos = new Float32Array(STAR_COUNT * 3);
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, r = 18;
+      starPos.set([r * Math.sqrt(1 - u * u) * Math.cos(a), r * u, r * Math.sqrt(1 - u * u) * Math.sin(a)], i * 3);
+    }
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    scene.add(new THREE.Points(starGeo, mat.stars));
+
+    // The Sun lights the planets and the ship, so each one has a day side and a night side.
+    scene.add(new THREE.PointLight(0xfff1d6, 3, 0, 0), new THREE.AmbientLight(0x404858, 0.6));
+
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(0.07, 32, 16), mat.sun);
+    const halo = new THREE.Sprite(mat.halo);
+    halo.scale.setScalar(0.5);
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(0.035, 32, 16), mat.earth);
+    const mars = new THREE.Mesh(new THREE.SphereGeometry(0.03, 32, 16), mat.mars);
+    // The ship: a crew module with 2 solar wings, and a shield that shows in the shelter.
+    const ship = new THREE.Group();
+    const hull = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.01, 0.036, 16), mat.ship);
+    hull.rotation.z = Math.PI / 2;
+    const wings = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.001, 0.07), mat.panel);
+    const shield = new THREE.Mesh(new THREE.SphereGeometry(0.04, 32, 16), mat.shield);
+    ship.add(hull, wings, shield);
+    const cme = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), mat.cme);
+    scene.add(sun, halo, earth, mars, ship, cme);
 
     const pathDone = new THREE.Line(new THREE.BufferGeometry(), mat.pathDone);
     const pathNext = new THREE.Line(new THREE.BufferGeometry(), mat.pathNext);
@@ -129,18 +177,26 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
     let shipAngle = 0;
     let shipR = 1;
 
+    /** Particles move out along spiral field lines. The bundle is narrow at a Warning, when the ship is on a connected line. */
     function layoutParticles(t: number) {
-      const spread = props.storm === 'hit' ? 0.42 : 0.6;
-      const reach = Math.max(shipR * 1.15, 0.6);
+      const spread = props.storm === 'hit' ? 0.35 : 0.9;
+      const reach = Math.max(shipR * 1.2, 0.6);
       for (let i = 0; i < P_COUNT; i++) {
         const phase = (seed[i * 3] + t) % 1;
         const r = 0.08 + phase * reach;
-        const a = shipAngle + seed[i * 3 + 1] * spread;
+        const a = shipAngle + seed[i * 3 + 1] * spread + SPIRAL * (shipR - r);
         pos[i * 3] = r * Math.cos(a);
-        pos[i * 3 + 1] = seed[i * 3 + 2] * 0.05;
+        pos[i * 3 + 1] = seed[i * 3 + 2] * 0.06 * r;
         pos[i * 3 + 2] = -r * Math.sin(a);
       }
       pGeo.attributes.position.needsUpdate = true;
+    }
+
+    /** The CME: a thin shell that grows from the Sun past the ship, then starts again. */
+    function layoutCme(t: number) {
+      const f = t % 1;
+      cme.scale.setScalar(0.1 + f * shipR * 1.3);
+      mat.cme.opacity = 0.14 * (1 - f);
     }
 
     function setLine(line: THREE.Line, pts: THREE.Vector3[], dashed = false) {
@@ -174,8 +230,12 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
       setLine(pathNext, next, true);
       setLine(link, [v3(v), v3(e)], true);
       particles.visible = props.storm !== 'none';
-      mat.particles.opacity = props.storm === 'hit' ? 0.95 : 0.55;
+      cme.visible = props.storm === 'watch';
+      shield.visible = props.shelter;
+      ship.lookAt(sun.position);
+      mat.particles.opacity = props.storm === 'hit' ? 0.95 : 0.6;
       layoutParticles(0.35);
+      layoutCme(0.5);
     }
 
     // ---- labels in HTML, so they stay sharp and readable ----
@@ -217,7 +277,12 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
     function loop() {
       raf = 0;
       const moving = !reduce && particles.visible;
-      if (moving) layoutParticles(((performance.now() - t0) / 1000) * (props.storm === 'hit' ? 0.22 : 0.1));
+      if (moving) {
+        const s = (performance.now() - t0) / 1000;
+        layoutParticles(s * (props.storm === 'hit' ? 0.22 : 0.1));
+        layoutCme(s * 0.12);
+        halo.scale.setScalar(0.5 + 0.04 * Math.sin(s * 3));
+      }
       const damp = controls.update();
       renderOnce();
       if (visible && (moving || interacting || damp)) raf = requestAnimationFrame(loop);
@@ -251,6 +316,7 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
         controls.dispose();
         scene.traverse((o) => { const m = o as THREE.Mesh; m.geometry?.dispose?.(); });
         Object.values(mat).forEach((m) => m.dispose());
+        glow.dispose();
         renderer.dispose();
         renderer.domElement.remove();
         tags.forEach((t) => t.span.remove());
@@ -262,9 +328,9 @@ export default function MissionView({ day, storm, theme }: MissionViewProps) {
 
   useEffect(() => {
     // Theme tokens change after the DOM attribute flips, so wait one frame.
-    const id = requestAnimationFrame(() => api.current?.update({ day, storm, theme }));
+    const id = requestAnimationFrame(() => api.current?.update({ day, storm, shelter, theme }));
     return () => cancelAnimationFrame(id);
-  }, [day, storm, theme]);
+  }, [day, storm, shelter, theme]);
 
   return (
     <div className="mv" ref={host}>

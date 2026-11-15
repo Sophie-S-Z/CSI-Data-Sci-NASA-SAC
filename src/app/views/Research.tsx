@@ -244,7 +244,7 @@ export function ResearchView() {
 
   return (
     <>
-      <PageHead title="Research" sub={<>A new study of the 2 decisions that this tool supports: when to enter the shelter and when to leave it. The study uses 40 years of proton data and 2 dosimeters in deep space. Each method got its settings from data before 2020. The test used the data of 2020 to 2026 one time.</>}
+      <PageHead title="Research" sub={<>When to enter the shelter, and when to leave it. We tested both on 40 years of proton data and 2 deep-space dosimeters. We tuned on data before 2020 and tested one time on 2020 to 2026.</>}
         actions={<Prov kind="measured">GOES, MSL RAD, LRO CRaTER</Prov>} />
 
       <div className="space-y-4">

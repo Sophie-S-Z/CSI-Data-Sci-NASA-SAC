@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { LINK_LABEL, VIS_LABEL, type LinkState, type LogEntry } from '../../engine/world';
 import { stamp, hhmm } from '../../engine/time';
 import { useUi } from '../context';
-import { Kv, LevelBadge, PageHead, Panel, Prov } from '../parts';
+import { Kv, LevelBadge, PageHead, Panel } from '../parts';
 import { EventDose } from './Radiation';
 
 export function CmoView() {
@@ -17,7 +17,7 @@ export function CmoView() {
   const infectionWatch = ev && ev.eventDoseMSv > 1 && poorSleep;
   return (
     <>
-      <PageHead title="CMO case view" sub="For the Crew Medical Officer. It shows only the entries that the crew member shares." />
+      <PageHead title="CMO case view" sub="For the Crew Medical Officer. It shows only shared entries." />
       {!ev ? <Panel><p className="pt-5 text-sm text-muted-foreground">No Caution or Warning event in this replay yet. The case view fills when one starts.</p></Panel> : (
         <div className="grid gap-4 lg:grid-cols-2">
           <Panel title={ev.id} aside={<LevelBadge level={ev.peak}>Peak: {ev.peak[0].toUpperCase() + ev.peak.slice(1)}</LevelBadge>}>
@@ -68,10 +68,10 @@ export function GroundView() {
   const transit = sent.filter((s) => s.summary!.arriveT! > w.t);
   return (
     <>
-      <PageHead title="Simulated flight-surgeon handoff" sub="This view shows what a flight surgeon on Earth receives from the ship. The flight surgeon is simulated. No crew step waits for the ground, and private entries stay on the ship." />
+      <PageHead title="Flight-surgeon handoff" sub="What the flight surgeon on Earth gets from the ship. No crew step waits for the ground. Private entries stay on the ship." />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-4">
-          <Panel title="Received by the flight surgeon" aside={<Prov kind="simulated">Simulated ground</Prov>}>
+          <Panel title="Received by the flight surgeon">
             {received.length === 0 ? <p className="text-sm text-muted-foreground">No summary received yet. Set the link to Offline, then back to Delayed or Live.</p> : (
               <div className="space-y-3">{received.map((s) => <SummaryCard key={s.seq} e={s} status={`Received ${hhmm(s.summary!.arriveT!)}`} />)}</div>
             )}

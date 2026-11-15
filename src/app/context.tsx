@@ -1,8 +1,9 @@
 import { createContext, useContext } from 'react';
 import type { Sim } from '../ui/useSim';
+import type { Profile } from './profile';
 
 export type Tab =
-  | 'mission' | 'radiation' | 'weather' | 'air' | 'body' | 'checkin' | 'log' | 'ask' | 'cmo' | 'ground' | 'explorer'
+  | 'mission' | 'radiation' | 'weather' | 'air' | 'body' | 'checkin' | 'log' | 'report' | 'ask' | 'cmo' | 'ground' | 'explorer'
   | 'evidence' | 'research' | 'sources';
 export type Theme = 'dark' | 'light';
 
@@ -18,6 +19,9 @@ export interface Ui {
   note: (msg: string) => void;
   theme: Theme;
   setTheme: (t: Theme) => void;
+  profile: Profile;
+  setProfile: (p: Profile) => void;
+  openProfile: () => void;
 }
 
 export const UiContext = createContext<Ui | null>(null);
