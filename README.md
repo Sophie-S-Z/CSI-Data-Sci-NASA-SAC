@@ -57,12 +57,12 @@ Open **Real-world data > Measured events** to show the rule results on all 6 eve
 
 ## Use of SI (AI) tools
 
-The team used Super Intelligence (SI) tools on this project. The video carries a visible "SI-GENERATED" watermark, and its file metadata says the same.
+The team used Super Intelligence (SI) tools on this project, as listed below.
 
 - **Code.** Claude (Anthropic) with Claude Code wrote most of the app code, the tests, and the Python research scripts. The team set the goals, reviewed the code, and checked the results.
 - **Research and text.** Claude helped to search the literature, check the citations, and write the README, the PRD, and the result reports. Each citation was checked against Crossref, PubMed, arXiv, or the NASA PDF (see "Source audit" below).
 - **Data analysis.** Claude wrote and ran the scripts that get and score the GOES, MSL RAD, and LRO CRaTER data. The data is measured data from the public archives. No data value is AI-generated.
-- **Demo video.** Claude drove the app in a headless browser, recorded the screen, and wrote the captions.
+- **Demo video.** The video is a screen recording of the real app. Claude drove the app in a headless browser, recorded the screen, and wrote the captions.
 - **In the app.** Ask AI can send facts to an optional model: Llama 3.2 in the browser (WebLLM), Claude with the user's API key, or an OpenAI-compatible API. The built-in assistant does not use a model.
 - **Images.** The app has no AI-generated images. It uses no NASA logo or NASA design element.
 
