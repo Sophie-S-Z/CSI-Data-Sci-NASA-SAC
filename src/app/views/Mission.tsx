@@ -11,15 +11,11 @@ import { lightMinutes, vehicleAt, TRANSIT_DAYS } from '../../engine/orbit';
 import { BEATS, DEMO_START, REPLAY_END, SPEEDS, beatIndex } from '../../ui/useSim';
 import { useUi } from '../context';
 import { displayName } from '../profile';
-import { InfoBadge, LevelBadge, Panel, Prov, Seg } from '../parts';
+import { InfoBadge, LINK_OPTIONS, LevelBadge, Panel, Prov, Seg } from '../parts';
 import { Decision } from './Decision';
 
 // three.js is large, so it loads after the first paint.
 const MissionView = lazy(() => import('../../ui/MissionView'));
-
-const LINKS: { value: LinkState; label: string }[] = [
-  { value: 'live', label: 'Live' }, { value: 'd5', label: '5 min' }, { value: 'd14', label: '14 min' }, { value: 'd22', label: '22 min' }, { value: 'blackout', label: 'Offline' },
-];
 
 /** Landing page: the storm replay, the alert panel, and the ship on its way to Mars. */
 export function MissionPage() {
@@ -127,7 +123,7 @@ function DemoGuide() {
       <details className="mt-2 text-xs">
         <summary className="cursor-pointer text-muted-foreground">Link to Earth: {LINK_LABEL[w.link]}</summary>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Seg<LinkState> label="Link to Earth" value={w.link} onChange={(l) => { sim.act({ type: 'link', link: l }); note(`Link set to ${LINK_LABEL[l].toLowerCase()}`); }} options={LINKS} />
+          <Seg<LinkState> label="Link to Earth" value={w.link} onChange={(l) => { sim.act({ type: 'link', link: l }); note(`Link set to ${LINK_LABEL[l].toLowerCase()}`); }} options={LINK_OPTIONS} />
           <span className="text-muted-foreground">Set Offline to show a blackout. The ground gets a summary when the link returns.</span>
         </div>
       </details>

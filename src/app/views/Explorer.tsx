@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import ev from '../../data/real/rad-events.json';
 import rules from '../../data/rules.json';
 import { AREAS, FACTORS, baselineOf, doseInArea, levelAt, type AreaId, type Factor, type Zone, type ZoneLevel } from '../../engine/limits';
 import { fmt, whole } from '../../engine/units';
-import { LevelBadge, PageHead, Panel, Prov, Seg, Src, ZoneBar } from '../parts';
+import { FIELD, LEVEL_WORD, LevelBadge, PageHead, Panel, Prov, Seg, Src, ZoneBar } from '../parts';
 import { Mic } from '../Mic';
 
 /** The first number in a spoken phrase, for example "3.4" in "about 3.4 millimeters". */
@@ -27,7 +28,6 @@ const PRESETS: { label: string; area?: AreaId; values: Partial<Values> }[] = [
 ];
 
 const ORDER: ZoneLevel[] = ['advisory', 'caution', 'warning'];
-const WORD: Record<ZoneLevel, string> = { nominal: 'Nominal', advisory: 'Advisory', caution: 'Caution', warning: 'Warning' };
 
 /** Limits are shown as the standard defines them. Computed edges use the app number style. */
 const edge = (f: Factor, x: number) => (f.key === 'dose' ? fmt(x) : String(x));
@@ -78,11 +78,11 @@ export function ExplorerView() {
           const level = levelAt(zones, value);
           const id = `in-${f.key}`;
           return (
-            <Panel key={f.key} title={<label htmlFor={id}>{f.title}</label>} aside={<LevelBadge level={level}>{WORD[level]}</LevelBadge>}>
+            <Panel key={f.key} title={<label htmlFor={id}>{f.title}</label>} aside={<LevelBadge level={level} />}>
               <div className="flex flex-wrap items-center gap-3">
                 <input id={id} type="number" inputMode="decimal" min={f.min} max={f.max} step={f.step} value={value}
                   onChange={(e) => { const x = e.target.valueAsNumber; if (Number.isFinite(x)) setV({ ...v, [f.key]: x }); }}
-                  className="num h-11 w-32 rounded-md border bg-background px-3 text-lg font-semibold" />
+                  className={cn(FIELD, 'num w-32 text-lg font-semibold')} />
                 <span className="text-sm text-muted-foreground">{f.unit}</span>
                 <Mic label={`Say a value for ${f.title}`} onText={(t) => { const x = spokenNumber(t); if (Number.isFinite(x)) setV((cur) => ({ ...cur, [f.key]: x })); }} />
                 <input type="range" aria-label={`${f.title} slider`} min={f.min} max={f.max} step={f.step} value={Math.min(f.max, Math.max(f.min, value))}
@@ -91,7 +91,7 @@ export function ExplorerView() {
               <ZoneBar f={f} zones={zones} v={value} className="mt-4" />
               <div className="num mt-1 flex justify-between text-[11px] text-muted-foreground"><span>{f.min}</span><span>{f.max}{f.log ? ' (log scale)' : ''}</span></div>
               <ul className="mt-2 space-y-1 text-sm">
-                {rangeLines(f, zones).map((r) => <li key={r.level}><b>{WORD[r.level]}:</b> {r.text}</li>)}
+                {rangeLines(f, zones).map((r) => <li key={r.level}><b>{LEVEL_WORD[r.level]}:</b> {r.text}</li>)}
               </ul>
               {f.key === 'dose' && <DoseNote area={area} rate={value} />}
               <Src k={f.src} className="mt-2 inline-block text-xs text-muted-foreground">Source of the limits</Src>
@@ -112,7 +112,7 @@ export function ExplorerView() {
                   <td className="px-5 py-3 font-medium">{f.title}</td>
                   {AREAS.map((x) => (
                     <td key={x.id} className="py-3 pr-4">
-                      {worst(rangeLines(f, f.zones(x.id))).map((r) => <div key={r.level}><span className={TEXT[r.level]}>{WORD[r.level]}</span> {r.text}</div>)}
+                      {worst(rangeLines(f, f.zones(x.id))).map((r) => <div key={r.level}><span className={TEXT[r.level]}>{LEVEL_WORD[r.level]}</span> {r.text}</div>)}
                     </td>
                   ))}
                 </tr>

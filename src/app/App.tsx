@@ -107,10 +107,6 @@ export function App() {
     try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
   }, [theme]);
 
-  useEffect(() => {
-    if (procOpen && !sim.world.procedure) setProcOpen(false);
-  }, [procOpen, sim.world.procedure]);
-
   // Space plays or pauses the replay, except while the focus is on a control or a text field.
   const { playing, setPlaying } = sim;
   useEffect(() => {

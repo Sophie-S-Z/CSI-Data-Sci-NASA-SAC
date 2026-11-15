@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { VIS_LABEL, VISIBILITY_ORDER, type LogEntry, type Visibility } from '../../engine/world';
 import { dayOf, stamp, hhmm } from '../../engine/time';
 import { useUi } from '../context';
-import { LevelBadge, PageHead, Panel } from '../parts';
+import { FIELD, LevelBadge, PageHead, Panel, Seg } from '../parts';
 
 export function LogRow({ e }: { e: LogEntry }) {
   const { sim, note } = useUi();
@@ -25,7 +25,7 @@ export function LogRow({ e }: { e: LogEntry }) {
       </div>
       <div className="col-start-2 sm:col-start-auto">
         {canShare ? (
-          <select aria-label={`Who can see entry ${e.seq}`} value={vis} className="h-8 rounded-md border bg-card px-2 text-xs"
+          <select aria-label={`Who can see entry ${e.seq}`} value={vis} className={cn(FIELD, 'h-10 w-auto bg-card px-2 sm:h-8 sm:text-xs')}
             onChange={(ev) => { sim.act({ type: 'visibility', seq: e.seq, visibility: ev.target.value as Visibility }); note(`Entry ${e.seq} shared with: ${VIS_LABEL[ev.target.value as Visibility]}`); }}>
             {VISIBILITY_ORDER.map((v) => <option key={v} value={v}>{VIS_LABEL[v]}</option>)}
           </select>
@@ -36,6 +36,9 @@ export function LogRow({ e }: { e: LogEntry }) {
 }
 
 type F = 'all' | 'alerts' | 'actions' | 'checkins' | 'ground';
+const FILTERS: { value: F; label: string }[] = [
+  { value: 'all', label: 'All' }, { value: 'alerts', label: 'Alerts' }, { value: 'actions', label: 'Actions' }, { value: 'checkins', label: 'Check-ins' }, { value: 'ground', label: 'Link' },
+];
 
 export function LogView() {
   const { sim, go } = useUi();
@@ -68,11 +71,7 @@ export function LogView() {
           <p className="text-sm"><b className="num text-2xl">{total}</b> Caution or Warning {total === 1 ? 'event' : 'events'} in {days.length} days.</p>
         </div>
       </Panel>
-      <div role="radiogroup" aria-label="Filter the log" className="mb-3 inline-flex rounded-md bg-muted p-1">
-        {([['all', 'All'], ['alerts', 'Alerts'], ['actions', 'Actions'], ['checkins', 'Check-ins'], ['ground', 'Link']] as [F, string][]).map(([v, l]) => (
-          <button key={v} role="radio" aria-checked={f === v} onClick={() => setF(v)} className={cn('h-10 rounded-md px-3 text-sm font-medium sm:h-8', f === v ? 'bg-card shadow-sm ring-1 ring-border' : 'text-muted-foreground')}>{l}</button>
-        ))}
-      </div>
+      <div className="mb-3"><Seg<F> label="Filter the log" value={f} onChange={setF} options={FILTERS} /></div>
       <Panel bodyClass="px-0 pb-0">
         {rows.length === 0 ? <p className="p-5 text-sm text-muted-foreground">No entries match this filter yet.</p> : <ul className="divide-y">{[...rows].reverse().slice(0, 200).map((e) => <LogRow key={e.seq} e={e} />)}</ul>}
       </Panel>

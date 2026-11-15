@@ -1,15 +1,23 @@
 import type { ReactNode } from 'react';
 import { OctagonAlert, TriangleAlert, CircleHelp, Info, CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Level } from '../engine/world';
+import type { Level, LinkState } from '../engine/world';
 import { scalePos, type Factor, type Zone, type ZoneLevel } from '../engine/limits';
 import { useUi } from './context';
 
 export type AnyLevel = Level | 'clear' | 'nominal';
 
+/** One style for each text field and select. 16 px text, so a phone does not zoom in on focus. */
+export const FIELD = 'h-11 w-full min-w-0 rounded-md border border-input bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30';
+
 export const LEVEL_WORD: Record<AnyLevel, string> = {
   warning: 'Warning', caution: 'Caution', verify: 'Verify', advisory: 'Advisory', clear: 'Clear', nominal: 'Nominal',
 };
+
+/** The link choices, with short labels for a segmented control. */
+export const LINK_OPTIONS: { value: LinkState; label: string }[] = [
+  { value: 'live', label: 'Live' }, { value: 'd5', label: '5 min' }, { value: 'd14', label: '14 min' }, { value: 'd22', label: '22 min' }, { value: 'blackout', label: 'Offline' },
+];
 
 const ICONS = { warning: OctagonAlert, caution: TriangleAlert, verify: CircleHelp, advisory: Info, clear: CircleCheck, nominal: CircleCheck } as const;
 

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, CornerDownLeft, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,14 +11,13 @@ import { ENGINE_LABEL, modelOf, DEFAULT_MODEL, type Engine, type KeyEngine } fro
 import { resolveSource } from '../sources';
 import { useUi } from '../context';
 import { Mic } from '../Mic';
-import { PageHead, Panel, Prov, Seg, Src } from '../parts';
+import { FIELD, PageHead, Panel, Prov, Seg, Src } from '../parts';
 
 interface Item { id: number; q: string; t: number; a: Answer; engine: Engine; text?: string; error?: string; pending?: boolean }
 type Progress = { text: string; part: number } | null;
 
 const NOTE: Partial<Record<Answer['kind'], string>> = { refusal: 'Not allowed', none: 'No answer' };
 const isRuleId = (k: string) => /^[RB]-/.test(k);
-const field = 'h-11 w-full min-w-0 rounded-md border border-input bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30';
 
 export function AskView() {
   const { sim, go, profile } = useUi();
@@ -26,6 +25,7 @@ export function AskView() {
   const [q, setQ] = useState('');
   const [items, setItems] = useState<Item[]>([]);
   const [progress, setProgress] = useState<Progress>(null);
+  const nextId = useRef(1);
   const onProgress = (text: string, part: number) => setProgress(part >= 1 ? null : { text, part });
 
   const submit = (text: string) => {
@@ -34,7 +34,7 @@ export function AskView() {
     const a = ask(question, w);
     // Refusals and the built-in engine answer at once. A model gets the facts and rewrites them.
     const useModel = profile.engine !== 'builtin' && a.kind !== 'refusal';
-    const id = (items[0]?.id ?? 0) + 1;
+    const id = nextId.current++;
     const set = (patch: Partial<Item>) => setItems((xs) => xs.map((x) => (x.id === id ? { ...x, ...patch } : x)));
     setItems((xs) => [{ id, q: question, t: w.t, a, engine: useModel ? profile.engine : 'builtin', pending: useModel }, ...xs].slice(0, 12));
     setQ('');
@@ -54,7 +54,7 @@ export function AskView() {
             <form onSubmit={onSubmit} className="flex gap-2">
               <label htmlFor="ask-q" className="sr-only">Your question</label>
               <input id="ask-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type or speak a question" autoComplete="off" enterKeyHint="send"
-                className="h-12 min-w-0 flex-1 rounded-md border border-input bg-transparent px-4 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30" />
+                className={cn(FIELD, 'h-12 flex-1 px-4')} />
               <Mic label="Speak a question" className="size-12" onText={(t) => setQ((x) => (x ? `${x} ${t}` : t))} />
               <Button type="submit" disabled={!q.trim()} aria-label="Ask" className="h-12 rounded-md px-4 text-base sm:px-5">
                 <span className="hidden sm:inline">Ask</span><CornerDownLeft className="size-4" aria-hidden="true" />
@@ -147,7 +147,7 @@ function EnginePanel({ onProgress, progress }: { onProgress: (text: string, part
     <div>
       <label htmlFor={`key-${e}`} className="mb-1 block text-xs font-medium">{label}</label>
       <div className="flex gap-2">
-        <input id={`key-${e}`} type="password" autoComplete="off" spellCheck={false} value={p.keys[e] ?? ''} onChange={(ev) => setKey(e, ev.target.value.trim())} placeholder="Paste your key" className={field} />
+        <input id={`key-${e}`} type="password" autoComplete="off" spellCheck={false} value={p.keys[e] ?? ''} onChange={(ev) => setKey(e, ev.target.value.trim())} placeholder="Paste your key" className={FIELD} />
         {p.keys[e] && <Button variant="outline" className="h-11 rounded-md" onClick={() => setKey(e, '')}>Forget</Button>}
       </div>
     </div>
@@ -155,7 +155,7 @@ function EnginePanel({ onProgress, progress }: { onProgress: (text: string, part
   const modelField = (e: Exclude<Engine, 'builtin' | 'local'>) => (
     <div>
       <label htmlFor={`model-${e}`} className="mb-1 block text-xs font-medium">Model</label>
-      <input id={`model-${e}`} value={p.models[e] ?? ''} placeholder={DEFAULT_MODEL[e]} onChange={(ev) => setModel(e, ev.target.value)} className={field} />
+      <input id={`model-${e}`} value={p.models[e] ?? ''} placeholder={DEFAULT_MODEL[e]} onChange={(ev) => setModel(e, ev.target.value)} className={FIELD} />
     </div>
   );
   const local = modelOf(p, 'local');
@@ -170,7 +170,7 @@ function EnginePanel({ onProgress, progress }: { onProgress: (text: string, part
           <>
             <div>
               <label htmlFor="model-local" className="mb-1 block text-xs font-medium">Model</label>
-              <select id="model-local" value={local} onChange={(e) => setModel('local', e.target.value)} className={field}>
+              <select id="model-local" value={local} onChange={(e) => setModel('local', e.target.value)} className={FIELD}>
                 {LOCAL_MODELS.map((m) => <option key={m.id} value={m.id}>{m.label} ({m.size} download)</option>)}
               </select>
             </div>
@@ -185,7 +185,7 @@ function EnginePanel({ onProgress, progress }: { onProgress: (text: string, part
           <>
             <div>
               <label htmlFor="base-url" className="mb-1 block text-xs font-medium">API URL</label>
-              <input id="base-url" value={p.baseUrl} onChange={(e) => setProfile({ ...p, baseUrl: e.target.value.trim() })} className={field} />
+              <input id="base-url" value={p.baseUrl} onChange={(e) => setProfile({ ...p, baseUrl: e.target.value.trim() })} className={FIELD} />
             </div>
             {keyField('openai', 'API key')}{modelField('openai')}
           </>

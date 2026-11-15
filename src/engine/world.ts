@@ -31,7 +31,7 @@ export interface Alert {
   history: AlertStep[];
   acked: boolean;
   suppressed: boolean;
-  quality: 'good' | 'poor' | 'missing';
+  quality: Quality;
   measured: string;
   donkiRefs: string[];
   levelWall: number;
@@ -168,10 +168,11 @@ export class World {
     this.now = now;
     this.missionDoseMSv = gcrDoseMSv(0, startT);
     this.push({ kind: 'system', text: `Replay starts. ${phaseAt(startT).label}, ${stamp(startT)}. Link: ${LINK_LABEL[this.link].toLowerCase()}.`, visibility: 'ground' });
-    if (this.projectedEndMSv() > TH.priorCareerMSv.value && this.projectedEndMSv() > rules.limits.career.mSv) {
+    const end = this.projectedEndMSv();
+    if (end > rules.limits.career.mSv) {
       this.push({
         kind: 'advisory', level: 'advisory',
-        text: `Projected over NASA limit: waiver case. Mission-end career dose is about ${fmt(this.projectedEndMSv())} mSv. The ${rules.limits.career.mSv} mSv limit is crossed on day ${this.crossingDay()}.`,
+        text: `Projected over NASA limit: waiver case. Mission-end career dose is about ${fmt(end)} mSv. The ${rules.limits.career.mSv} mSv limit is crossed on day ${this.crossingDay()}.`,
         visibility: 'ground',
       });
     }
@@ -198,6 +199,12 @@ export class World {
 
   get B(): number {
     return baselineMSvH(this.t);
+  }
+
+  /** Minutes in the shelter so far at minute t, or 0 when the crew was outside. */
+  shelterMinAt(t = this.t): number {
+    const iv = this.shelterIntervals.find((x) => x.start <= t && (x.end ?? Infinity) > t);
+    return iv ? t - iv.start : 0;
   }
 
   /**
@@ -228,7 +235,7 @@ export class World {
       (r) => (r.kind === 'FLR' && flareRank(r.classType!) >= flareRank(TH.flareAdvisoryClass.value)) ||
              (r.kind === 'CME' && (r.speed ?? 0) >= TH.cmeAdvisoryKms.value),
     );
-    const sep = seen.filter((r) => r.kind === 'SEP' && r.t <= this.t && (r.tEnd ?? Infinity) > this.t);
+    const sep = seen.filter((r) => r.kind === 'SEP' && (r.tEnd ?? Infinity) > this.t);
     const fastPair = recent(TM.cautionFlareWindowMin).filter(
       (r) => r.kind === 'FLR' && flareRank(r.classType!) >= flareRank(TH.flareCautionClass.value) &&
         r.linked.some((id) => {
@@ -329,7 +336,7 @@ export class World {
         ev.savedMSv += (excess / SHELTER_FACTOR - excess) / 60;
       }
       ev.measured = `${fmt(s.mean)} mSv/h cabin mean, ${fmt(s.mean / B)} × B`;
-      ev.quality = quality.includes('missing') ? 'missing' : quality.includes('poor') ? 'poor' : 'good';
+      ev.quality = worstQuality(quality);
     }
 
     // ----- sensor check (Verify) -----
@@ -386,7 +393,7 @@ export class World {
       openedAt: this.t, changedAt: this.t,
       history: [{ t: this.t, ...target }],
       acked: false, suppressed: false,
-      quality: s.quality.includes('missing') ? 'missing' : s.quality.includes('poor') ? 'poor' : 'good',
+      quality: worstQuality(s.quality),
       measured: `${fmt(s.mean)} mSv/h cabin mean`,
       donkiRefs: [], levelWall: this.now(), eventDoseMSv: 0, shelterDoseMSv: 0, savedMSv: 0, shelterMin: 0,
     };
@@ -437,8 +444,9 @@ export class World {
       inputs: {
         'Cabin mean': `${fmt(s.mean)} mSv/h`,
         'Baseline B': `${fmt(s.B)} mSv/h`,
-        'Sensors ≥ 10 × B': s.cabin.filter((v) => v !== null && v >= 10 * s.B).length,
-        'Sensors ≥ 3 × B': s.cabin.filter((v) => v !== null && v >= 3 * s.B).length,
+        [`Sensors ≥ ${TH.floorMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= TH.floorMultiple.x * s.B).length,
+        [`Sensors ≥ ${TH.warningMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= TH.warningMultiple.x * s.B).length,
+        [`Sensors ≥ ${TH.cautionMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= TH.cautionMultiple.x * s.B).length,
         '24 h projection': `${fmt(this.projection24h(s))} mSv`,
         'Data quality': s.quality.join(' '),
       },
@@ -500,7 +508,6 @@ export class World {
         if (!st || this.procedure.confirmed[st.n]) break;
         this.procedure.confirmed[st.n] = { t: this.t, wall, choice: action.choice };
         if (action.choice === 'branch' && st.branch) {
-          this.procedure.confirmed[st.n].choice = 'branch';
           ui(`SH-1 step ${st.n}: ${st.branch.logText}`, 'ground');
         } else ui(`SH-1 step ${st.n} done: ${st.text}`, 'ground');
         if (st.marksShelter && !this.inShelter) {
@@ -664,6 +671,10 @@ export const VIS_LABEL: Record<Visibility, string> = { private: 'Only me', cmo: 
 export const LINK_LABEL: Record<LinkState, string> = {
   live: 'Live', d5: 'Delayed 5 min', d14: 'Delayed 14 min', d22: 'Delayed 22 min', blackout: 'Offline (blackout)',
 };
+
+function worstQuality(q: Quality[]): Quality {
+  return q.includes('missing') ? 'missing' : q.includes('poor') ? 'poor' : 'good';
+}
 
 function stripDot(s: string): string {
   return s.replace(/\.+$/, '');

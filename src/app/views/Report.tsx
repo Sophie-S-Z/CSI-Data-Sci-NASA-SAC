@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Download, FileText } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { dayOf, duration } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { useUi } from '../context';
 import { buildReport } from '../report';
-import { LevelBadge, PageHead, Panel } from '../parts';
+import { FIELD, LevelBadge, PageHead, Panel } from '../parts';
 
 /** The daily report. Download it as JSON, or print it to PDF. */
 export function ReportView() {
@@ -39,7 +40,7 @@ export function ReportView() {
       <PageHead title="Daily report" sub="Alerts, solar events, check-ins, and actions for one day. Download it for the CMO or the ground." actions={
         <div className="flex print:hidden flex-wrap items-center gap-2">
           <label className="sr-only" htmlFor="rep-day">Mission day</label>
-          <select id="rep-day" value={d} onChange={(e) => setDay(Number(e.target.value))} className="h-10 rounded-md border bg-card px-3 text-sm">
+          <select id="rep-day" value={d} onChange={(e) => setDay(Number(e.target.value))} className={cn(FIELD, 'w-auto bg-card')}>
             {Array.from({ length: last - first + 1 }, (_, i) => last - i).map((x) => <option key={x} value={x}>Day {x}{x === last ? ' (today)' : ''}</option>)}
           </select>
           <Button variant="outline" className="h-10 rounded-md" onClick={json}><Download className="size-4" aria-hidden="true" />JSON</Button>

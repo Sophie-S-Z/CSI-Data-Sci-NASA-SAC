@@ -18,9 +18,6 @@ type RecognitionCtor = new () => Recognition;
 const SpeechCtor: RecognitionCtor | undefined = typeof window === 'undefined' ? undefined
   : ((window as unknown as Record<string, RecognitionCtor | undefined>).SpeechRecognition ?? (window as unknown as Record<string, RecognitionCtor | undefined>).webkitSpeechRecognition);
 
-/** True when this browser can turn speech into text. */
-export const canSpeak = !!SpeechCtor;
-
 /**
  * Voice input for a text field. Tap, speak, and the words go to `onText`.
  * The button does not show in a browser without speech recognition, so the field works as before.

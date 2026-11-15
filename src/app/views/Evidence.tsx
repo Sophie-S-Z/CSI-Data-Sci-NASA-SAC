@@ -3,10 +3,10 @@ import { ComposedChart, Area, XAxis, YAxis, ReferenceLine, ReferenceArea, Respon
 import { cn } from '@/lib/utils';
 import ev from '../../data/real/rad-events.json';
 import l1raw from '../../data/real/l1-summary.json';
-
-const l1 = l1raw as { headline: string; tiles: { label: string; value: string; sub: string }[]; note: string };
 import { PageHead, Panel, Prov, Src } from '../parts';
 import { fmt, whole } from '../../engine/units';
+
+const l1 = l1raw as { headline: string; tiles: { label: string; value: string; sub: string }[]; note: string };
 
 type PolicyId = keyof typeof ev.policies;
 const POLICY_ORDER: PolicyId[] = ['current', 'lowe', 'lowe2', 'layered2'];

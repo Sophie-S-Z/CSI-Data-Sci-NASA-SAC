@@ -188,13 +188,13 @@ function Procedure() {
   const warnActive = w.activeAlerts.some((a) => a.level === 'warning');
   const startWall = alert?.levelWall ?? p.startedWall;
   const shelterWall = alert?.shelterWall;
-  const [, tick] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (shelterWall) return;
-    const id = window.setInterval(() => tick((x) => x + 1), 1000);
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [shelterWall]);
-  const elapsed = Math.max(0, ((shelterWall ?? Date.now()) - startWall) / 1000);
+  const elapsed = Math.max(0, ((shelterWall ?? now) - startWall) / 1000);
   const done = Object.keys(confirmed).length;
 
   return (
@@ -228,7 +228,7 @@ function Procedure() {
                 {isCur && s.waitsForClear && (
                   <div className="text-sm text-muted-foreground">
                     {blocked ? `The Warning is active. It clears when all sensors stay below ${fmt(TH.cautionMultiple.x * w.B)} mSv/h for ${TM.warningClearMin} min.` : 'The Warning is clear. You can leave the shelter.'}
-                    {w.inShelter && w.shelterIntervals.length > 0 && <> In the shelter for {duration(w.t - w.shelterIntervals[w.shelterIntervals.length - 1].start)}.</>}
+                    {w.inShelter && <> In the shelter for {duration(w.shelterMinAt())}.</>}
                   </div>
                 )}
               </div>

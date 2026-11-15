@@ -2,18 +2,12 @@ import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip as RTooltip, CartesianGrid } from 'recharts';
 import { Wind, Thermometer, Droplets, Gauge, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { World } from '../../engine/world';
 import { cabinAt, cabinFindings, type CabinReading } from '../../engine/cabin';
 import { FACTOR, levelAt, type Factor, type ZoneLevel } from '../../engine/limits';
 import { dayOf, hhmm, stamp } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { useUi } from '../context';
 import { LevelBadge, PageHead, Panel, Prov, Src, ZoneBar } from '../parts';
-
-function shelterMinAt(w: World, t: number): number {
-  const iv = w.shelterIntervals.find((x) => x.start <= t && (x.end ?? Infinity) > t);
-  return iv ? t - iv.start : 0;
-}
 
 const PARAMS: { key: keyof CabinReading & Factor['key']; icon: typeof Wind }[] = [
   { key: 'co2mmHg', icon: Wind },
@@ -29,7 +23,7 @@ const STATUS: Record<ZoneLevel, string> = { nominal: 'In range', advisory: 'Outs
 export function CabinView() {
   const { sim } = useUi();
   const w = sim.world;
-  const shelterMin = shelterMinAt(w, w.t);
+  const shelterMin = w.shelterMinAt();
   const r = cabinAt(w.t, shelterMin);
   const findings = cabinFindings(r);
   const [sel, setSel] = useState<(typeof PARAMS)[number]['key']>('co2mmHg');
@@ -40,7 +34,7 @@ export function CabinView() {
   const bucket = Math.floor(w.t / 15);
   const series = useMemo(() => {
     const out: { t: number; v: number }[] = [];
-    for (let t = w.t - 72 * 60; t <= w.t; t += 20) out.push({ t, v: cabinAt(t, shelterMinAt(w, t))[sel] });
+    for (let t = w.t - 72 * 60; t <= w.t; t += 20) out.push({ t, v: cabinAt(t, w.shelterMinAt(t))[sel] });
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bucket, sel, w.shelterIntervals.length]);
@@ -97,7 +91,7 @@ export function CabinView() {
           <Panel title="What the rules see" aside={findings.length ? `${findings.length} finding${findings.length > 1 ? 's' : ''}` : 'All in range'}>
             {findings.length === 0 ? <p className="text-sm text-muted-foreground">All values are inside the NASA limits.</p> : (
               <ul className="space-y-2">{findings.map((f) => (
-                <li key={f.id} className="rounded-md bg-muted/50 p-3 text-sm"><LevelBadge level={f.level} /> <b className="ml-1">{f.title}.</b> {f.text} <Src k={f.source === 'ochmoCo2' ? 'cabinCo2' : 'cabinTemp'} className="text-xs text-muted-foreground">Source</Src></li>
+                <li key={f.id} className="rounded-md bg-muted/50 p-3 text-sm"><LevelBadge level={f.level} /> <b className="ml-1">{f.title}.</b> {f.text} <Src k={f.param in FACTOR ? FACTOR[f.param as Factor['key']].src : 'cabinCo2'} className="text-xs text-muted-foreground">Source</Src></li>
               ))}</ul>
             )}
           </Panel>

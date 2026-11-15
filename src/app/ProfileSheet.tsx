@@ -5,9 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { useUi, type Tab, type Theme } from './context';
 import { Mic } from './Mic';
 import { ENGINE_LABEL, ROLES, initials } from './profile';
-import { Seg } from './parts';
-
-const field = 'h-11 w-full min-w-0 rounded-md border border-input bg-transparent px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30';
+import { FIELD, Seg } from './parts';
 
 /** The crew member's profile: name, role, look, and links to the AI and personal limits. All of it stays on this device. */
 export function ProfileSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -25,7 +23,7 @@ export function ProfileSheet({ open, onOpenChange }: { open: boolean; onOpenChan
           <div>
             <label htmlFor="pf-name" className="mb-1.5 block text-sm font-medium">Name</label>
             <div className="flex gap-2">
-              <input id="pf-name" value={p.name} onChange={(e) => setProfile({ ...p, name: e.target.value })} placeholder="Crew A" autoComplete="name" className={field} />
+              <input id="pf-name" value={p.name} onChange={(e) => setProfile({ ...p, name: e.target.value })} placeholder="Crew A" autoComplete="name" className={FIELD} />
               <Mic label="Say your name" onText={(t) => setProfile({ ...p, name: t })} />
             </div>
           </div>

@@ -12,6 +12,7 @@ export interface Ui {
   tab: Tab;
   go: (tab: Tab) => void;
   openSource: (key: string) => void;
+  /** The crew asked to see SH-1. It shows only while a procedure is open. */
   procOpen: boolean;
   setProcOpen: (open: boolean) => void;
   openProcedure: () => void;

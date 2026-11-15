@@ -1,9 +1,8 @@
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { LINK_LABEL, VIS_LABEL, type LinkState, type LogEntry } from '../../engine/world';
 import { stamp, hhmm } from '../../engine/time';
 import { useUi } from '../context';
-import { Kv, LevelBadge, PageHead, Panel } from '../parts';
+import { Kv, LEVEL_WORD, LINK_OPTIONS, LevelBadge, PageHead, Panel, Seg } from '../parts';
 import { EventDose } from './Radiation';
 
 export function CmoView() {
@@ -20,7 +19,7 @@ export function CmoView() {
       <PageHead title="CMO case view" sub="For the Crew Medical Officer. It shows only shared entries." />
       {!ev ? <Panel><p className="pt-5 text-sm text-muted-foreground">No Caution or Warning event in this replay yet. The case view fills when one starts.</p></Panel> : (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Panel title={ev.id} aside={<LevelBadge level={ev.peak}>Peak: {ev.peak[0].toUpperCase() + ev.peak.slice(1)}</LevelBadge>}>
+          <Panel title={ev.id} aside={<LevelBadge level={ev.peak}>Peak: {LEVEL_WORD[ev.peak]}</LevelBadge>}>
             <Kv rows={[
               ['Opened', stamp(ev.openedAt)],
               ['Status', ev.closedAt ? `Clear at ${stamp(ev.closedAt)}` : `Active, ${ev.level}`],
@@ -54,9 +53,6 @@ export function CmoView() {
   );
 }
 
-const LINKS: LinkState[] = ['live', 'd5', 'd14', 'd22', 'blackout'];
-const LINK_SHORT: Record<LinkState, string> = { live: 'Live', d5: '5 min', d14: '14 min', d22: '22 min', blackout: 'Offline' };
-
 export function GroundView() {
   const { sim, note } = useUi();
   const w = sim.world;
@@ -86,12 +82,7 @@ export function GroundView() {
           )}
         </div>
         <Panel title="Link state">
-          <div role="radiogroup" aria-label="Link to Earth" className="grid grid-cols-5 gap-1 rounded-md bg-muted p-1">
-            {LINKS.map((o) => (
-              <button key={o} role="radio" aria-checked={w.link === o} onClick={() => { sim.act({ type: 'link', link: o }); note(`Link set to ${LINK_LABEL[o].toLowerCase()}`); }}
-                className={cn('h-10 rounded text-xs font-medium', w.link === o ? 'bg-card ring-1 ring-border' : 'text-muted-foreground')}>{LINK_SHORT[o]}</button>
-            ))}
-          </div>
+          <Seg<LinkState> label="Link to Earth" value={w.link} options={LINK_OPTIONS} onChange={(o) => { sim.act({ type: 'link', link: o }); note(`Link set to ${LINK_LABEL[o].toLowerCase()}`); }} />
           <p className="mt-3 text-sm text-muted-foreground">When the link returns after a blackout, the ship sends one summary. It holds all entries shared with Ground since the last summary that the ship sent, so the flight surgeon gets each entry one time.</p>
           <Button variant="outline" className="mt-3 rounded-md" onClick={() => { sim.act({ type: 'summary' }); note(w.link === 'blackout' ? 'Ground summary queued on board' : 'Ground summary sent'); }}>
             {w.link === 'blackout' ? 'Build summary (queued)' : 'Send summary now'}
