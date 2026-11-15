@@ -1,6 +1,7 @@
 import { LEVEL_RANK, RULES, type CheckIn, type Level, type World } from '../engine/world';
 import { MIN_PER_DAY, dayOf, stamp } from '../engine/time';
 import { LEVEL_EFFECT } from './health';
+import { LEVEL_WORD } from './parts';
 import { fmt } from '../engine/units';
 import { displayName, type Profile } from './profile';
 
@@ -34,7 +35,7 @@ export function buildReport(w: World, day: number, p: Profile, now = new Date())
   const isToday = day === dayOf(w.t);
 
   const attention = [
-    ...(isToday ? w.activeAlerts.map((a) => `${a.id} is open: ${a.level[0].toUpperCase()}${a.level.slice(1)}${a.acked ? '' : ', not acknowledged'}${a.suppressed ? ', suppressed' : ''}.`) : []),
+    ...(isToday ? w.activeAlerts.map((a) => `${a.id} is open: ${LEVEL_WORD[a.level]}${a.acked ? '' : ', not acknowledged'}${a.suppressed ? ', suppressed' : ''}.`) : []),
     ...(isToday ? [...w.inhibited].map((r) => `Rule ${r} is inhibited.`) : []),
     ...(isToday ? w.bodyFindings().filter((f) => f.level === 'caution').map((f) => `${f.title}: ${f.text}`) : []),
     ...(doseMSv > 2 * w.B * 24 ? [`Your dose today is ${fmt(doseMSv)} mSv, more than 2 times a normal day.`] : []),

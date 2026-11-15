@@ -78,9 +78,9 @@ export async function modelAnswer(q: string, lines: string[], p: Profile, onProg
       if (r.stop_reason === 'refusal') throw new Error('The model declined this question.');
       return r.content.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('').trim();
     } catch (e) {
-      if (e instanceof Anthropic.AuthenticationError) throw new Error('Anthropic did not accept the API key.');
-      if (e instanceof Anthropic.RateLimitError) throw new Error('Rate limit reached. Try again in a minute.');
-      if (e instanceof Anthropic.APIError) throw new Error(`Anthropic error ${e.status ?? ''}: ${e.message}`.trim());
+      if (e instanceof Anthropic.AuthenticationError) throw new Error('Anthropic did not accept the API key.', { cause: e });
+      if (e instanceof Anthropic.RateLimitError) throw new Error('Rate limit reached. Try again in a minute.', { cause: e });
+      if (e instanceof Anthropic.APIError) throw new Error(`Anthropic error ${e.status ?? ''}: ${e.message}`.trim(), { cause: e });
       throw e;
     }
   }

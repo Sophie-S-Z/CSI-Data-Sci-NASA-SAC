@@ -103,13 +103,9 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#F4F5F6' : '#0B0D10');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#F4F5F6' : '#08090B');
     try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
   }, [theme]);
-
-  useEffect(() => {
-    if (procOpen && !sim.world.procedure) setProcOpen(false);
-  }, [procOpen, sim.world.procedure]);
 
   // Space plays or pauses the replay, except while the focus is on a control or a text field.
   const { playing, setPlaying } = sim;

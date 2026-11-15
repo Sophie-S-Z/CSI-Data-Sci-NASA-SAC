@@ -87,8 +87,7 @@ function raisedNow(w: World): boolean {
 }
 
 export function useSim() {
-  const ref = useRef<World | null>(null);
-  if (!ref.current) ref.current = load();
+  const [world, setWorld] = useState(load);
   const [, setVersion] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(SPEEDS[2]);
@@ -99,7 +98,7 @@ export function useSim() {
   useEffect(() => {
     if (!playing) return;
     const id = window.setInterval(() => {
-      const w = ref.current!;
+      const w = world;
       carry.current += speed.minPerSec / 10;
       const n = Math.floor(carry.current);
       carry.current -= n;
@@ -117,30 +116,34 @@ export function useSim() {
       }
     }, 100);
     return () => window.clearInterval(id);
-  }, [playing, speed, pauseOnAlert, bump]);
+  }, [world, playing, speed, pauseOnAlert, bump]);
 
   const act = useCallback((a: Action) => {
-    ref.current!.apply(a);
-    save(ref.current!);
+    world.apply(a);
+    save(world);
     bump();
-  }, [bump]);
+  }, [world, bump]);
 
   const jumpTo = useCallback((t: number) => {
-    const w = ref.current!;
-    if (t >= w.t) w.advanceTo(Math.min(t, REPLAY_END));
-    else ref.current = rebuild(w.actions.filter((a) => a.t <= t), t);
-    save(ref.current!);
-    bump();
-  }, [bump]);
+    if (t >= world.t) {
+      world.advanceTo(Math.min(t, REPLAY_END));
+      save(world);
+      bump();
+      return;
+    }
+    const w = rebuild(world.actions.filter((a) => a.t <= t), t);
+    save(w);
+    setWorld(w);
+  }, [world, bump]);
 
   const restart = useCallback(() => {
-    ref.current = rebuild([], DEMO_START);
+    const w = rebuild([], DEMO_START);
     setPlaying(false);
-    save(ref.current);
-    bump();
-  }, [bump]);
+    save(w);
+    setWorld(w);
+  }, []);
 
-  return { world: ref.current, playing, setPlaying, speed, setSpeed, pauseOnAlert, setPauseOnAlert, act, jumpTo, restart };
+  return { world, playing, setPlaying, speed, setSpeed, pauseOnAlert, setPauseOnAlert, act, jumpTo, restart };
 }
 
 export type Sim = ReturnType<typeof useSim>;

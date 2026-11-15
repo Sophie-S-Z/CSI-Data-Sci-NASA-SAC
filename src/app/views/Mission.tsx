@@ -11,25 +11,25 @@ import { lightMinutes, vehicleAt, TRANSIT_DAYS } from '../../engine/orbit';
 import { BEATS, DEMO_START, REPLAY_END, SPEEDS, beatIndex } from '../../ui/useSim';
 import { useUi } from '../context';
 import { displayName } from '../profile';
-import { InfoBadge, LevelBadge, Panel, Prov, Seg } from '../parts';
+import { InfoBadge, LINK_OPTIONS, LevelBadge, Panel, Prov, Seg } from '../parts';
 import { Decision } from './Decision';
 
 // three.js is large, so it loads after the first paint.
 const MissionView = lazy(() => import('../../ui/MissionView'));
 
-const LINKS: { value: LinkState; label: string }[] = [
-  { value: 'live', label: 'Live' }, { value: 'd5', label: '5 min' }, { value: 'd14', label: '14 min' }, { value: 'd22', label: '22 min' }, { value: 'blackout', label: 'Offline' },
-];
-
-/** Landing page: the storm replay, the alert panel, and the ship on its way to Mars. */
+/**
+ * Landing page: the storm replay, the alert panel, and the ship on its way to Mars.
+ * On a wide screen the alert panel has its own column and stays in view.
+ * On a narrow screen it moves to the top during a Caution or a Warning, so the action comes first.
+ */
 export function MissionPage() {
+  const level = useUi().sim.world.activeAlerts[0]?.level;
+  const loud = level === 'warning' || level === 'caution';
   return (
-    <div className="space-y-4">
-      <DemoGuide />
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <div className="min-w-0 xl:order-2"><Decision /></div>
-        <div className="min-w-0 xl:order-1"><ShipPanel /></div>
-      </div>
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] xl:items-start">
+      <div className={cn('min-w-0 xl:sticky xl:top-[4.5rem] xl:col-start-2 xl:row-span-2 xl:row-start-1', loud ? 'order-first' : 'order-2')}><Decision /></div>
+      <div className="order-1 min-w-0 xl:col-start-1"><DemoGuide /></div>
+      <div className="order-3 min-w-0 xl:col-start-1"><ShipPanel /></div>
     </div>
   );
 }
@@ -100,7 +100,7 @@ function DemoGuide() {
         <div className="num mt-1 flex justify-between text-[11px] text-muted-foreground"><span>Start {stamp(DEMO_START)}</span><span>End {stamp(REPLAY_END)}</span></div>
       </div>
 
-      <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+      <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {BEATS.map((b, i) => (
           // On a phone, only the current step shows. The track above gives the others.
           <li key={b.label} className={cn(i !== Math.max(cur, 0) && 'hidden sm:block')}>
@@ -112,9 +112,8 @@ function DemoGuide() {
                   {i < cur ? <Check className="size-3.5" aria-hidden="true" /> : i + 1}
                 </span>
                 <span className="font-semibold">{b.label}</span>
-                <LevelBadge level={b.level} className="ml-auto h-5 px-2 text-[11px]" />
               </span>
-              <span className="num text-xs text-muted-foreground">{stamp(b.t)}</span>
+              <span className="flex items-center gap-2"><span className="num text-xs whitespace-nowrap text-muted-foreground">{stamp(b.t)}</span><LevelBadge level={b.level} className="ml-auto h-5 px-2 text-[11px]" /></span>
               {i === cur && <span className="text-sm leading-snug">{b.text}</span>}
             </button>
           </li>
@@ -127,7 +126,7 @@ function DemoGuide() {
       <details className="mt-2 text-xs">
         <summary className="cursor-pointer text-muted-foreground">Link to Earth: {LINK_LABEL[w.link]}</summary>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Seg<LinkState> label="Link to Earth" value={w.link} onChange={(l) => { sim.act({ type: 'link', link: l }); note(`Link set to ${LINK_LABEL[l].toLowerCase()}`); }} options={LINKS} />
+          <Seg<LinkState> label="Link to Earth" value={w.link} onChange={(l) => { sim.act({ type: 'link', link: l }); note(`Link set to ${LINK_LABEL[l].toLowerCase()}`); }} options={LINK_OPTIONS} />
           <span className="text-muted-foreground">Set Offline to show a blackout. The ground gets a summary when the link returns.</span>
         </div>
       </details>

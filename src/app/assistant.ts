@@ -52,7 +52,6 @@ const TM = rules.timing;
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const dot = (s: string) => (/[.!?]$/.test(s) ? s : `${s}.`);
 const shown = (w: World) => w.activeAlerts.filter((a) => !a.suppressed);
-const shelterMin = (w: World) => (w.inShelter ? w.t - w.shelterIntervals[w.shelterIntervals.length - 1].start : 0);
 
 /** The brief covers this many minutes before now. */
 export const BRIEF_MIN = 12 * 60;
@@ -253,7 +252,7 @@ const TOPICS: Topic[] = [
     id: 'cabin', ask: 'Is the cabin air OK?',
     examples: ['is the cabin air ok', 'co2', 'carbon dioxide', 'air quality', 'cabin temperature', 'humidity', 'oxygen', 'cabin pressure', 'stuffy air'],
     answer: (w) => {
-      const r = cabinAt(w.t, shelterMin(w));
+      const r = cabinAt(w.t, w.shelterMinAt());
       const f = cabinFindings(r);
       return {
         lines: [

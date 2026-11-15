@@ -135,7 +135,7 @@
     font-feature-settings: "cv11", "ss01", "tnum" 0;
     min-height: 100dvh;
   }
-  .tnum, .num { font-variant-numeric: tabular-nums slashed-zero; }
+  .num { font-variant-numeric: tabular-nums slashed-zero; }
   ::selection { background: color-mix(in oklch, var(--primary) 25%, transparent); }
 }
 

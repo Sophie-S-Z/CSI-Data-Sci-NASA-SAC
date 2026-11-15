@@ -3,10 +3,10 @@ import { ComposedChart, Area, XAxis, YAxis, ReferenceLine, ReferenceArea, Respon
 import { cn } from '@/lib/utils';
 import ev from '../../data/real/rad-events.json';
 import l1raw from '../../data/real/l1-summary.json';
-
-const l1 = l1raw as { headline: string; tiles: { label: string; value: string; sub: string }[]; note: string };
 import { PageHead, Panel, Prov, Src } from '../parts';
 import { fmt, whole } from '../../engine/units';
+
+const l1 = l1raw as { headline: string; tiles: { label: string; value: string; sub: string }[]; note: string };
 
 type PolicyId = keyof typeof ev.policies;
 const POLICY_ORDER: PolicyId[] = ['current', 'lowe', 'lowe2', 'layered2'];
@@ -91,7 +91,7 @@ export function EvidenceView() {
           </div>
           <div className="mt-3 flex flex-wrap gap-1" role="radiogroup" aria-label="Rule">
             {POLICY_ORDER.map((p) => (
-              <button key={p} role="radio" aria-checked={pol === p} onClick={() => setPol(p)} className={cn('h-10 rounded-md px-3 text-xs font-medium sm:h-8', pol === p ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground')}>{SHORT[p]}</button>
+              <button key={p} role="radio" aria-checked={pol === p} onClick={() => setPol(p)} className={cn('h-8 rounded-md px-3 text-xs font-medium pointer-coarse:h-10', pol === p ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground')}>{SHORT[p]}</button>
             ))}
           </div>
           <div className="mt-3 h-72 w-full" role="img" aria-label={`Measured dose rate ratio for the event of ${fmtUtc(e.onset_utc)}, with shelter time for ${SHORT[pol]}.`}>

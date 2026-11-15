@@ -12,7 +12,7 @@ import { SENSORS } from '../../engine/doseModel';
 import { at, dayOf, hhmm, stamp, duration, minuteOfDay, MIN_PER_DAY } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { useUi } from '../context';
-import { PageHead, Panel, Prov, Src, Spark, Kv } from '../parts';
+import { PageHead, Panel, Prov, Seg, Src, Spark, Kv } from '../parts';
 
 const TH = rules.thresholds;
 
@@ -45,12 +45,13 @@ function RateTile() {
   const level = w.openAlert('radiation')?.level;
   // Color follows the open alert level, so red shows only during a Warning (beta report D-2).
   const tone = level === 'warning' ? 'text-warning' : level === 'caution' ? 'text-caution-ink' : 'text-foreground';
+  const sparkBucket = Math.floor(w.t / 5);
   const spark = useMemo(() => {
     const h = w.history.filter((p) => p.t > w.t - 8 * 60);
     const step = Math.max(1, Math.floor(h.length / 60));
     return h.filter((_, i) => i % step === 0).map((p) => p.personal);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Math.floor(w.t / 5)]);
+  }, [sparkBucket]);
   return (
     <Panel title="Your dose rate" aside={<><Prov kind="measured">RAD event data</Prov></>}>
       <div className="flex items-end justify-between gap-3">
@@ -83,9 +84,10 @@ function RateTile() {
  * the measured RAD rate, the simulated dose to the crew member, and the modeled shelter saving.
  */
 export function EventDose({ a, w }: { a: Alert; w: World }) {
+  const bucket = Math.floor(w.t / 15);
   const peak = useMemo(() => w.history.reduce((m, h) => (h.t >= a.openedAt && h.t <= (a.closedAt ?? w.t) ? Math.max(m, h.mean) : m), 0),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-    [a.id, a.closedAt, Math.floor(w.t / 15)]);
+    [a.id, a.closedAt, bucket]);
   const before = a.eventDoseMSv - a.shelterDoseMSv;
   const rows: [string, React.ReactNode, React.ReactNode][] = [
     ['Peak cabin mean dose rate (RAD event shape × B)', <Src k="speModel">{fmt(peak)} mSv/h</Src>, <Prov kind="measured">Measured RAD</Prov>],
@@ -159,11 +161,7 @@ function DoseChart() {
   return (
     <Panel title="Cabin dose rate" aside={<>
       <Prov kind="measured">Event: MSL RAD, Mar 2012</Prov>
-      <div role="radiogroup" aria-label="Chart window" className="flex rounded-md bg-muted p-0.5">
-        {WINDOWS.map((o) => (
-          <button key={o.h} role="radio" aria-checked={span === o.h} onClick={() => setSpan(o.h)} className={cn('h-10 rounded-md px-3 text-xs font-medium sm:h-7 sm:px-2.5', span === o.h ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground')}>{o.label}</button>
-        ))}
-      </div>
+      <Seg label="Chart window" value={String(span)} onChange={(v) => setSpan(Number(v))} options={WINDOWS.map((o) => ({ value: String(o.h), label: o.label }))} />
     </>}>
       <DoseChartBody data={data} B={w.B} />
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">

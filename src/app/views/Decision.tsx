@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Check, CornerDownRight, LogOut, Square, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -98,25 +98,27 @@ export function Decision() {
             {clear.have === 0 && <ClearEstimate />}
           </div>
         )}
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          {main && loud && !showProc && (
-            <Button size="lg" onClick={() => { sim.act({ type: 'procStart', alertId: main.id }); openProcedure(); note(`Procedure SH-1 opened from ${main.id}`); }}
-              className={cn('h-14 rounded-md px-6 text-base font-semibold', level === 'warning' ? 'bg-white text-warning hover:bg-white/90' : 'bg-caution-foreground text-caution hover:bg-caution-foreground/90')}>
-              {w.procedure ? 'Open procedure SH-1' : 'Start procedure SH-1'}<ArrowRight className="size-5" aria-hidden="true" />
-            </Button>
-          )}
-          {!main && w.inShelter && (
-            <Button size="lg" className="h-14 rounded-md px-6 text-base" onClick={() => { sim.act({ type: 'shelterExit' }); setProcOpen(false); note('Left the shelter'); }}>
-              <LogOut className="size-5" aria-hidden="true" />Leave the shelter
-            </Button>
-          )}
-          {showProc && <Button variant="secondary" className="h-12 rounded-md" onClick={() => setProcOpen(false)}>Show alert details</Button>}
-          {main && (
-            <Button variant="ghost" className={cn('ml-auto h-11 rounded-md', loud && 'hover:bg-black/10')} onClick={() => openSource(main.ruleId)}>
-              Why this alert: rule <span className="font-mono">{main.ruleId}</span>
-            </Button>
-          )}
-        </div>
+        {(main || w.inShelter) && (
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            {main && loud && !showProc && (
+              <Button size="lg" onClick={() => { sim.act({ type: 'procStart', alertId: main.id }); openProcedure(); note(`Procedure SH-1 opened from ${main.id}`); }}
+                className={cn('h-14 w-full rounded-md px-6 text-base font-semibold sm:w-auto', level === 'warning' ? 'bg-white text-warning hover:bg-white/90' : 'bg-caution-foreground text-caution hover:bg-caution-foreground/90')}>
+                {w.procedure ? 'Open procedure SH-1' : 'Start procedure SH-1'}<ArrowRight className="size-5" aria-hidden="true" />
+              </Button>
+            )}
+            {!main && w.inShelter && (
+              <Button size="lg" className="h-14 w-full rounded-md px-6 text-base sm:w-auto" onClick={() => { sim.act({ type: 'shelterExit' }); setProcOpen(false); note('Left the shelter'); }}>
+                <LogOut className="size-5" aria-hidden="true" />Leave the shelter
+              </Button>
+            )}
+            {showProc && <Button variant="secondary" className="h-12 rounded-md" onClick={() => setProcOpen(false)}>Show alert details</Button>}
+            {main && (
+              <Button variant="ghost" className={cn('h-11 rounded-md px-0 sm:ml-auto sm:px-3', loud && 'hover:bg-black/10')} onClick={() => openSource(main.ruleId)}>
+                Why this alert: rule <span className="font-mono">{main.ruleId}</span>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {main && (showProc ? <Procedure /> : (
@@ -188,17 +190,25 @@ function Procedure() {
   const warnActive = w.activeAlerts.some((a) => a.level === 'warning');
   const startWall = alert?.levelWall ?? p.startedWall;
   const shelterWall = alert?.shelterWall;
-  const [, tick] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (shelterWall) return;
-    const id = window.setInterval(() => tick((x) => x + 1), 1000);
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [shelterWall]);
-  const elapsed = Math.max(0, ((shelterWall ?? Date.now()) - startWall) / 1000);
+  const elapsed = Math.max(0, ((shelterWall ?? now) - startWall) / 1000);
+  // On a phone the procedure opens below the fold. Bring its steps into view, so the next tap is in reach.
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    if (!el || el.getBoundingClientRect().top < window.innerHeight * 0.6) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+  }, []);
   const done = Object.keys(confirmed).length;
 
   return (
-    <div className="border-t p-5">
+    <div ref={box} className="scroll-mt-40 border-t p-5 sm:scroll-mt-20">
       <div className="flex flex-wrap items-center gap-3">
         <h3 className="text-base font-semibold"><span className="font-mono">{PROCEDURE_SH1.id}</span> {PROCEDURE_SH1.title}</h3>
         <span className="text-xs text-muted-foreground">Step {Math.min(done + 1, PROCEDURE_SH1.steps.length)} of {PROCEDURE_SH1.steps.length}</span>
@@ -228,7 +238,7 @@ function Procedure() {
                 {isCur && s.waitsForClear && (
                   <div className="text-sm text-muted-foreground">
                     {blocked ? `The Warning is active. It clears when all sensors stay below ${fmt(TH.cautionMultiple.x * w.B)} mSv/h for ${TM.warningClearMin} min.` : 'The Warning is clear. You can leave the shelter.'}
-                    {w.inShelter && w.shelterIntervals.length > 0 && <> In the shelter for {duration(w.t - w.shelterIntervals[w.shelterIntervals.length - 1].start)}.</>}
+                    {w.inShelter && <> In the shelter for {duration(w.shelterMinAt())}.</>}
                   </div>
                 )}
               </div>
