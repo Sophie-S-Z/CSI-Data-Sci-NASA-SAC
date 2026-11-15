@@ -53,7 +53,16 @@ Open **Real-world data > Measured events** to show the rule results on all 6 eve
 
 ## Demo video
 
-[`docs/demo/storm-shelter-demo-30s.mp4`](docs/demo/storm-shelter-demo-30s.mp4) (30 s, no sound). It shows the 6 demo steps, Ask AI, and the rule test on the measured events.
+[`docs/demo/storm-shelter-demo-30s.mp4`](docs/demo/storm-shelter-demo-30s.mp4) (28 s, no sound). Screens of the final build: the 6 demo steps, the shelter procedure, Space weather, and the rule test on the measured events.
+
+## Preview images
+
+Screens of the final build in [`docs/preview/`](docs/preview/): desktop at 1920 x 1080 and phone at 390 x 844.
+
+![Mission replay](docs/preview/desktop-01-mission-replay.png)
+![Warning](docs/preview/desktop-03-warning.png)
+![Shelter procedure](docs/preview/desktop-04-shelter-procedure.png)
+![Measured events](docs/preview/desktop-09-measured-events.png)
 
 ## Use of SI (AI) tools
 
@@ -62,7 +71,7 @@ The team used Super Intelligence (SI) tools on this project, as listed below.
 - **Code.** Claude (Anthropic) with Claude Code wrote most of the app code, the tests, and the Python research scripts. The team set the goals, reviewed the code, and checked the results.
 - **Research and text.** Claude helped to search the literature, check the citations, and write the README, the PRD, and the result reports. Each citation was checked against Crossref, PubMed, arXiv, or the NASA PDF (see "Source audit" below).
 - **Data analysis.** Claude wrote and ran the scripts that get and score the GOES, MSL RAD, and LRO CRaTER data. The data is measured data from the public archives. No data value is AI-generated.
-- **Demo video.** The video is a screen recording of the real app. Claude drove the app in a headless browser, recorded the screen, and wrote the captions.
+- **Demo video and preview images.** They are screen captures of the real app. Claude drove the app in a headless browser, took the screen captures, and wrote the captions.
 - **In the app.** Ask AI can send facts to an optional model: Llama 3.2 in the browser (WebLLM), Claude with the user's API key, or an OpenAI-compatible API. The built-in assistant does not use a model.
 - **Images.** The app has no AI-generated images. It uses no NASA logo or NASA design element.
 
