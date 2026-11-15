@@ -40,10 +40,10 @@ The app opens on **Mission replay**. The top panel holds the demo: 3 short instr
 
 | Step | Mission time | What you see |
 | --- | --- | --- |
-| 1 Solar flare | Day 94 00:25 | The X5.4 flare and the fast CME give a Caution (rule R-C1). The dose rate at the ship is still normal. |
-| 2 Sensor spike | Day 94 03:12 | One sensor jumps. The app gives Verify, not a Warning, because only 1 sensor agrees. |
+| 1 Solar flare | Day 94 00:24 | The X5.4 flare and the fast CME give a Caution (rule R-C1). The dose rate at the ship is still normal. |
+| 2 Sensor spike | Day 94 03:11 | One sensor jumps. The app gives Verify, not a Warning, because only 1 sensor agrees. |
 | 3 Dose rise | Day 94 06:30 | Protons reach the ship. The cabin dose rate passes 1.5 × the baseline. |
-| 4 Warning | Day 94 08:51 | At 2 × the baseline on 2 or more sensors for 30 min, rule R-W1 gives a Warning. Tap **Start procedure SH-1**. |
+| 4 Warning | Day 94 08:50 | At 2 × the baseline on 2 or more sensors for 30 min, rule R-W1 gives a Warning. Tap **Start procedure SH-1**. |
 | 5 Peak | Day 95 17:00 | The dose rate is about 35 × the baseline. **Cabin radiation** shows the dose that the shelter saves. |
 | 6 All clear | Day 97 13:30 | The Warning drops to Caution. You can leave the shelter. |
 

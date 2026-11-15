@@ -98,7 +98,7 @@ export function Panel({ title, aside, children, className, bodyClass, id }: { ti
 export function PageHead({ title, sub, actions }: { title: string; sub?: ReactNode; actions?: ReactNode }) {
   return (
     <div className="mb-5 flex flex-wrap items-end gap-3">
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-[1_1_20rem]">
         <h1 className="text-2xl font-semibold tracking-tight text-balance md:text-[28px]">{title}</h1>
         {sub && <p className="mt-1 max-w-3xl text-sm text-pretty text-muted-foreground">{sub}</p>}
       </div>

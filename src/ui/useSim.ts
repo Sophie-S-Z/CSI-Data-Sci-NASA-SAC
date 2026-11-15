@@ -20,10 +20,10 @@ export const SPEEDS = [
  * tests/demo.test.ts checks that each step shows its level.
  */
 export const BEATS: { label: string; t: number; level: Level; text: string }[] = [
-  { label: 'Solar flare', t: at(94, '00:25'), level: 'caution', text: 'An X5.4 flare and a fast CME erupt from the Sun. The dose rate at the ship is still normal, but the app gives a Caution: safe your task and stage the shelter.' },
-  { label: 'Sensor spike', t: at(94, '03:12'), level: 'verify', text: 'One cabin sensor jumps. The other sensors do not agree, so the app asks you to check the sensor. It does not give a false Warning.' },
+  { label: 'Solar flare', t: at(94, '00:24'), level: 'caution', text: 'An X5.4 flare and a fast CME erupt from the Sun. The dose rate at the ship is still normal, but the app gives a Caution: safe your task and stage the shelter.' },
+  { label: 'Sensor spike', t: at(94, '03:11'), level: 'verify', text: 'One cabin sensor jumps. The other sensors do not agree, so the app asks you to check the sensor. It does not give a false Warning.' },
   { label: 'Dose rise', t: at(94, '06:30'), level: 'caution', text: 'Solar protons reach the ship. The cabin dose rate rises above 1.5 times the baseline on 2 or more sensors.' },
-  { label: 'Warning', t: at(94, '08:51'), level: 'warning', text: 'The dose rate stays above 2 times the baseline for 30 min. The screen turns red. Press "Start procedure SH-1" and go to the shelter.' },
+  { label: 'Warning', t: at(94, '08:50'), level: 'warning', text: 'The dose rate stays above 2 times the baseline for 30 min. The screen turns red. Press "Start procedure SH-1" and go to the shelter.' },
   { label: 'Peak', t: at(95, '17:00'), level: 'warning', text: 'The dose rate is about 35 times the baseline. Open Cabin radiation to see the dose that the shelter saves.' },
   { label: 'All clear', t: at(97, '13:30'), level: 'caution', text: 'All sensors stay low for 1 h. The Warning drops to a Caution. You can leave the shelter.' },
 ];
