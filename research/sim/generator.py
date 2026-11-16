@@ -1,4 +1,4 @@
-"""Synthetic Mars-cruise radiation timeline for Storm Shelter Phase 3.
+"""Synthetic Mars-cruise radiation timeline for Vigil Phase 3.
 
 Everything in this file is SYNTHETIC. It can show that a policy is broken or
 not broken. It cannot show that a policy works in space. The real-data

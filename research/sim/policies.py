@@ -147,7 +147,7 @@ NONE_I, NONE_F = np.zeros(0, np.int64), np.zeros(0)
 def policy(name, m, **kw):
     e_idx, e_pred = _alerts(m.electron_alerts)
     r_idx, r_pred = _alerts(m.relay_alerts)
-    if name == "current":       # Storm Shelter today: Warning at 10 x B, clear after 2 h below 3 x B
+    if name == "current":       # Vigil today: Warning at 10 x B, clear after 2 h below 3 x B
         x = fuse(m.sensors, "single")
         b = np.full(x.size, B_NOMINAL)
         return run_threshold(x, b, 10.0, 1, 3.0, 8, NONE_I, NONE_F, 0.0, 0, NONE_I, NONE_F, 0.0, 0)
