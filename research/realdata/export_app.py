@@ -65,7 +65,6 @@ def main():
         "filled": [int(i) for i in np.nonzero(filled)[0]],
         "ratio_E": [r3(x) for x in (ef / be)[i0:i0 + n]],
         "ratio_B": [r3(x) for x in (bf / bb)[i0:i0 + n]],
-        "uGy_h_E": [r3(x) for x in ef[i0:i0 + n]],
     }
     (APP / "rad-replay.json").write_text(json.dumps(replay, separators=(",", ":")))
 

@@ -1,7 +1,7 @@
 import rules from '../data/rules.json';
 import mission from '../data/mission.json';
 import frontier from '../data/real/frontier.json';
-import { RULES, LINK_LABEL, LINK_DELAY_MIN, PROCEDURE_SH1, VIS_LABEL, VISIBILITY_ORDER, actionSentence, type Alert, type World } from '../engine/world';
+import { RULES, LINK_LABEL, LINK_DELAY_MIN, PROCEDURE_SH1, VIS_LABEL, VISIBILITY_ORDER, actionSentence, cap, type Alert, type World } from '../engine/world';
 import { SENSORS, SHELTER_FACTOR } from '../engine/doseModel';
 import { BODY_RULE } from '../engine/bodyRules';
 import { cabinAt, cabinFindings, CABIN } from '../engine/cabin';
@@ -49,7 +49,6 @@ interface Topic {
 
 const TH = rules.thresholds;
 const TM = rules.timing;
-const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const dot = (s: string) => (/[.!?]$/.test(s) ? s : `${s}.`);
 
 /** The brief covers this many minutes before now. */

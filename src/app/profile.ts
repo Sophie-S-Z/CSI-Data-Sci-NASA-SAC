@@ -29,7 +29,7 @@ export const DEFAULT_PROFILE: Profile = {
   name: '', role: 'Mission specialist', engine: 'builtin', models: {}, keys: {}, baseUrl: 'https://api.openai.com/v1',
 };
 
-const KEY = 'storm-shelter.profile.v1';
+const KEY = 'vigil.profile.v1';
 
 export function loadProfile(): Profile {
   try {

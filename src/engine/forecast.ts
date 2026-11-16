@@ -14,7 +14,7 @@ import type { Sample, World } from './world';
  * The forecast is an estimate only. It never opens, holds, or clears an alert.
  */
 
-export const BIN_MIN: number = radEvents.bin_min;
+const BIN_MIN: number = radEvents.bin_min;
 const CLEAR_X = rules.thresholds.cautionMultiple.x;
 const HOLD_BINS = rules.timing.warningClearMin / BIN_MIN;
 /** No forecast until the rate falls below this part of the event peak. Before that, the rate can still rise. */
