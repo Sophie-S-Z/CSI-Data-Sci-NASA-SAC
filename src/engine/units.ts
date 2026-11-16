@@ -7,7 +7,7 @@ import rules from '../data/rules.json';
  * particle event (SPE) is protons, which have a lower quality factor.
  */
 export const MSV_PER_MGY: number = rules.units.mSvPerMGy;
-export const SPE_MSV_PER_MGY: number = rules.units.speMSvPerMGy;
+const SPE_MSV_PER_MGY: number = rules.units.speMSvPerMGy;
 /** SPE dose equivalent per GCR dose equivalent, for the same absorbed dose. */
 export const SPE_PER_GCR = SPE_MSV_PER_MGY / MSV_PER_MGY;
 

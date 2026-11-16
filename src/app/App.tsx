@@ -5,7 +5,6 @@ import {
   Ellipsis, Sparkles, SunMedium, SlidersHorizontal, Play, Pause, TriangleAlert, FileText, Database,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { dayOf, hhmm } from '../engine/time';
@@ -39,8 +38,7 @@ const VIEWS: Record<Tab, ComponentType> = {
   sources: view(() => import('./views/Sources'), 'SourcesView'),
 };
 
-// The storage keys keep their old prefix, so a saved theme, profile, or replay survives the rename.
-const THEME_KEY = 'storm-shelter.theme.v3';
+const THEME_KEY = 'vigil.theme.v1';
 
 /** `short` marks the 4 views in the phone tab bar, with the short label. */
 interface NavItem { id: Tab; label: string; icon: typeof Radiation; short?: string }
@@ -139,28 +137,26 @@ export function App() {
   const View = VIEWS[tab];
   return (
     <MotionConfig reducedMotion="user">
-      <TooltipProvider delayDuration={300}>
-        <UiContext.Provider value={ui}>
-          <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">Skip to the main content</a>
-          <div className="flex min-h-dvh">
-            <Sidebar />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <TopBar last={last} />
-              <ModeBanner />
-              <InhibitBanner />
-              <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-5 pb-28 md:px-6 lg:px-8 lg:pb-10">
-                <Suspense fallback={<ViewSkeleton />}>
-                  {/* Each view comes in with a short ease-out fade. No exit animation, so a tap feels instant. */}
-                  <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}><View /></motion.div>
-                </Suspense>
-              </main>
-            </div>
+      <UiContext.Provider value={ui}>
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">Skip to the main content</a>
+        <div className="flex min-h-dvh">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TopBar last={last} />
+            <ModeBanner />
+            <InhibitBanner />
+            <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-5 pb-28 md:px-6 lg:px-8 lg:pb-10">
+              <Suspense fallback={<ViewSkeleton />}>
+                {/* Each view comes in with a short ease-out fade. No exit animation, so a tap feels instant. */}
+                <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}><View /></motion.div>
+              </Suspense>
+            </main>
           </div>
-          <MobileTabs />
-          <SourceSheet k={source} onClose={() => setSource(null)} />
-          <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
-        </UiContext.Provider>
-      </TooltipProvider>
+        </div>
+        <MobileTabs />
+        <SourceSheet k={source} onClose={() => setSource(null)} />
+        <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
+      </UiContext.Provider>
     </MotionConfig>
   );
 }

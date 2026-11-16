@@ -41,7 +41,7 @@ export function radFilled(t: number): boolean {
 }
 
 /** Measured RAD ratio (rate / fitted background) of one detector at minute t. Linear between 15 min bins. 1 outside the replay. */
-export function radRatio(t: number, det: Detector = 'E'): number {
+function radRatio(t: number, det: Detector = 'E'): number {
   const r = RATIO[det];
   const x = (t - REPLAY_START) / BIN;
   if (x < 0 || x >= r.length - 1) return 1;
@@ -57,7 +57,7 @@ export function radRatio(t: number, det: Detector = 'E'): number {
  * SPE excess dose rate at an unshielded cabin point, in mSv/h. From measured MSL RAD data (March 2012).
  * The excess absorbed dose is (ratio − 1) × B. Solar protons give less dose equivalent per mGy than GCR.
  */
-export function speExcessMSvH(t: number, det: Detector = 'E'): number {
+function speExcessMSvH(t: number, det: Detector = 'E'): number {
   return Math.max(0, radRatio(t, det) - 1) * baselineMSvH(t) * SPE_PER_GCR;
 }
 

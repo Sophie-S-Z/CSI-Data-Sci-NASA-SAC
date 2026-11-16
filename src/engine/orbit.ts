@@ -3,14 +3,14 @@
  * Hohmann-type transfer ellipse. Good enough to show where the vehicle is and how far
  * a signal must travel. It is not a navigation solution.
  */
-export const AU_LIGHT_SECONDS = 499.0;
+const AU_LIGHT_SECONDS = 499.0;
 const EARTH_DAYS = 365.25;
 const MARS_DAYS = 686.98;
 export const R_EARTH = 1.0;
 export const R_MARS = 1.524;
 export const TRANSIT_DAYS = 180;
-export const TRANSFER_A = (R_EARTH + R_MARS) / 2;
-export const TRANSFER_E = (R_MARS - R_EARTH) / (R_MARS + R_EARTH);
+const TRANSFER_A = (R_EARTH + R_MARS) / 2;
+const TRANSFER_E = (R_MARS - R_EARTH) / (R_MARS + R_EARTH);
 
 export interface Vec2 { x: number; y: number }
 
