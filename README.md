@@ -116,7 +116,7 @@ The **Limits explorer** is a what-if tool. Type a value for each factor (radiati
 | Profile | Name, role, and look. Stored in this browser only. `src/app/profile.ts` |
 | Body effects | Under the alert panel: what the dose at each level does to the body, your storm dose against the 250 mSv storm limit, and a cited dose ladder. `src/app/health.ts` |
 | Daily report | **Daily report**: what needs attention, alerts, solar events, check-ins, and the log for one day. JSON download, or PDF from the print window. `src/app/report.ts` |
-| Voice input | Microphone button beside each text field (Ask, Health check note, Profile name, Limits explorer). Web Speech API. The button does not show in a browser without it. `src/app/Mic.tsx` |
+| Voice input | A microphone button beside each crew input: Ask, Profile name, Limits explorer values, and each part of the Health check (sleep hours, sleep quality, mood, pain, and note). Typing and taps still work. Spoken numbers ("six and a half") and scale words ("pretty good") are read by `spokenNumber` and `spokenStep` in `src/app/noteReader.ts`. Only 1 microphone listens at a time. In a browser without the Web Speech API, the button is disabled and says why. `src/app/Mic.tsx` |
 | AI engines | **Ask AI**: built-in (offline), a model in the browser (WebLLM, WebGPU), Claude with your API key, or any OpenAI-compatible API. `src/app/ai.ts` |
 | Onboard assistant (Phase 5) | **Ask**. `src/app/assistant.ts`. See "Onboard assistant" below. |
 | Last 12 h brief (Phase 6) | **Ask**, topic `brief` in `src/app/assistant.ts` |
