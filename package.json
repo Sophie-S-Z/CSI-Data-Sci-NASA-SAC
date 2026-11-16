@@ -12,7 +12,9 @@
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "check": "npm run lint && vitest run && npm run build",
-    "fetch-donki": "node scripts/fetch-donki.mjs"
+    "fetch-donki": "node scripts/fetch-donki.mjs",
+    "e2e": "playwright test",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
@@ -31,7 +33,9 @@
     "three": "^0.170.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
