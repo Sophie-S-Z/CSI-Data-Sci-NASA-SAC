@@ -8,7 +8,7 @@ import { cabinAt, cabinFindings, CABIN } from '../engine/cabin';
 import { warningForecast } from '../engine/forecast';
 import { dayOf, stamp, hhmm, duration } from '../engine/time';
 import { flareRank } from '../engine/donki';
-import { fmt } from '../engine/units';
+import { SPE_PER_GCR, atMultiple, fmt, multipleOf } from '../engine/units';
 import { resolveSource } from './sources';
 import type { Tab } from './context';
 
@@ -74,7 +74,7 @@ const TOPICS: Topic[] = [
       if (!a) {
         return {
           lines: [w.inShelter ? 'The Warning is clear. You can leave the shelter.' : 'Dose rate normal. No action.',
-            `The cabin mean is ${fmt(w.current.mean / w.B)} × the baseline B. The rules check all ${SENSORS.length} sensors each minute.`],
+            `The cabin mean is ${fmt(multipleOf(w.current.mean, w.B))} × the baseline B. The rules check all ${SENSORS.length} sensors each minute.`],
           sources: ['B'],
         };
       }
@@ -93,7 +93,7 @@ const TOPICS: Topic[] = [
       if (!a || a.level !== 'warning') {
         return { lines: ['No Warning is open.', a ? `${cap(a.level)} ${a.id}: ${actionSentence(a, w)}` : w.inShelter ? 'You can leave the shelter.' : 'You do not need the shelter now.'], sources: ['R-W1'] };
       }
-      const rule = `The Warning clears when all sensors stay below ${TH.cautionMultiple.label} (${fmt(TH.cautionMultiple.x * w.B)} mSv/h) for ${TM.warningClearMin} min.`;
+      const rule = `The Warning clears when all sensors stay below ${TH.cautionMultiple.label} (${fmt(atMultiple(TH.cautionMultiple.x, w.B))} mSv/h) for ${TM.warningClearMin} min.`;
       const p = w.warningClearProgress()!;
       if (p.have > 0) {
         return { lines: [rule, `All sensors are below the line for ${duration(p.have)}. If they stay low, the Warning clears at ${hhmm(w.t + p.need - p.have)}.`], sources: ['R-W1'] };
@@ -145,10 +145,10 @@ const TOPICS: Topic[] = [
       const a = w.openAlert('radiation');
       if (!a) return { lines: ['Yes. No Warning or Caution is open.'], sources: ['R-W1'] };
       if (a.level !== 'warning') return { lines: [`${cap(a.level)} ${a.id}: ${actionSentence(a, w)}`, RULES[a.ruleId].action], sources: [a.ruleId] };
-      const lines = [`No. Stay in the shelter while the Warning is open (rule R-W1). The cabin rate is ${fmt(w.current.mean / w.B)} × B now.`];
+      const lines = [`No. Stay in the shelter while the Warning is open (rule R-W1). The cabin rate is ${fmt(multipleOf(w.current.mean, w.B))} × B now.`];
       const f = warningForecast(w);
       if (f) {
-        const out = (x: number) => x * w.B * mission.dosimeter.cabinFactor;
+        const out = (x: number) => x * w.B * SPE_PER_GCR * mission.dosimeter.cabinFactor;
         lines.push(`If you leave now, the rest of the event adds about ${fmt(out(f.excessLo))} to ${fmt(out(f.excessHi))} mSv. In the shelter, it adds about ${fmt(out(f.excessLo) * SHELTER_FACTOR)} to ${fmt(out(f.excessHi) * SHELTER_FACTOR)} mSv.`);
       }
       return { lines, sources: ['R-W1', 'shelterFactor'], estimate: !!f };

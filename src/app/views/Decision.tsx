@@ -7,7 +7,7 @@ import rules from '../../data/rules.json';
 import { RULES, LINK_LABEL, LINK_DELAY_MIN, LEVEL_RANK, PROCEDURE_SH1, actionSentence, type Alert, type World } from '../../engine/world';
 import { SENSORS } from '../../engine/doseModel';
 import { hhmm, duration } from '../../engine/time';
-import { fmt } from '../../engine/units';
+import { atMultiple, fmt, multipleOf } from '../../engine/units';
 import { useUi } from '../context';
 import { LevelBadge, LiveNum, LevelIcon, LEVEL_WORD, Src } from '../parts';
 import { BodyEffects } from '../BodyEffects';
@@ -16,9 +16,10 @@ const TH = rules.thresholds;
 const TM = rules.timing;
 
 function whyLine(a: Alert, w: World): string {
-  const x = w.current.mean / w.current.B;
+  const x = multipleOf(w.current.mean, w.current.B);
   if (a.level === 'warning') return `The cabin dose rate is ${fmt(x)} times your cruise baseline, on 2 or more sensors.`;
   if (a.level === 'caution') {
+    if (a.peak === 'warning') return `The Warning cleared at ${hhmm(a.changedAt)}. The solar proton event goes on, so the Caution stays.`;
     if (x >= TH.cautionMultiple.x) return `The cabin dose rate is ${fmt(x)} times your cruise baseline.`;
     return `A large solar event is likely. The dose rate at the vehicle is normal now. Safe the task by ${hhmm(a.changedAt + 30)}.`;
   }
@@ -38,10 +39,12 @@ function tellLine(a: Alert, w: World): string {
 function qualityLine(a: Alert, w: World): string {
   const q = w.current.quality;
   const good = q.filter((x) => x === 'good').length;
-  if (a.quality === 'good') return `Good. ${good} of ${q.length} sensors agree.`;
+  // The sensors follow 2 RAD detectors (E and B). The sensor layout itself is simulated.
+  const agree = `${good} of ${q.length} sensors agree, on 2 RAD detectors${w.current.filled ? '. This RAD bin is a line fill, so the alarm timers hold' : ''}.`;
+  if (a.quality === 'good') return `Good. ${agree}`;
   const n = q.filter((x) => x === (a.quality === 'poor' ? 'poor' : 'missing')).length;
   const sensors = `${n} sensor${n === 1 ? '' : 's'}`;
-  return `${a.quality === 'poor' ? 'Poor on' : 'Missing data on'} ${sensors}. ${good} of ${q.length} agree.`;
+  return `${a.quality === 'poor' ? 'Poor on' : 'Missing data on'} ${sensors}. ${agree}`;
 }
 
 const HERO: Record<string, string> = {
@@ -80,7 +83,7 @@ export function Decision() {
             {LEVEL_WORD[level]}
           </span>
           {main && <span className="font-medium">{RULES[main.ruleId].title}</span>}
-          <span className={cn('num ml-auto text-xs', loud ? 'opacity-80' : 'text-muted-foreground')}>
+          <span className={cn('num ml-auto text-xs', !loud && 'text-muted-foreground')}>
             {main ? <>{main.id} · since {hhmm(main.changedAt)}{main.acked ? ' · acknowledged' : ''}</> : <>Checked {hhmm(w.t)}</>}
           </span>
         </div>
@@ -88,7 +91,7 @@ export function Decision() {
           {main ? actionSentence(main, w) : w.inShelter ? 'All clear. You can leave the shelter.' : 'Dose rate normal. No action.'}
         </h2>
         <p className={cn('mt-2 max-w-2xl text-[15px]', loud ? 'opacity-90' : 'text-muted-foreground')}>
-          {main ? whyLine(main, w) : <>Cabin mean <span className="font-medium text-foreground"><LiveNum value={w.current.mean} /> mSv/h</span>, <LiveNum value={w.current.mean / w.B} /> × the baseline <Src k="B"><span className="num">B</span></Src>. The rules check all {SENSORS.length} sensors each minute.</>}
+          {main ? whyLine(main, w) : <>Cabin mean <span className="font-medium text-foreground"><LiveNum value={w.current.mean} /> mSv/h</span>, <LiveNum value={multipleOf(w.current.mean, w.B)} /> × the baseline <Src k="B"><span className="num">B</span></Src>. The rules check all {SENSORS.length} sensors each minute.</>}
         </p>
         {clear && w.inShelter && (
           <div className="mt-4 max-w-md">
@@ -101,7 +104,7 @@ export function Decision() {
         )}
         {(main || w.inShelter) && (
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            {main && loud && !showProc && (
+            {main && loud && !showProc && (main.peak !== 'warning' || main.level === 'warning' || w.procedure) && (
               <Button size="lg" onClick={() => { sim.act({ type: 'procStart', alertId: main.id }); openProcedure(); note(`Procedure SH-1 opened from ${main.id}`); }}
                 className={cn('h-14 w-full rounded-md px-6 text-base font-semibold sm:w-auto', level === 'warning' ? 'bg-white text-warning hover:bg-white/90' : 'bg-caution-foreground text-caution hover:bg-caution-foreground/90')}>
                 {w.procedure ? 'Open procedure SH-1' : 'Start procedure SH-1'}<ArrowRight className="size-5" aria-hidden="true" />
@@ -128,9 +131,9 @@ export function Decision() {
             ['What changed?', `${main.reason.replace(/\.$/, '')}.`],
             ['How reliable is the data?', qualityLine(main, w)],
             ['Why does it matter?', main.level === 'warning'
-              ? <>Unsheltered, the next 24 h give about <Src k="projection24h"><span className="num">{fmt(w.projection24h())} mSv</span></Src> (estimate). The shelter cuts the event dose. NASA asks for doses as low as reasonably achievable.</>
+              ? <>Unsheltered, the next 24 h add about <Src k="projection24h"><span className="num">{fmt(w.projection24h())} mSv</span></Src> of extra dose (estimate). The shelter cuts the event dose. NASA asks for doses as low as reasonably achievable.</>
               : RULES[main.ruleId].basis],
-            ['What do I do now?', w.inShelter && main.level === 'warning' ? 'Stay in the shelter. Finish procedure SH-1. Leave when the Warning clears.' : RULES[main.ruleId].action],
+            ['What do I do now?', w.inShelter && main.level === 'warning' ? 'Stay in the shelter. Finish procedure SH-1. Leave when the Warning clears.' : main.level === 'caution' && main.peak === 'warning' ? 'Leave the shelter when you are ready. Keep the vest within reach. Go back if the Warning returns.' : RULES[main.ruleId].action],
             ['When do I tell the CMO or the ground?', tellLine(main, w)],
             ['Data', <>Rule <Src k={main.ruleId}><span className="font-mono">{main.ruleId}</span></Src> · data {main.quality} · {main.donkiRefs.length ? `${main.donkiRefs.length} solar records` : 'onboard sensors'} · dose from <Src k="speModel">measured RAD data</Src></>],
           ].map(([q, a], i) => (
@@ -217,7 +220,7 @@ function Procedure() {
           <Timer className="size-4" aria-hidden="true" />{shelterWall ? 'Your time to shelter ' : 'Your time '}{Math.floor(elapsed / 60)}:{String(Math.floor(elapsed % 60)).padStart(2, '0')}
         </span>
       </div>
-      <div className="mt-3 h-1 overflow-hidden rounded-full bg-warning/30"><motion.div className="h-full bg-nominal" animate={{ width: `${(done / PROCEDURE_SH1.steps.length) * 100}%` }} /></div>
+      <div className="mt-3 h-1 overflow-hidden rounded-full bg-muted"><motion.div className="h-full bg-nominal" animate={{ width: `${(done / PROCEDURE_SH1.steps.length) * 100}%` }} /></div>
       <ol className="mt-4 space-y-2">
         {PROCEDURE_SH1.steps.map((s) => {
           const c = confirmed[s.n];
@@ -226,19 +229,19 @@ function Procedure() {
           return (
             <li key={s.n} aria-current={isCur ? 'step' : undefined}
               className={cn('flex flex-wrap items-center gap-3 rounded-md border-l-4 p-3 transition-colors',
-                c ? 'border-nominal bg-nominal/8' : isCur ? 'border-warning bg-warning/10 ring-1 ring-warning/40' : 'border-warning/40 bg-muted/40')}>
-              {/* Red number: not done. Green check: done. The color and the icon both give the state. */}
-              <span className={cn('num grid size-9 shrink-0 place-items-center rounded-full text-sm font-semibold', c ? 'bg-nominal text-white' : isCur ? 'bg-warning text-white' : 'border-2 border-warning/60 text-warning')} aria-hidden="true">
+                c ? 'border-nominal bg-nominal/8' : !isCur ? 'border-border bg-muted/40' : warnActive ? 'border-warning bg-warning/10 ring-1 ring-warning/40' : 'border-primary bg-primary/10 ring-1 ring-primary/40')}>
+              {/* Check: done. Number: not done. Red only while the Warning is active. The icon also gives the state. */}
+              <span className={cn('num grid size-9 shrink-0 place-items-center rounded-full text-sm font-semibold', c ? 'bg-nominal text-white' : !isCur ? 'border-2 border-border text-muted-foreground' : warnActive ? 'bg-warning text-white' : 'bg-primary text-primary-foreground')} aria-hidden="true">
                 {c ? <motion.span initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.2, ease: 'easeOut' }}><Check className="size-4" /></motion.span> : s.n}
               </span>
               <div className="min-w-0 flex-1">
                 <div className={cn('text-[15px]', isCur && 'text-lg font-semibold', !c && !isCur && 'text-muted-foreground')}><span className="sr-only">Step {s.n}. </span>{s.text}</div>
-                <div className={cn('num text-xs font-medium', c ? 'text-nominal' : 'text-warning')}>
+                <div className={cn('num text-xs font-medium', c ? 'text-nominal' : !isCur ? 'text-muted-foreground' : warnActive ? 'text-warning-ink' : 'text-primary')}>
                   {c ? `Done at ${hhmm(c.t)}${c.choice === 'branch' ? ' · vest not found, CMO told' : ''}` : isCur ? 'Not done. Do this step now.' : 'Not done'}
                 </div>
                 {isCur && s.waitsForClear && (
                   <div className="text-sm text-muted-foreground">
-                    {blocked ? `The Warning is active. It clears when all sensors stay below ${fmt(TH.cautionMultiple.x * w.B)} mSv/h for ${TM.warningClearMin} min.` : 'The Warning is clear. You can leave the shelter.'}
+                    {blocked ? `The Warning is active. It clears when all sensors stay below ${fmt(atMultiple(TH.cautionMultiple.x, w.B))} mSv/h for ${TM.warningClearMin} min.` : 'The Warning is clear. You can leave the shelter.'}
                     {w.inShelter && <> In the shelter for {duration(w.shelterMinAt())}.</>}
                   </div>
                 )}

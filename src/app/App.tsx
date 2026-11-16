@@ -103,7 +103,7 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#F5F6F8' : '#111418');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#F5F6F8' : '#0D1019');
     try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
   }, [theme]);
 
@@ -168,7 +168,7 @@ export function App() {
 /** Placeholder with the shape of a view, while its code loads. */
 function ViewSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading the view" className="animate-pulse motion-reduce:animate-none">
+    <div role="status" aria-busy="true" aria-label="Loading the view" className="animate-pulse motion-reduce:animate-none">
       <div className="h-8 w-56 rounded-md bg-muted" />
       <div className="mt-3 h-4 w-full max-w-xl rounded-md bg-muted" />
       <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]"><div className="h-80 rounded-xl bg-muted" /><div className="h-80 rounded-xl bg-muted" /></div>
@@ -186,7 +186,7 @@ function Brand() {
         <path d="M8 32H21L25 24L31 42L37 18L41 32H56" fill="none" stroke="var(--foreground)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div className="hidden leading-tight sm:block">
-        <div className="text-[15px] font-semibold tracking-tight">Vigil</div>
+        <div className="glow-text text-[15px] font-semibold tracking-tight">Vigil</div>
         <div className="text-[11px] text-muted-foreground">Crew health monitor</div>
       </div>
     </div>
@@ -292,7 +292,7 @@ function Sidebar() {
 function ProfileButton() {
   const { profile, openProfile } = useUi();
   return (
-    <button type="button" onClick={openProfile} aria-label="Profile and settings" title="Profile and settings"
+    <button type="button" onClick={openProfile} aria-label={`${initials(profile)}, profile and settings`} title="Profile and settings"
       className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-sm font-semibold text-primary ring-1 ring-primary/30 hover:bg-primary/25">
       {initials(profile)}
     </button>

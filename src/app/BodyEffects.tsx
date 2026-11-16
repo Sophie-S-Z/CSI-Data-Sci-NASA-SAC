@@ -17,7 +17,7 @@ export function BodyEffects({ level, stormDose, className }: { level: AnyLevel; 
         <div className="mt-3">
           <div className="flex justify-between text-xs"><span>Your dose in this storm</span><span className="num font-semibold">{fmt(stormDose)} mSv · {pctText((stormDose / STORM_LIMIT) * 100)} of the storm limit</span></div>
           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-            <div className="h-full rounded-full bg-warning" style={{ width: `${Math.min(100, (stormDose / STORM_LIMIT) * 100)}%` }} />
+            <div className={cn('h-full rounded-full', level === 'warning' ? 'bg-warning' : 'bg-chart-1')} style={{ width: `${Math.min(100, (stormDose / STORM_LIMIT) * 100)}%` }} />
           </div>
         </div>
       )}

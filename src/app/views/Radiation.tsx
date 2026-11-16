@@ -10,9 +10,9 @@ import mission from '../../data/mission.json';
 import { LEVEL_RANK, type Alert, type World } from '../../engine/world';
 import { SENSORS } from '../../engine/doseModel';
 import { at, dayOf, hhmm, stamp, duration, minuteOfDay, MIN_PER_DAY } from '../../engine/time';
-import { fmt } from '../../engine/units';
+import { atMultiple, fmt, multipleOf } from '../../engine/units';
 import { useUi } from '../context';
-import { LiveNum, PageHead, Panel, Prov, Seg, Src, Spark, Kv } from '../parts';
+import { LiveNum, PageHead, Panel, Prov, Seg, Src, Spark, Kv, splitFilled } from '../parts';
 
 const TH = rules.thresholds;
 
@@ -20,7 +20,7 @@ const TH = rules.thresholds;
 export function RadiationView() {
   return (
     <>
-      <PageHead title="Cabin radiation" sub="Your dose, the 6 cabin sensors, and the alert limits." />
+      <PageHead title="Cabin radiation" sub="Your dose, the 6 cabin sensors, and the alert limits. Sensors S1, S3, and S5 follow the RAD E detector. S2, S4, and S6 follow RAD B." />
       {/* Below xl the 2 columns dissolve, so "Your dose rate" comes first on a phone. The wide layout does not change. */}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-4 max-xl:contents">
@@ -42,10 +42,10 @@ function RateTile() {
   const { sim } = useUi();
   const w = sim.world;
   const s = w.current;
-  const x = s.personal / s.B;
+  const x = multipleOf(s.personal, s.B);
   const level = w.openAlert('radiation')?.level;
   // Color follows the open alert level, so red shows only during a Warning (beta report D-2).
-  const tone = level === 'warning' ? 'text-warning' : level === 'caution' ? 'text-caution-ink' : 'text-foreground';
+  const tone = level === 'warning' ? 'text-warning-ink' : level === 'caution' ? 'text-caution-ink' : 'text-foreground';
   const sparkBucket = Math.floor(w.t / 5);
   const spark = useMemo(() => {
     const h = w.history.filter((p) => p.t > w.t - 8 * 60);
@@ -60,13 +60,13 @@ function RateTile() {
           <div className={cn('num text-5xl font-semibold tracking-tight', tone)}><LiveNum value={s.personal} /><span className="ml-1.5 text-base font-medium text-muted-foreground">mSv/h</span></div>
           <div className="num mt-1 text-sm text-muted-foreground"><LiveNum value={x} /> × cruise baseline{w.inShelter && <span className="ml-1.5 inline-flex items-center gap-1 text-nominal"><ShieldCheck className="size-3.5" aria-hidden="true" />in shelter</span>}</div>
         </div>
-        <Spark values={spark} label="Your dose rate, last 8 hours" className="h-12 w-36" stroke={tone === 'text-warning' ? 'var(--warning)' : 'var(--chart-1)'} />
+        <Spark values={spark} label="Your dose rate, last 8 hours" className="h-12 w-36" stroke={tone === 'text-warning-ink' ? 'var(--warning-ink)' : 'var(--chart-1)'} />
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
         {[
           ['Baseline B', fmt(s.B), 'B'],
-          ['Caution', fmt(TH.cautionMultiple.x * s.B), 'cautionMultiple'],
-          ['Warning', fmt(TH.warningMultiple.x * s.B), 'warningMultiple'],
+          ['Caution', fmt(atMultiple(TH.cautionMultiple.x, s.B)), 'cautionMultiple'],
+          ['Warning', fmt(atMultiple(TH.warningMultiple.x, s.B)), 'warningMultiple'],
         ].map(([k, v, src]) => (
           <div key={k} className="rounded-md bg-muted/60 px-2 py-2">
             <div className="text-muted-foreground">{k}</div>
@@ -125,7 +125,7 @@ function Exposure() {
       {ev ? <EventDose a={ev} w={w} /> : <p className="text-sm text-muted-foreground">No solar event yet. The event dose shows here when a Caution or a Warning opens.</p>}
       <h3 className="mt-4 text-xs font-medium text-muted-foreground">Mission and career</h3>
       <Kv rows={[
-        ['Next 24 h, unsheltered', <Src k="projection24h">{fmt(w.projection24h())} mSv</Src>],
+        ['Extra dose, next 24 h, unsheltered', <Src k="projection24h">{fmt(w.projection24h())} mSv</Src>],
         ['Mission so far', `${fmt(w.missionDoseMSv)} mSv`],
         ['Career used', <>{fmt(career)} / <Src k="career">{limit}</Src> mSv</>],
         ['At mission end (day 860)', `~${fmt(end)} mSv`],
@@ -167,6 +167,7 @@ function DoseChart() {
       <DoseChartBody data={data} B={w.B} />
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 rounded bg-[var(--chart-1)]" />Cabin mean</span>
+        <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 rounded border-t-2 border-dotted border-[var(--chart-1)]" />No RAD value, line fill</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 rounded border-t-2 border-dashed border-[var(--chart-2)]" />Your dosimeter</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 rounded bg-caution" /><Src k="cautionMultiple">Caution {TH.cautionMultiple.label}</Src></span>
         <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 rounded bg-warning" /><Src k="warningMultiple">Warning {TH.warningMultiple.label}</Src></span>
@@ -178,14 +179,17 @@ function DoseChart() {
   );
 }
 
-interface Pt { t: number; mean: number | null; personal: number }
+interface Pt { t: number; all: number | null; mean: number | null; fill: number | null; personal: number }
 function buildSeries(w: World, spanH: number) {
   const t0 = w.t - spanH * 60;
   const h = w.history.filter((p) => p.t >= t0);
   const step = Math.max(1, Math.floor(h.length / 160));
   // A minute with no good sensor is a data gap. It shows as a break in the line, not as a dip (beta report D-3).
-  const pts: Pt[] = h.filter((_, i) => i % step === 0 || i === h.length - 1)
-    .map((p) => ({ t: p.t, mean: p.quality.includes('good') ? Math.max(p.mean, 0.01) : null, personal: Math.max(p.personal, 0.01) }));
+  const kept = h.filter((_, i) => i % step === 0 || i === h.length - 1);
+  // A filled RAD bin is a straight line between 2 measured bins. It shows dotted, not as a measurement.
+  const all = kept.map((p) => (p.quality.includes('good') ? Math.max(p.mean, 0.01) : null));
+  const { measured, fill } = splitFilled(all, kept.map((p) => p.filled));
+  const pts: Pt[] = kept.map((p, i) => ({ t: p.t, all: all[i], mean: measured[i], fill: fill[i], personal: Math.max(p.personal, 0.01) }));
   const shelters = w.shelterIntervals.filter((iv) => (iv.end ?? w.t) > t0).map((iv) => ({ a: Math.max(iv.start, t0), b: iv.end ?? w.t }));
   return { pts, shelters, t0, t1: w.t };
 }
@@ -195,9 +199,9 @@ const DoseChartBody = memo(function DoseChartBody({ data, B }: { data: ReturnTyp
   const spanH = (data.t1 - data.t0) / 60;
   const stepMin = spanH <= 8 ? 120 : spanH <= 24 ? 360 : 720;
   for (let t = Math.ceil(data.t0 / stepMin) * stepMin; t <= data.t1; t += stepMin) ticks.push(t);
-  const maxV = Math.max(...data.pts.map((p) => p.mean ?? 0), 10 * B * 1.2);
+  const maxV = Math.max(...data.pts.map((p) => p.all ?? 0), atMultiple(TH.floorMultiple.x, B) * 1.2);
   return (
-    <div className="h-64 w-full md:h-72" role="img" aria-label={`Cabin dose rate chart. Now ${fmt(data.pts[data.pts.length - 1]?.mean ?? 0)} mSv/h.`}>
+    <div className="h-64 w-full md:h-72" role="img" aria-label={`Cabin dose rate chart. Now ${fmt(data.pts[data.pts.length - 1]?.all ?? 0)} mSv/h. Dotted parts have no RAD value.`}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data.pts} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
           <defs>
@@ -210,16 +214,18 @@ const DoseChartBody = memo(function DoseChartBody({ data, B }: { data: ReturnTyp
           {data.shelters.map((s, i) => <ReferenceArea key={i} x1={s.a} x2={s.b} fill="var(--shelter)" fillOpacity={0.14} stroke="none" ifOverflow="hidden" />)}
           <XAxis dataKey="t" type="number" domain={[data.t0, data.t1]} ticks={ticks} tickFormatter={(t) => (spanH > 24 ? `D${dayOf(t)} ${hhmm(t)}` : hhmm(t))} tickLine={false} axisLine={false} />
           <YAxis scale="log" domain={[0.03, Math.max(3, maxV * 1.3)]} ticks={[0.03, 0.1, 0.3, 1, 3]} allowDataOverflow tickFormatter={(v) => String(v)} tickLine={false} axisLine={false} width={44} />
-          <ReferenceLine y={TH.floorMultiple.x * B} stroke="var(--muted-foreground)" strokeDasharray="2 4" strokeOpacity={0.6} />
-          <ReferenceLine y={TH.warningMultiple.x * B} stroke="var(--warning)" strokeWidth={1.5} />
-          <ReferenceLine y={TH.cautionMultiple.x * B} stroke="var(--caution)" strokeWidth={1.5} />
+          <ReferenceLine y={atMultiple(TH.floorMultiple.x, B)} stroke="var(--muted-foreground)" strokeDasharray="2 4" strokeOpacity={0.6} />
+          <ReferenceLine y={atMultiple(TH.warningMultiple.x, B)} stroke="var(--warning)" strokeWidth={1.5} />
+          <ReferenceLine y={atMultiple(TH.cautionMultiple.x, B)} stroke="var(--caution)" strokeWidth={1.5} />
           <RTooltip
             isAnimationActive={false}
             contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12, color: 'var(--popover-foreground)' }}
             labelFormatter={(t) => stamp(Number(t))}
-            formatter={(v, n) => [`${fmt(Number(v))} mSv/h`, n === 'mean' ? 'Cabin mean' : 'Your dosimeter']}
+            formatter={(v, n) => [`${fmt(Number(v))} mSv/h`, n === 'mean' ? 'Cabin mean' : n === 'fill' ? 'Cabin mean, line fill' : 'Your dosimeter']}
           />
-          <Area type="linear" dataKey="mean" stroke="var(--chart-1)" strokeWidth={2} fill="url(#meanFill)" isAnimationActive={false} dot={false} connectNulls={false} />
+          <Area type="linear" dataKey="all" stroke="none" fill="url(#meanFill)" isAnimationActive={false} dot={false} activeDot={false} tooltipType="none" connectNulls={false} />
+          <Line type="linear" dataKey="mean" stroke="var(--chart-1)" strokeWidth={2} isAnimationActive={false} dot={false} connectNulls={false} />
+          <Line type="linear" dataKey="fill" stroke="var(--chart-1)" strokeWidth={2} strokeDasharray="1 3" strokeLinecap="round" isAnimationActive={false} dot={false} connectNulls={false} />
           <Line type="linear" dataKey="personal" stroke="var(--chart-2)" strokeWidth={1.75} strokeDasharray="4 3" isAnimationActive={false} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
@@ -233,10 +239,10 @@ function SensorStrip() {
   const s = w.current;
   const level = w.openAlert('radiation')?.level;
   const tone = (v: number | null) => (v === null ? 'ring-border'
-    : level === 'warning' && v >= TH.warningMultiple.x * s.B ? 'bg-warning/12 ring-warning/40'
-      : (level === 'warning' || level === 'caution') && v >= TH.cautionMultiple.x * s.B ? 'bg-caution/12 ring-caution/40' : 'bg-muted/50 ring-border');
+    : level === 'warning' && v >= atMultiple(TH.warningMultiple.x, s.B) ? 'bg-warning/12 ring-warning/40'
+      : (level === 'warning' || level === 'caution') && v >= atMultiple(TH.cautionMultiple.x, s.B) ? 'bg-caution/12 ring-caution/40' : 'bg-muted/50 ring-border');
   const cells = [
-    ...SENSORS.map((sn, i) => ({ id: sn.id, label: sn.label, v: s.cabin[i], q: s.quality[i] as string })),
+    ...SENSORS.map((sn, i) => ({ id: sn.id, label: `${sn.label}, RAD ${sn.detector}`, v: s.cabin[i], q: s.quality[i] as string })),
     { id: mission.dosimeter.id, label: w.inShelter ? 'You, in shelter' : 'Your dosimeter', v: s.personal, q: 'personal' },
   ];
   return (
@@ -247,7 +253,7 @@ function SensorStrip() {
             <span className={cn(c.q === 'good' ? 'text-nominal' : c.q === 'poor' ? 'text-verify' : c.q === 'missing' ? 'text-muted-foreground' : 'text-advisory')}>{c.q === 'good' ? 'Good' : c.q === 'poor' ? 'Poor' : c.q === 'missing' ? 'No data' : 'Personal'}</span>
           </div>
           <div className="num mt-1 text-base font-semibold">{c.v === null ? '- -' : fmt(c.v)}</div>
-          <div className="truncate text-[11px] text-muted-foreground">{c.label}{c.v !== null && <span className="num"> · {fmt(c.v / s.B)}×</span>}</div>
+          <div className="truncate text-[11px] text-muted-foreground">{c.label}{c.v !== null && <span className="num"> · {fmt(multipleOf(c.v, s.B))}×</span>}</div>
         </div>
       ))}
     </div>

@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 /* Themes: dark (default) and light. The <html> element carries data-theme. Status colors keep one meaning each (Appendix F habit):
-   red only for Warning, amber only for Caution, slate blue only for shelter time. Each status also has an icon and a word. */
+   red only for Warning, amber only for Caution, and pale blue for shelter time. Each status also has an icon and a word. */
 @custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
@@ -37,6 +37,7 @@
   --color-shelter: var(--shelter);
   --color-shelter-foreground: var(--shelter-foreground);
   --color-warning: var(--warning);
+  --color-warning-ink: var(--warning-ink);
   --color-sim: var(--sim);
   --color-real: var(--real);
   --color-chart-1: var(--chart-1);
@@ -49,46 +50,50 @@
   --radius-2xl: calc(var(--radius) + 10px);
 }
 
-/* Dark (default): a muted clinical palette for a dim cabin. Graphite ground, soft white text (no pure white,
-   to limit glare), one steel-blue accent for controls, and low-chroma status colors. Only the Warning red is saturated.
-   --sim (indigo) and --real (teal) mark the 2 data modes. Text contrast is 7:1 or more for body text. */
+/* Dark (default): deep space. A blue-black ground, pale starlight text (no pure white, to limit glare), and one
+   pale ice-blue accent with a soft glow for controls and data lines. Status colors are pale and low in chroma:
+   cool tones for normal states, amber only for Caution, and the one saturated color, red, only for Warning.
+   --sim (pale violet) and --real (pale teal) mark the 2 data modes. Text contrast is 7:1 or more for body text. */
 :root,
 [data-theme="dark"] {
   --radius: 0.375rem;
-  --background: oklch(0.155 0.006 250);
-  --foreground: oklch(0.9 0.006 250);
-  --card: oklch(0.185 0.007 250);
-  --card-foreground: oklch(0.9 0.006 250);
-  --elevated: oklch(0.21 0.008 250);
-  --popover: oklch(0.21 0.008 250);
-  --popover-foreground: oklch(0.9 0.006 250);
-  --primary: oklch(0.74 0.06 245);
-  --primary-foreground: oklch(0.18 0.02 250);
-  --secondary: oklch(0.235 0.008 250);
-  --secondary-foreground: oklch(0.9 0.006 250);
-  --muted: oklch(0.225 0.007 250);
-  --muted-foreground: oklch(0.7 0.012 250);
-  --accent: oklch(0.245 0.012 250);
-  --accent-foreground: oklch(0.92 0.006 250);
-  --destructive: oklch(0.65 0.2 27);
-  --border: oklch(1 0 0 / 11%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.74 0.06 245);
-  --sidebar: oklch(0.165 0.006 250);
-  --nominal: oklch(0.74 0.08 155);
-  --advisory: oklch(0.76 0.045 245);
-  --verify: oklch(0.75 0.06 300);
-  --caution: oklch(0.78 0.11 78);
-  --caution-ink: oklch(0.8 0.1 80);
+  --background: oklch(0.13 0.018 265);
+  --foreground: oklch(0.93 0.008 250);
+  --card: oklch(0.165 0.02 265);
+  --card-foreground: oklch(0.93 0.008 250);
+  --elevated: oklch(0.195 0.022 265);
+  --popover: oklch(0.195 0.022 265);
+  --popover-foreground: oklch(0.93 0.008 250);
+  --primary: oklch(0.86 0.06 228);
+  --primary-foreground: oklch(0.16 0.03 260);
+  --secondary: oklch(0.21 0.02 265);
+  --secondary-foreground: oklch(0.93 0.008 250);
+  --muted: oklch(0.2 0.018 265);
+  --muted-foreground: oklch(0.72 0.02 255);
+  --accent: oklch(0.23 0.025 262);
+  --accent-foreground: oklch(0.94 0.008 250);
+  --destructive: oklch(0.65 0.2 25);
+  --border: oklch(0.85 0.04 250 / 11%);
+  --input: oklch(0.85 0.04 250 / 16%);
+  --ring: oklch(0.86 0.06 228);
+  --sidebar: oklch(0.145 0.019 265);
+  --nominal: oklch(0.84 0.07 190);
+  --advisory: oklch(0.86 0.06 228);
+  --verify: oklch(0.8 0.05 290);
+  --caution: oklch(0.82 0.1 80);
+  --caution-ink: oklch(0.84 0.09 82);
   --caution-foreground: oklch(0.2 0.04 70);
-  --warning: oklch(0.63 0.21 27);
-  --shelter: oklch(0.68 0.05 255);
-  --shelter-foreground: oklch(0.16 0.02 255);
-  --chart-1: oklch(0.74 0.06 245);
-  --chart-2: oklch(0.84 0.015 250);
-  --chart-3: oklch(0.55 0.015 250);
-  --sim: oklch(0.74 0.075 265);
-  --real: oklch(0.74 0.07 185);
+  --warning: oklch(0.55 0.2 25);
+  --warning-ink: oklch(0.75 0.14 25);
+  --shelter: oklch(0.74 0.05 245);
+  --shelter-foreground: oklch(0.15 0.03 260);
+  --chart-1: oklch(0.86 0.06 228);
+  --chart-2: oklch(0.88 0.015 250);
+  --chart-3: oklch(0.55 0.02 255);
+  --sim: oklch(0.8 0.05 290);
+  --real: oklch(0.84 0.07 190);
+  --glow: color-mix(in oklch, var(--primary) 40%, transparent);
+  --space: radial-gradient(120% 70% at 50% -10%, oklch(0.22 0.05 270 / 0.55), transparent 65%);
   color-scheme: dark;
 }
 
@@ -100,7 +105,7 @@
   --elevated: oklch(0.985 0.002 240);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.01 240);
-  --primary: oklch(0.48 0.07 250);
+  --primary: oklch(0.46 0.08 245);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.95 0.003 240);
   --secondary-foreground: oklch(0.25 0.01 240);
@@ -113,20 +118,23 @@
   --input: oklch(0.86 0.004 240);
   --ring: oklch(0.52 0.07 250);
   --sidebar: oklch(0.985 0.002 240);
-  --nominal: oklch(0.5 0.09 155);
-  --advisory: oklch(0.48 0.06 250);
-  --verify: oklch(0.48 0.08 300);
+  --nominal: oklch(0.48 0.07 190);
+  --advisory: oklch(0.46 0.08 245);
+  --verify: oklch(0.48 0.07 290);
   --caution: oklch(0.78 0.11 78);
   --caution-ink: oklch(0.45 0.09 70);
   --caution-foreground: oklch(0.2 0.04 70);
-  --warning: oklch(0.55 0.21 27);
+  --warning: oklch(0.52 0.2 25);
+  --warning-ink: oklch(0.5 0.2 25);
   --shelter: oklch(0.52 0.06 255);
   --shelter-foreground: oklch(0.99 0 0);
-  --chart-1: oklch(0.48 0.07 250);
+  --chart-1: oklch(0.46 0.08 245);
   --chart-2: oklch(0.4 0.02 240);
   --chart-3: oklch(0.6 0.01 240);
-  --sim: oklch(0.48 0.1 265);
-  --real: oklch(0.5 0.08 185);
+  --sim: oklch(0.48 0.08 290);
+  --real: oklch(0.48 0.07 190);
+  --glow: transparent;
+  --space: none;
   color-scheme: light;
 }
 
@@ -138,6 +146,8 @@
   body { overscroll-behavior-y: none; }
   body {
     @apply bg-background text-foreground antialiased;
+    background-image: var(--space);
+    background-attachment: fixed;
     font-feature-settings: "cv11", "ss01", "tnum" 0;
     min-height: 100dvh;
   }
@@ -152,7 +162,13 @@
   /* Diagonal stripes mark simulated data, so the mode does not depend on color alone. */
   .sim-stripes { background-image: repeating-linear-gradient(135deg, color-mix(in oklch, var(--sim) 14%, transparent) 0 8px, transparent 8px 16px); }
   .scrollbar-none::-webkit-scrollbar { display: none; }
+  /* A soft glow for the few pale accents in the dark theme. The light theme sets --glow to transparent. */
+  .glow { box-shadow: 0 0 18px -2px var(--glow); }
+  .glow-text { text-shadow: 0 0 14px var(--glow); }
 }
+
+/* Data lines glow a little in the dark theme. */
+.recharts-line-curve, .recharts-area-curve { filter: drop-shadow(0 0 3px var(--glow)); }
 
 /* A pulse that marks a new loud alert. It stops for reduced motion. */
 @keyframes pulse-ring {
@@ -169,12 +185,12 @@
 .recharts-text.recharts-label { fill: var(--muted-foreground); }
 
 /* Mission 3D view (src/ui/MissionView.tsx). three.js draws the canvas, and the labels are plain spans. */
-.mv { position: relative; height: min(60vh, 520px); overflow: hidden; background: oklch(0.1 0.006 250); cursor: grab; touch-action: pan-y; }
+.mv { position: relative; height: min(60vh, 520px); overflow: hidden; background: oklch(0.09 0.02 268); cursor: grab; touch-action: pan-y; }
 .mv:active { cursor: grabbing; }
 .mv canvas { display: block; width: 100% !important; height: 100% !important; }
 .mv[data-nowebgl] { cursor: default; display: grid; place-items: center; }
 .mv[data-nowebgl]::after { content: 'The 3D view needs WebGL. The rest of the tool works without it.'; color: var(--muted-foreground); font-size: 13.5px; padding: 16px; text-align: center; }
 .mv-labels { position: absolute; inset: 0; pointer-events: none; }
-.mv-label { position: absolute; left: 0; top: 0; font-size: 12px; color: oklch(0.8 0.01 235); background: oklch(0.16 0.006 250); padding: 0 5px; border-radius: 4px; white-space: nowrap; }
-.mv-label.me { color: oklch(0.95 0.01 230); font-weight: 600; box-shadow: 0 0 0 1px var(--border); }
+.mv-label { position: absolute; left: 0; top: 0; font-size: 12px; color: oklch(0.85 0.02 240); background: oklch(0.14 0.02 265); padding: 0 5px; border-radius: 4px; white-space: nowrap; }
+.mv-label.me { color: oklch(0.95 0.03 228); font-weight: 600; text-shadow: 0 0 10px var(--glow); box-shadow: 0 0 0 1px var(--border); }
 @media (max-width: 720px) { .mv { height: 340px; } }

@@ -2,7 +2,7 @@ import rules from '../data/rules.json';
 import sources from '../data/sources.json';
 import mission from '../data/mission.json';
 import cabin from '../data/cabin-rules.json';
-import { fmt } from '../engine/units';
+import { atMultiple, fmt } from '../engine/units';
 import { BODY_RULE, ruleText } from '../engine/bodyRules';
 
 type SourceKey = keyof typeof sources;
@@ -53,14 +53,14 @@ export function resolveSource(key: string): SourceView[] {
     case 'advisoryMultiple': {
       const th = TH[key];
       return [{
-        title: `Threshold ${th.label}`, value: `${fmt(th.x * B)} mSv/h in cruise`,
-        basis: `${th.label} of the cruise baseline B (${fmt(B)} mSv/h).`,
+        title: `Threshold ${th.label}`, value: `${fmt(atMultiple(th.x, B))} mSv/h in cruise`,
+        basis: `${th.label} of the cruise baseline B (${fmt(B)} mSv/h), as absorbed dose. The dose above B counts as solar protons.`,
         sourceKey: 'team', evidence: sources.team.evidence, team: true,
       }, ...resolveSource('B').slice(0, 1)];
     }
     case 'projection24h':
       return [{
-        title: '24 h projection, unsheltered', value: `≥ ${TH.projection24hMSv.value} mSv gives Warning`,
+        title: '24 h projection of extra dose, unsheltered', value: `≥ ${TH.projection24hMSv.value} mSv gives Warning`,
         basis: TH.projection24hMSv.basis, formula: '(cabin mean rate − B) × 24 h. It assumes the rate does not fall, so it is a high estimate.',
         sourceKey: 'team', evidence: 'Estimate. Team value for demo.', team: true,
       }, ...resolveSource('singleSpe')];

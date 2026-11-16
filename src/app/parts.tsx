@@ -9,6 +9,17 @@ import { useUi } from './context';
 
 export type AnyLevel = Level | 'clear' | 'nominal';
 
+/**
+ * Split a series into a measured line and a filled line, so a chart can draw the filled bins dashed.
+ * A filled run keeps the measured point on each side, so the 2 lines join.
+ */
+export function splitFilled(values: (number | null)[], filled: boolean[]): { measured: (number | null)[]; fill: (number | null)[] } {
+  return {
+    measured: values.map((v, i) => (filled[i] ? null : v)),
+    fill: values.map((v, i) => (filled[i] || filled[i - 1] || filled[i + 1] ? v : null)),
+  };
+}
+
 /** One style for each text field and select. 16 px text, so a phone does not zoom in on focus. */
 export const FIELD = 'h-11 w-full min-w-0 rounded-md border border-input bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30';
 
@@ -89,9 +100,9 @@ export function Prov({ kind, children }: { kind: Provenance; children?: ReactNod
 export function Src({ k, children, label, className }: { k: string; children: ReactNode; label?: string; className?: string }) {
   const { openSource } = useUi();
   return (
-    <button type="button" onClick={() => openSource(k)} aria-label={label ?? `Show source for ${k}`}
+    <button type="button" onClick={() => openSource(k)} aria-label={label}
       className={cn('cursor-pointer rounded-sm underline decoration-dotted decoration-from-font underline-offset-4 hover:decoration-solid hover:text-primary focus-visible:ring-2 focus-visible:ring-ring', className)}>
-      {children}
+      {children}{!label && <span className="sr-only"> (show the source)</span>}
     </button>
   );
 }
