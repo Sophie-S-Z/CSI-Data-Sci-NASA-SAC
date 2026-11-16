@@ -1,13 +1,23 @@
 import rules from '../data/rules.json';
 
 /**
- * NFR-02. Sensors give absorbed dose in mGy. The screen shows dose equivalent in mSv.
- * This file holds the one conversion factor. No other file converts units.
+ * NFR-02. The screen shows dose equivalent in mSv. This file holds the two
+ * conversion factors from absorbed dose (mGy). No other file converts units.
+ * The baseline B is galactic cosmic rays (GCR). The dose above B in a solar
+ * particle event (SPE) is protons, which have a lower quality factor.
  */
 export const MSV_PER_MGY: number = rules.units.mSvPerMGy;
+export const SPE_MSV_PER_MGY: number = rules.units.speMSvPerMGy;
+/** SPE dose equivalent per GCR dose equivalent, for the same absorbed dose. */
+export const SPE_PER_GCR = SPE_MSV_PER_MGY / MSV_PER_MGY;
 
-export const toMSv = (mGy: number): number => mGy * MSV_PER_MGY;
-export const toMGy = (mSv: number): number => mSv / MSV_PER_MGY;
+/**
+ * The rules count multiples of the absorbed baseline rate, as RAD measures it.
+ * atMultiple gives the dose-equivalent rate (mSv/h) at k × B, for a baseline B in mSv/h.
+ * multipleOf is its inverse.
+ */
+export const atMultiple = (k: number, B: number): number => B * (Math.min(k, 1) + Math.max(0, k - 1) * SPE_PER_GCR);
+export const multipleOf = (v: number, B: number): number => (v <= B ? v / B : 1 + (v / B - 1) / SPE_PER_GCR);
 
 /**
  * Number style for the whole app. It follows the NASA technical publication style and

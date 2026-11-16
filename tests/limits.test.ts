@@ -1,3 +1,4 @@
+import { atMultiple } from '../src/engine/units';
 import { describe, it, expect } from 'vitest';
 import rules from '../src/data/rules.json';
 import { FACTOR, FACTORS, AREAS, baselineOf, doseInArea, levelAt, scalePos } from '../src/engine/limits';
@@ -15,15 +16,15 @@ describe('limit zones (Limits explorer and Cabin air)', () => {
   it('give Caution at 1.5 × B and Warning at 2 × B on the cabin sensors', () => {
     const z = FACTOR.dose.zones('cabin');
     const B = baselineOf('cabin');
-    expect(levelAt(z, 1.4 * B)).toBe('nominal');
-    expect(levelAt(z, TH.cautionMultiple.x * B)).toBe('caution');
-    expect(levelAt(z, TH.warningMultiple.x * B)).toBe('warning');
+    expect(levelAt(z, atMultiple(1.4, B))).toBe('nominal');
+    expect(levelAt(z, atMultiple(TH.cautionMultiple.x, B))).toBe('caution');
+    expect(levelAt(z, atMultiple(TH.warningMultiple.x, B))).toBe('warning');
   });
 
   it('move the dose edges up in the shelter, so the dose you get there matches the cabin edge', () => {
     for (const k of [TH.cautionMultiple.x, TH.warningMultiple.x]) {
       const edge = FACTOR.dose.zones('shelter').find((z) => z.level === (k === TH.cautionMultiple.x ? 'caution' : 'warning'))!.from;
-      expect(doseInArea('shelter', edge)).toBeCloseTo(k * baselineOf('shelter'), 9);
+      expect(doseInArea('shelter', edge)).toBeCloseTo(atMultiple(k, baselineOf('shelter')), 9);
     }
   });
 

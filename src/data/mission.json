@@ -57,32 +57,38 @@
     {
       "id": "S1",
       "label": "Galley",
-      "shielding": 1.0
+      "shielding": 1.0,
+      "detector": "E"
     },
     {
       "id": "S2",
       "label": "Crew quarters",
-      "shielding": 1.05
+      "shielding": 1.05,
+      "detector": "B"
     },
     {
       "id": "S3",
       "label": "Lab, port",
-      "shielding": 0.95
+      "shielding": 0.95,
+      "detector": "E"
     },
     {
       "id": "S4",
       "label": "Lab, starboard",
-      "shielding": 1.1
+      "shielding": 1.1,
+      "detector": "B"
     },
     {
       "id": "S5",
       "label": "Node aft",
-      "shielding": 0.7
+      "shielding": 0.7,
+      "detector": "E"
     },
     {
       "id": "S6",
       "label": "Storage, core",
-      "shielding": 0.65
+      "shielding": 0.65,
+      "detector": "B"
     }
   ],
   "dosimeter": {
@@ -161,6 +167,6 @@
     "label": "Measured SPE: MSL RAD, 5 to 11 March 2012",
     "startDay": 92,
     "source": "rad2012",
-    "basis": "The cabin rate is the RAD E-detector rate divided by its fitted background, times the cruise baseline B. So the replay keeps the measured shape and size of the event. Mission day 92 00:00 is 5 March 2012 00:00 UTC."
+    "basis": "Each cabin sensor follows one RAD detector: S1, S3, and S5 follow E (plastic), and S2, S4, and S6 follow B (silicon). The sensor rate is the detector rate divided by its fitted background, times the cruise baseline B. So the replay keeps the measured shape and size of the event, and the 2 detectors can disagree. Mission day 92 00:00 is 5 March 2012 00:00 UTC."
   }
 }
