@@ -4,7 +4,7 @@ Measured input: MSL RAD RDR dose rates (PDS-PPI, MSL-M-RAD-3-RDR-V1.0),
 E detector (plastic, near tissue) and B detector (silicon). See fetch_rad.py.
 
 Runs, for each data set:
-  current   Storm Shelter rules today: Warning when both detectors read
+  current   Vigil rules today: Warning when both detectors read
             >= 10 x B for 5 min. Clear after 120 min below 3 x B.
             B is the fixed baseline in rules.json (cruise 20.0, surface
             7.0 uGy/h, from 0.0767 and 0.0267 mSv/h over 3.83 mSv/mGy).
