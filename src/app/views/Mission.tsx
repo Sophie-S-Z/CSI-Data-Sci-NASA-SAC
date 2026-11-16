@@ -91,7 +91,7 @@ function DemoGuide() {
           </button>
           {BEATS.map((b, i) => (
             <button key={b.label} type="button" onClick={() => sim.jumpTo(b.t)} aria-label={`Step ${i + 1}: ${b.label}`}
-              className={cn('num absolute top-1 grid size-8 -translate-x-1/2 place-items-center rounded-full border-2 text-sm font-semibold transition-colors duration-200 sm:top-0 sm:size-10',
+              className={cn('num absolute top-1 grid size-8 -translate-x-1/2 place-items-center rounded-full border-2 text-sm font-semibold transition-[color,background-color,border-color,scale] duration-200 hover:scale-110 sm:top-0 sm:size-10',
                 i === cur ? 'border-primary bg-primary text-primary-foreground' : i < cur ? 'border-primary bg-card text-primary' : 'border-border bg-card text-muted-foreground')}
               style={{ left: `${posOf(b.t) * 100}%` }}>{i + 1}</button>
           ))}
@@ -104,7 +104,7 @@ function DemoGuide() {
           // On a phone, only the current step shows. The track above gives the others.
           <li key={b.label} className={cn(i !== Math.max(cur, 0) && 'hidden sm:block')}>
             <button type="button" onClick={() => sim.jumpTo(b.t)} aria-current={i === cur ? 'step' : undefined}
-              className={cn('flex h-full w-full flex-col gap-1.5 rounded-md border p-3 text-left transition-colors hover:bg-accent',
+              className={cn('flex h-full w-full flex-col gap-1.5 rounded-md border p-3 text-left transition-[background-color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-accent active:translate-y-0 motion-reduce:transform-none',
                 i === cur ? 'border-primary bg-accent' : 'border-border')}>
               <span className="flex items-center gap-2">
                 <span className={cn('num grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold', i <= cur ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
@@ -112,7 +112,7 @@ function DemoGuide() {
                 </span>
                 <span className="font-semibold">{b.label}</span>
               </span>
-              <span className="flex items-center gap-2"><span className="num text-xs whitespace-nowrap text-muted-foreground">{stamp(b.t)}</span><LevelBadge level={b.level} className="ml-auto h-5 px-2 text-[11px]" /></span>
+              <span className="flex flex-wrap items-center gap-x-2 gap-y-1"><span className="num text-xs whitespace-nowrap text-muted-foreground">{stamp(b.t)}</span><LevelBadge level={b.level} className="ml-auto h-5 px-2 text-[11px]" /></span>
               {i === cur && <span className="text-sm leading-snug">{b.text}</span>}
             </button>
           </li>

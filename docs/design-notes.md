@@ -49,7 +49,7 @@ The Night theme (no blue light) is gone. In November 2026 the team chose 2 modes
 
 ## Type
 
-IBM Plex Sans for words and numbers, with tabular figures and a slashed zero (NFR-05). IBM Plex Mono is only for rule codes and record IDs. Plex separates l, 1, O, and 0. Both fonts ship with the app, so the screen looks the same offline. Sentence case everywhere. The action sentence is the largest text on the screen.
+Inter for words and numbers, with tabular figures and a slashed zero (NFR-05). Space Grotesk is only for headings and the action sentence. JetBrains Mono is only for rule codes and record IDs. All 3 fonts ship with the app, so the screen looks the same offline. Sentence case everywhere. The action sentence is the largest text on the screen.
 
 ## Layout
 
@@ -111,7 +111,7 @@ Version 5 keeps the rules above. It moves the app to a modern component stack an
 | --- | --- | --- |
 | Components | shadcn/ui on Radix primitives | Keyboard and screen reader support comes with each part. |
 | Styles | Tailwind CSS 4 with OKLCH tokens for dark and light | One token set drives both themes. |
-| Type | Inter for words and numbers, JetBrains Mono for rule codes | Inter has tabular figures and clear shapes at small sizes. Both fonts ship with the app. |
+| Type | Inter for words and numbers, Space Grotesk for headings, JetBrains Mono for rule codes | Inter has tabular figures and clear shapes at small sizes. Space Grotesk gives the headings a technical shape. All 3 fonts ship with the app. |
 | Charts | Recharts, log scale for dose rate | A dose rate that goes from 1 × to 35 × fits on one axis. |
 | Motion | Motion (Framer) for page changes and the alert panel | Short, and off when the device asks for reduced motion. |
 | Navigation | Sidebar on a tablet or desktop, bottom tabs on a phone | Crew views first. Mission team views in a second group. |

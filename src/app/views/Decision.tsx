@@ -40,7 +40,9 @@ function qualityLine(a: Alert, w: World): string {
   const q = w.current.quality;
   const good = q.filter((x) => x === 'good').length;
   // The sensors follow 2 RAD detectors (E and B). The sensor layout itself is simulated.
-  const agree = `${good} of ${q.length} sensors agree, on 2 RAD detectors${w.current.filled ? '. This RAD bin is a line fill, so the alarm timers hold' : ''}.`;
+  // The text does not change on a filled RAD bin: it changes each 15 min, and a changing line moves the whole panel.
+  // The Cabin radiation chart marks the filled bins with a dotted line.
+  const agree = `${good} of ${q.length} sensors agree, on 2 RAD detectors.`;
   if (a.quality === 'good') return `Good. ${agree}`;
   const n = q.filter((x) => x === (a.quality === 'poor' ? 'poor' : 'missing')).length;
   const sensors = `${n} sensor${n === 1 ? '' : 's'}`;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Check, Minus, Plus, Lock, Stethoscope, Users, Satellite } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { VIS_LABEL, VISIBILITY_ORDER, type Visibility } from '../../engine/world';
 import { dayOf } from '../../engine/time';
 import { useUi } from '../context';
-import { LevelBadge, PageHead, Panel, Src } from '../parts';
+import { ChoiceMark, LevelBadge, PageHead, Panel, Src } from '../parts';
 import { sources } from '../sources';
 import { LogRow } from './Log';
 import { readNote, spokenNumber, spokenStep, type Symptom } from '../noteReader';
@@ -30,12 +30,16 @@ const VIS_HELP: Record<Visibility, string> = {
 };
 
 function Scale({ value, set, labels, label }: { value: number; set: (n: number) => void; labels: string[]; label: string }) {
+  const group = useId();
   return (
     <div className="flex items-center gap-2">
-      <div role="radiogroup" aria-label={label} className="grid flex-1 grid-cols-5 gap-1 rounded-md bg-muted p-1">
+      <div role="radiogroup" aria-label={label} className="grid flex-1 grid-cols-[repeat(5,minmax(max-content,1fr))] gap-1 rounded-md bg-muted p-1">
         {labels.map((l, i) => (
           <button key={l} role="radio" aria-checked={value === i + 1} onClick={() => set(i + 1)}
-            className={cn('h-11 rounded-md text-sm font-medium transition', value === i + 1 ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>{l}</button>
+            className={cn('relative h-11 rounded-md px-2 text-[13px] font-medium transition-colors', value === i + 1 ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+            {value === i + 1 && <ChoiceMark group={group} />}
+            <span className="relative">{l}</span>
+          </button>
         ))}
       </div>
       <Mic label={`Say your ${label.toLowerCase()}: ${labels.join(', ')}`} onText={(t) => { const n = spokenStep(t, labels); if (n) set(n); }} />
@@ -73,7 +77,7 @@ export function CheckInView() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
         <Panel>
           <div className="grid gap-6 pt-5">
-            <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <div className="mb-2 text-sm font-medium">Sleep last night</div>
                 <div className="flex items-center gap-2">

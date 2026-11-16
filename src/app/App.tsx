@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState, type ComponentType } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useId, useMemo, useState, type ComponentType } from 'react';
 import { MotionConfig, motion } from 'motion/react';
 import {
   Radiation, Wind, HeartPulse, ClipboardCheck, ScrollText, FlaskConical, Microscope, Orbit, Stethoscope, Satellite, BookOpen,
@@ -182,7 +182,7 @@ function Brand() {
         <path d="M8 32H21L25 24L31 42L37 18L41 32H56" fill="none" stroke="var(--foreground)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div className="hidden leading-tight sm:block">
-        <div className="glow-text text-[15px] font-semibold tracking-tight">Vigil</div>
+        <div className="glow-text font-display text-[17px] font-semibold tracking-tight">Vigil</div>
         <div className="text-[11px] text-muted-foreground">Crew health monitor</div>
       </div>
     </div>
@@ -202,6 +202,7 @@ function useCounts() {
 function ModeSwitch({ short }: { short?: boolean }) {
   const { tab, go } = useUi();
   const cur = sectionOf(tab).id;
+  const group = useId();
   return (
     <div role="tablist" aria-label="Data mode" className="grid h-11 grid-cols-2 rounded-lg bg-background p-1 ring-1 ring-border">
       {SECTIONS.map((s) => {
@@ -209,11 +210,12 @@ function ModeSwitch({ short }: { short?: boolean }) {
         const on = cur === s.id;
         return (
           <button key={s.id} type="button" role="tab" aria-selected={on} onClick={() => !on && go(s.groups[0].items[0].id)}
-            className={cn('flex items-center justify-center gap-1.5 rounded-md px-3 text-[13px] font-semibold whitespace-nowrap transition-colors duration-200 active:scale-[0.97]',
-              on ? MODE_FILL[s.id] : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
-            <I className="size-4 shrink-0" aria-hidden="true" />
-            <span className={cn(!short && 'sm:hidden')}>{s.id === 'sim' ? 'Simulation' : 'Real data'}</span>
-            {!short && <span className="hidden sm:inline">{s.label}</span>}
+            className={cn('relative flex items-center justify-center gap-1.5 rounded-md px-3 text-[13px] font-semibold whitespace-nowrap transition-colors duration-200 active:scale-[0.97]',
+              on ? 'text-background' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
+            {on && <motion.span layoutId={group} aria-hidden="true" transition={{ type: 'spring', stiffness: 500, damping: 38 }} className={cn('absolute inset-0 rounded-md', MODE_BG[s.id])} />}
+            <I className="relative size-4 shrink-0" aria-hidden="true" />
+            <span className={cn('relative', !short && 'sm:hidden')}>{s.id === 'sim' ? 'Simulation' : 'Real data'}</span>
+            {!short && <span className="relative hidden sm:inline">{s.label}</span>}
           </button>
         );
       })}
@@ -222,6 +224,7 @@ function ModeSwitch({ short }: { short?: boolean }) {
 }
 
 /** Mode colors. Simulation also gets diagonal stripes, so the mode never depends on color alone. */
+const MODE_BG = { sim: 'bg-sim', real: 'bg-real' } as const;
 const MODE_FILL = { sim: 'bg-sim text-background', real: 'bg-real text-background' } as const;
 const MODE_TEXT = { sim: 'text-sim', real: 'text-real' } as const;
 
@@ -242,7 +245,8 @@ function ModeBanner() {
   );
 }
 
-function NavButton({ item, onPick }: { item: NavItem; onPick?: () => void }) {
+/** `mark` names the sliding marker of one nav list. Only the sidebar sets it, so 2 lists never share a marker. */
+function NavButton({ item, onPick, mark }: { item: NavItem; onPick?: () => void; mark?: string }) {
   const { tab, go } = useUi();
   const mode = sectionOf(tab).id;
   const c = useCounts();
@@ -251,22 +255,27 @@ function NavButton({ item, onPick }: { item: NavItem; onPick?: () => void }) {
   const dot = item.id === 'mission' && !active && (c.warning || c.caution) ? (c.warning ? 'bg-warning' : 'bg-caution') : null;
   return (
     <button onClick={() => { go(item.id); onPick?.(); }} aria-current={active ? 'page' : undefined}
-      className={cn('relative flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
-        active ? cn('bg-accent text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded', mode === 'sim' ? 'before:bg-sim' : 'before:bg-real') : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground')}>
-      <I className="size-[18px]" strokeWidth={2} aria-hidden="true" />
-      <span>{item.label}</span>
+      className={cn('group relative flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
+        active ? 'text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground')}>
+      {active && (
+        <motion.span layoutId={mark} aria-hidden="true" transition={{ type: 'spring', stiffness: 500, damping: 40 }} className="absolute inset-0 rounded-md bg-accent">
+          <span className={cn('absolute inset-y-2 left-0 w-0.5 rounded', mode === 'sim' ? 'bg-sim' : 'bg-real')} />
+        </motion.span>
+      )}
+      <I className="relative size-[18px] transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" strokeWidth={2} aria-hidden="true" />
+      <span className="relative">{item.label}</span>
       {dot && <span className={cn('ml-auto size-2 rounded-full', dot)} aria-label="Active alert" />}
     </button>
   );
 }
 
-function NavGroups({ section, onPick }: { section: Section; onPick?: () => void }) {
+function NavGroups({ section, onPick, mark }: { section: Section; onPick?: () => void; mark?: string }) {
   return (
     <>
       {section.groups.map((g) => (
         <nav key={g.label} aria-label={g.label} className="mt-4 space-y-0.5">
           <div className={cn('px-3 pb-1 text-[11px] font-semibold tracking-wide uppercase', MODE_TEXT[section.id])}>{g.label}</div>
-          {g.items.map((n) => <NavButton key={n.id} item={n} onPick={onPick} />)}
+          {g.items.map((n) => <NavButton key={n.id} item={n} onPick={onPick} mark={mark} />)}
         </nav>
       ))}
     </>
@@ -279,7 +288,7 @@ function Sidebar() {
     <aside className="sticky top-0 hidden print:hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r bg-sidebar px-3 py-4 lg:flex">
       <div className="px-2 pb-3"><Brand /></div>
       <ModeSwitch short />
-      <NavGroups section={sectionOf(tab)} />
+      <NavGroups section={sectionOf(tab)} mark="sidebar-active" />
     </aside>
   );
 }

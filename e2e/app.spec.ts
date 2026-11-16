@@ -46,6 +46,32 @@ test('the note reader ends a negation at a comma', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Mark Headache' })).toBeVisible();
 });
 
+test('voice input shows the words as it hears them, then fills the field', async ({ page }) => {
+  // A stand-in for the browser speech API: it hears speech, gives a partial result, then a final one.
+  await page.addInitScript(() => {
+    class FakeRecognition {
+      onspeechstart?: () => void;
+      onresult?: (e: unknown) => void;
+      onend?: () => void;
+      start() {
+        const result = (transcript: string, isFinal: boolean) => ({ results: [Object.assign([{ transcript }], { isFinal })] });
+        setTimeout(() => this.onspeechstart?.(), 50);
+        setTimeout(() => this.onresult?.(result('headache since', false)), 100);
+        setTimeout(() => this.onresult?.(result('headache since lunch', true)), 1500);
+        setTimeout(() => this.onend?.(), 1600);
+      }
+      stop() { this.onend?.(); }
+    }
+    Object.assign(window, { SpeechRecognition: FakeRecognition });
+  });
+  await page.reload();
+  await open(page, 'Health check');
+  await page.getByRole('button', { name: 'Speak your note' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'headache since' })).toBeVisible();
+  await expect(page.getByLabel('Note (optional)')).toHaveValue('headache since lunch');
+  await expect(page.getByRole('status').filter({ hasText: 'headache since' })).toHaveCount(0);
+});
+
 test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
   test('Mission replay at the Warning', async ({ page }) => {
     await step(page, 4, 'Warning');
