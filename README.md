@@ -52,7 +52,7 @@ Open **Real-world data > Measured events** to show the rule results on all 7 eve
 
 ## Demo video
 
-[`docs/demo/storm-shelter-demo-30s.mp4`](docs/demo/storm-shelter-demo-30s.mp4) (28 s, no sound). Screens of the final build: the 6 demo steps, the shelter procedure, Space weather, and the rule test on the measured events.
+[`docs/demo/storm-shelter-demo-30s.mp4`](docs/demo/storm-shelter-demo-30s.mp4) (27 s, no sound). Screens of the final build: 5 demo steps, the shelter procedure, the dose chart with the flagged filled bins, Leave shelter, and the rule test on the 7 measured events.
 
 ## Preview images
 
