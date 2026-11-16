@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useId, type ReactNode } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
 import { OctagonAlert, TriangleAlert, CircleHelp, Info, CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -112,7 +112,7 @@ export function Panel({ title, aside, children, className, bodyClass, id }: { ti
     <section aria-labelledby={id} className={cn('rounded-xl bg-card text-card-foreground ring-hairline', className)}>
       {(title || aside) && (
         <header className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 px-5 pt-4 pb-2">
-          {title && <h2 id={id} className="text-[15px] font-semibold tracking-tight">{title}</h2>}
+          {title && <h2 id={id} className="text-base font-semibold tracking-tight">{title}</h2>}
           {aside && <div className="ml-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">{aside}</div>}
         </header>
       )}
@@ -125,7 +125,7 @@ export function PageHead({ title, sub, actions }: { title: string; sub?: ReactNo
   return (
     <div className="mb-5 flex flex-wrap items-end gap-3">
       <div className="min-w-0 flex-[1_1_20rem]">
-        <h1 className="text-2xl font-semibold tracking-tight text-balance md:text-[28px]">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-balance md:text-[30px]">{title}</h1>
         {sub && <p className="mt-1 max-w-3xl text-sm text-pretty text-muted-foreground">{sub}</p>}
       </div>
       {actions}
@@ -168,14 +168,21 @@ export function Kv({ rows, className }: { rows: [ReactNode, ReactNode][]; classN
   );
 }
 
+/** The marker behind the chosen option of a radio group. It slides to the new option, so the choice is easy to follow. */
+export function ChoiceMark({ group }: { group: string }) {
+  return <motion.span layoutId={group} aria-hidden="true" transition={{ type: 'spring', stiffness: 500, damping: 38 }} className="absolute inset-0 rounded-[inherit] bg-card ring-1 ring-border" />;
+}
+
 /** Segmented choice. Each option is a radio button with a 32 px or larger target. */
 export function Seg<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
+  const group = useId();
   return (
     <div role="radiogroup" aria-label={label} className="inline-flex flex-wrap rounded-md bg-muted p-0.5">
       {options.map((o) => (
         <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
-          className={cn('h-8 rounded px-2.5 text-xs font-medium whitespace-nowrap transition-colors pointer-coarse:h-10 pointer-coarse:px-3', value === o.value ? 'bg-card text-foreground ring-1 ring-border' : 'text-muted-foreground hover:text-foreground')}>
-          {o.label}
+          className={cn('relative h-8 rounded px-2.5 text-xs font-medium whitespace-nowrap transition-colors pointer-coarse:h-10 pointer-coarse:px-3', value === o.value ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+          {value === o.value && <ChoiceMark group={group} />}
+          <span className="relative">{o.label}</span>
         </button>
       ))}
     </div>
