@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ComposedChart, Area, XAxis, YAxis, ReferenceLine, ReferenceArea, ResponsiveContainer, Tooltip as RTooltip, CartesianGrid } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, ReferenceLine, ReferenceArea, ResponsiveContainer, Tooltip as RTooltip, CartesianGrid } from 'recharts';
 import { cn } from '@/lib/utils';
 import ev from '../../data/real/rad-events.json';
 import l1raw from '../../data/real/l1-summary.json';
-import { PageHead, Panel, Prov, Src } from '../parts';
+import { PageHead, Panel, Prov, Src, splitFilled } from '../parts';
 import { fmt, whole } from '../../engine/units';
 
 const l1 = l1raw as { headline: string; tiles: { label: string; value: string; sub: string }[]; note: string };
@@ -44,7 +44,10 @@ export function EvidenceView() {
 
   const data = useMemo(() => {
     const t0 = new Date(e.start_utc + 'Z').getTime();
-    return e.ratio.map((r, i) => ({ t: t0 + i * ev.bin_min * 60_000, r: r === null ? null : Math.max(r, 0.5) }));
+    const filled = new Set(e.filled);
+    const all = e.ratio.map((r) => (r === null ? null : Math.max(r, 0.5)));
+    const { measured, fill } = splitFilled(all, e.ratio.map((_, i) => filled.has(i)));
+    return all.map((a, i) => ({ t: t0 + i * ev.bin_min * 60_000, all: a, r: measured[i], fill: fill[i] }));
   }, [e]);
   const shelters = ((e.shelter as Record<string, number[][]>)[pol] ?? []).map(([a, b]) => [data[a]?.t, data[Math.min(b, data.length - 1)]?.t]);
   const score = (e.scores as Record<string, Score>)[pol];
@@ -55,8 +58,8 @@ export function EvidenceView() {
       <PageHead title="Measured events" sub={<>We ran 4 shelter rules on each solar storm that the RAD detector on NASA's Curiosity measured: in cruise in 2012 and on Mars. We tuned the rules on 2012 and 2017 data, then tested them one time on 2024 data.</>}
         actions={<Prov kind="measured">MSL RAD, NASA PDS</Prov>} />
 
-      <Panel title="Result on 6 real events" aside={<span className="num">{Math.round(totals[0].days)} days of RAD data scored</span>} bodyClass="px-0 pb-2">
-        <div className="overflow-x-auto">
+      <Panel title={`Result on ${ev.events.length} real events`} aside={<span className="num">{Math.round(totals[0].days)} days of RAD data scored</span>} bodyClass="px-0 pb-2">
+        <div className="overflow-x-auto focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} role="region" aria-label="Table, scroll sideways">
           <table className="w-full min-w-[860px] text-sm">
             <thead className="text-left text-xs text-muted-foreground"><tr className="border-b">
               <th className="px-5 py-2 font-medium">Rule</th><th className="py-2 pr-4 font-medium">Limits in the test</th><th className="py-2 pr-4 font-medium">Sheltered before the peak</th><th className="py-2 pr-4 font-medium">False entries</th><th className="py-2 pr-4 font-medium">Shelter h per 100 d</th><th className="py-2 pr-5 font-medium">Mean dose avoided</th>
@@ -66,7 +69,7 @@ export function EvidenceView() {
                 <tr key={r.p} className={cn(r.p === 'layered2' && 'bg-primary/5')}>
                   <td className="px-5 py-3"><div className="font-medium">{SHORT[r.p]}</div><div className="text-xs text-muted-foreground">{ev.policies[r.p]}</div></td>
                   <td className="py-3 pr-4 text-xs leading-relaxed"><div><span className="text-muted-foreground">Enter: </span>{ev.limits[r.p].enter}</div><div><span className="text-muted-foreground">Clear: </span>{ev.limits[r.p].clear}</div></td>
-                  <td className="py-3"><span className={cn('num text-lg font-semibold', r.caught === ev.events.length ? 'text-nominal' : 'text-warning')}>{r.caught} of {ev.events.length}</span></td>
+                  <td className="py-3"><span className={cn('num text-lg font-semibold', r.caught === ev.events.length ? 'text-nominal' : 'text-caution-ink')}>{r.caught} of {ev.events.length}</span></td>
                   <td className="num py-3 text-lg font-semibold">{r.false}</td>
                   <td className="num py-3">{fmt(r.shelterH)}</td>
                   <td className="num py-3 pr-5">{whole(r.avoided)}%</td>
@@ -104,13 +107,16 @@ export function EvidenceView() {
                 <YAxis scale="log" domain={[0.5, Math.max(20, e.peak_ratio * 1.3)]} ticks={[1, 2, 10, 30, 100].filter((x) => x <= Math.max(20, e.peak_ratio * 1.3))} allowDataOverflow tickFormatter={(v) => `${v}×`} tickLine={false} axisLine={false} width={44} />
                 <ReferenceLine y={2} stroke="var(--warning)" strokeWidth={1.5} />
                 <ReferenceLine y={10} stroke="var(--muted-foreground)" strokeDasharray="2 4" />
-                <RTooltip isAnimationActive={false} contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} labelFormatter={(t) => new Date(Number(t)).toUTCString().slice(5, 22) + ' UTC'} formatter={(v) => [`${fmt(Number(v))} × background`, 'RAD E dose rate']} />
-                <Area type="monotone" dataKey="r" stroke="var(--chart-1)" strokeWidth={2} fill="url(#evFill)" connectNulls isAnimationActive={false} dot={false} />
+                <RTooltip isAnimationActive={false} contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }} labelFormatter={(t) => new Date(Number(t)).toUTCString().slice(5, 22) + ' UTC'} formatter={(v, n) => [`${fmt(Number(v))} × background`, n === 'fill' ? 'RAD E, line fill' : 'RAD E dose rate']} />
+                <Area type="linear" dataKey="all" stroke="none" fill="url(#evFill)" isAnimationActive={false} dot={false} activeDot={false} tooltipType="none" />
+                <Line type="linear" dataKey="r" stroke="var(--chart-1)" strokeWidth={2} connectNulls={false} isAnimationActive={false} dot={{ r: 1.5, strokeWidth: 0, fill: 'var(--chart-1)' }} />
+                <Line type="linear" dataKey="fill" stroke="var(--chart-1)" strokeWidth={2} strokeDasharray="1 3" strokeLinecap="round" connectNulls={false} isAnimationActive={false} dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5"><i className="h-3 w-4 rounded-sm bg-nominal/20" />In shelter, {SHORT[pol]}</span>
+            <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 border-t-2 border-dotted border-[var(--chart-1)]" />No RAD value, line fill ({Math.round(100 * e.filled.length / e.ratio.length)}% of bins)</span>
             <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 bg-warning" />2 × background (v2 Warning)</span>
             <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 border-t border-dashed border-muted-foreground" />10 × (old Warning)</span>
           </div>
@@ -128,7 +134,7 @@ export function EvidenceView() {
                 ['Split', e.split === 'tune' ? 'Tune (cycle 24)' : 'Test (cycle 25)'],
               ].map(([k, v]) => <div key={k}><dt className="text-xs text-muted-foreground">{k}</dt><dd className="num font-medium">{v}</dd></div>)}
             </dl>
-            <div className={cn('mt-4 rounded-md p-3 text-sm', score.entered_before_peak ? 'bg-nominal/10' : 'bg-warning/10')}>
+            <div className={cn('mt-4 rounded-md p-3 text-sm', score.entered_before_peak ? 'bg-nominal/10' : 'bg-caution/12')}>
               <b>{SHORT[pol]}:</b> {score.entered_before_peak
                 ? <>sheltered {score.lead_vs_2xB_min !== null && score.lead_vs_2xB_min >= 0 ? `${score.lead_vs_2xB_min} min before` : `${Math.abs(score.lead_vs_2xB_min ?? 0)} min after`} the 2× crossing, before the peak. Avoided {whole(score.dose_avoided_pct ?? 0)}% of the event dose.</>
                 : <>no shelter entry before the peak. The crew got the full event dose.</>}
@@ -142,7 +148,7 @@ export function EvidenceView() {
                 return (
                   <div key={k} className="flex items-center gap-2 text-xs">
                     <span className="num w-12 text-muted-foreground">{k.replace('+0h', 'At 2×').replace('+', '')}</span>
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-warning/80" style={{ width: `${v}%` }} /></div>
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-chart-1/70" style={{ width: `${v}%` }} /></div>
                     <span className="num w-10 text-right font-medium">{v}%</span>
                   </div>
                 );

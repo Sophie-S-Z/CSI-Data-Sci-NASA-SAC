@@ -39,7 +39,7 @@ function rangeLines(f: Factor, zones: Zone[]): { level: ZoneLevel; text: string 
   });
 }
 
-const TEXT: Record<ZoneLevel, string> = { nominal: '', advisory: 'text-advisory', caution: 'text-caution-ink', warning: 'text-warning' };
+const TEXT: Record<ZoneLevel, string> = { nominal: '', advisory: 'text-advisory', caution: 'text-caution-ink', warning: 'text-warning-ink' };
 
 /** The Caution and Warning ranges. A factor with no Caution limit shows its Advisory range. */
 function worst(lines: { level: ZoneLevel; text: string }[]) {
@@ -99,7 +99,7 @@ export function ExplorerView() {
       </div>
 
       <Panel title="Dangerous ranges in each area" className="mt-4" bodyClass="px-0 pb-2">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} role="region" aria-label="Table, scroll sideways">
           <table className="w-full min-w-[640px] text-sm">
             <thead className="text-left text-xs text-muted-foreground">
               <tr className="border-b"><th className="px-5 py-2 font-medium">Factor</th>{AREAS.map((x) => <th key={x.id} className="py-2 pr-4 font-medium">{x.label}</th>)}</tr>

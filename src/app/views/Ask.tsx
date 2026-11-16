@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { stamp } from '../../engine/time';
 import { fmt } from '../../engine/units';
 import { ask, suggestions, CLEAR_TEST, ASSISTANT_INFO, type Answer } from '../assistant';
-import { LOCAL_MODELS, facts, hasWebGpu, loadLocal, localReady, modelAnswer } from '../ai';
+import { LOCAL_MODELS, facts, hasWebGpu, loadLocal, localReady, modelAnswer, newNumbers } from '../ai';
 import { ENGINE_LABEL, modelOf, DEFAULT_MODEL, type Engine, type KeyEngine } from '../profile';
 import { resolveSource } from '../sources';
 import { useUi } from '../context';
@@ -39,8 +39,13 @@ export function AskView() {
     setItems((xs) => [{ id, q: question, t: w.t, a, engine: useModel ? profile.engine : 'builtin', pending: useModel }, ...xs].slice(0, 12));
     setQ('');
     if (useModel) {
-      modelAnswer(question, facts(a, w, profile), profile, onProgress)
-        .then((text) => set({ text, pending: false }), (e: unknown) => set({ error: e instanceof Error ? e.message : String(e), pending: false }));
+      const lines = facts(a, w, profile);
+      modelAnswer(question, lines, profile, onProgress).then((text) => {
+        const added = newNumbers(text, lines);
+        set(added.length
+          ? { error: `The model gave a number that is not in the facts (${added.join(', ')}), so Vigil does not show its answer.`, pending: false }
+          : { text, pending: false });
+      }, (e: unknown) => set({ error: e instanceof Error ? e.message : String(e), pending: false }));
     }
   };
   const onSubmit = (e: FormEvent) => { e.preventDefault(); submit(q); };
@@ -200,7 +205,7 @@ function HowItWorks() {
   return (
     <Panel title="How the answers stay safe" className="h-fit">
       <ul className="list-disc space-y-1.5 pl-4 text-sm">
-        <li>The built-in assistant finds the facts first. An AI model can only reword them.</li>
+        <li>The built-in assistant finds the facts first. An AI model can only reword them. Vigil checks each number in the model answer against the facts, and does not show an answer with a new number.</li>
         <li>Questions about diagnosis, treatment, or a change to an alert get a fixed refusal. They never go to a model.</li>
         <li>The assistant reads data only. You act.</li>
         <li>The clear-time estimate was right {fmt(t.coverage_pct)}% of the time on {t.stays} real shelter stays from 2020 to 2026. It never opens or clears an alert.</li>

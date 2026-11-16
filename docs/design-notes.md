@@ -33,7 +33,7 @@ These come from the research briefs in the project folder and from four people w
 
 ## Color
 
-Appendix F habit. Red is only for Warning. Yellow is only for Caution. Each level also has an icon and a word, so color is never the only signal. Verify is violet text and Advisory is blue text, with no fill. Nominal is green text. All other parts of the screen are neutral.
+Appendix F habit. Red is only for Warning. Yellow is only for Caution. Each level also has an icon and a word, so color is never the only signal. Verify is pale violet text and Advisory is pale blue text, with no fill. Nominal is pale teal text. All other parts of the screen are neutral: a deep blue-black ground, pale starlight text, and one pale ice-blue accent with a soft glow (November 2026 palette).
 
 Tokens use OKLCH in `src/styles/index.css`. Neutrals carry a small cool tint.
 

@@ -16,7 +16,7 @@ export function SourcesView() {
       <PageHead title="Rules and sources" sub={rules.note} actions={<Button variant="outline" className="rounded-md" onClick={() => go('body')}>Set personal body limits</Button>} />
       <div className="space-y-4">
         <Panel title="Radiation rules" aside={<>Baseline B: <Src k="B">{rules.baselines.cruise.mSvPerHour} mSv/h in cruise</Src></>} bodyClass="px-0 pb-2">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} role="region" aria-label="Table, scroll sideways">
             <table className="w-full min-w-[720px] text-sm">
               <thead className="text-left text-xs text-muted-foreground"><tr className="border-b"><th className="px-5 py-2 font-medium">Rule</th><th className="py-2 font-medium">Level</th><th className="py-2 font-medium">Trigger (any line is enough)</th><th className="py-2 font-medium">Crew action</th><th className="px-5 py-2 font-medium">State</th></tr></thead>
               <tbody className="divide-y">

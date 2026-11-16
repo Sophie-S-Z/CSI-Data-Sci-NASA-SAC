@@ -100,13 +100,13 @@ export default function MissionView({ day, storm, shelter, theme }: MissionViewP
       link: new THREE.LineDashedMaterial({ dashSize: 0.02, gapSize: 0.02 }),
       sun: new THREE.MeshBasicMaterial({ color: 0xffd27a }),
       halo: new THREE.SpriteMaterial({ map: glow, color: 0xffb347, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }),
-      earth: new THREE.MeshStandardMaterial({ color: 0x4f9be0, roughness: 0.7, emissive: 0x0b2440 }),
-      mars: new THREE.MeshStandardMaterial({ color: 0xd2774a, roughness: 0.9, emissive: 0x2a0f05 }),
+      earth: new THREE.MeshStandardMaterial({ color: 0x7fb2dc, roughness: 0.7, emissive: 0x0b1e38 }),
+      mars: new THREE.MeshStandardMaterial({ color: 0xc58a6a, roughness: 0.9, emissive: 0x1e0d08 }),
       ship: new THREE.MeshStandardMaterial({ color: 0xdde4ec, metalness: 0.4, roughness: 0.4, emissive: 0x30363e }),
       panel: new THREE.MeshStandardMaterial({ color: 0x2a4f8a, metalness: 0.6, roughness: 0.3, emissive: 0x0c1830 }),
       shield: new THREE.MeshBasicMaterial({ color: 0x8fb4ff, transparent: true, opacity: 0.18, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }),
       cme: new THREE.MeshBasicMaterial({ color: 0xffc35a, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.BackSide }),
-      stars: new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, color: 0xaab4c4, transparent: true, opacity: 0.8, depthWrite: false }),
+      stars: new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, color: 0xc8d4e6, transparent: true, opacity: 0.8, depthWrite: false }),
       particles: new THREE.PointsMaterial({ map: glow, size: 0.035, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending }),
     };
     function applyTheme() {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ask, match, suggestions, MIN_SCORE } from '../src/app/assistant';
+import { newNumbers } from '../src/app/ai';
 import { resolveSource } from '../src/app/sources';
 import { World, PROCEDURE_SH1 } from '../src/engine/world';
 import { at } from '../src/engine/time';
@@ -143,5 +144,15 @@ describe('onboard assistant: answers from the state', () => {
   it('suggests shelter questions during a Warning', () => {
     expect(suggestions(worldAt(95, '12:00'))[0]).toBe('When can I leave the shelter?');
     expect(suggestions(worldAt(94, '00:10', false))[0]).toBe('What do I do now?');
+  });
+});
+
+describe('model answer check', () => {
+  const lines = ['The cabin rate is 12.5 × B now.', 'Career dose: 1,204 mSv.', 'Warning since 08:45.'];
+  it('accepts an answer that copies the numbers of the facts', () => {
+    expect(newNumbers('Your rate is 12.5 times normal. Your career dose is 1204 mSv, since 8:45.', lines)).toEqual([]);
+  });
+  it('finds a number that the facts do not hold', () => {
+    expect(newNumbers('You will get about 40 mSv in 3 hours.', lines)).toEqual(['40', '3']);
   });
 });

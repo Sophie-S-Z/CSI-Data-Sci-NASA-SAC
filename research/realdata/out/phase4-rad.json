@@ -3,21 +3,21 @@
   "split": "tune",
   "phase": "cruise",
   "start": "2011-12-06T00:00:00",
-  "days_with_data": 120.5,
-  "days_scored": 117.2,
-  "gcr_E_uGy_day_median": 443.1,
-  "gcr_B_uGy_day_median": 345.0,
+  "days_with_data": 119.8,
+  "days_scored": 116.5,
+  "gcr_E_uGy_day_median": 443.2,
+  "gcr_B_uGy_day_median": 345.2,
   "events": [
    {
     "onset_utc": "2012-01-27T19:00:00",
     "cross2_utc": "2012-01-27T19:15:00",
     "peak_utc": "2012-01-27T21:45:00",
-    "peak_ratio": 9.1,
+    "peak_ratio": 9.04,
     "peak_uGy_h": 142.1,
     "rise_h": 2.75,
-    "duration_h": 54.5,
-    "event_excess_uGy": 1529.6,
-    "decay_efold_h": 15.3
+    "duration_h": 53.0,
+    "event_excess_uGy": 1548.8,
+    "decay_efold_h": 15.0
    },
    {
     "onset_utc": "2012-03-07T08:30:00",
@@ -26,20 +26,31 @@
     "peak_ratio": 35.76,
     "peak_uGy_h": 671.5,
     "rise_h": 32.5,
-    "duration_h": 81.5,
-    "event_excess_uGy": 9645.2,
-    "decay_efold_h": 10.7
+    "duration_h": 75.5,
+    "event_excess_uGy": 9634.4,
+    "decay_efold_h": 9.5
+   },
+   {
+    "onset_utc": "2012-03-13T18:15:00",
+    "cross2_utc": "2012-03-13T18:15:00",
+    "peak_utc": "2012-03-13T18:15:00",
+    "peak_ratio": 2.51,
+    "peak_uGy_h": 32.9,
+    "rise_h": 0.0,
+    "duration_h": 77.75,
+    "event_excess_uGy": 461.0,
+    "decay_efold_h": 169.7
    },
    {
     "onset_utc": "2012-05-17T02:30:00",
     "cross2_utc": "2012-05-17T02:30:00",
     "peak_utc": "2012-05-17T04:00:00",
-    "peak_ratio": 9.26,
+    "peak_ratio": 9.27,
     "peak_uGy_h": 181.8,
     "rise_h": 1.5,
-    "duration_h": 25.5,
-    "event_excess_uGy": 1107.9,
-    "decay_efold_h": 6.3
+    "duration_h": 24.0,
+    "event_excess_uGy": 1117.8,
+    "decay_efold_h": 5.9
    }
   ],
   "policies": {
@@ -47,9 +58,9 @@
     "entries": 1,
     "false_entries": 0,
     "false_per_100d": 0.0,
-    "entries_per_100d": 0.85,
-    "shelter_h_per_100d": 39.9,
-    "missed": 2,
+    "entries_per_100d": 0.86,
+    "shelter_h_per_100d": 40.1,
+    "missed": 3,
     "events": [
      {
       "onset": "2012-01-27T19:00:00",
@@ -63,7 +74,14 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -1050,
       "lead_vs_10xB_min": -15,
-      "dose_avoided_pct": 62.8
+      "dose_avoided_pct": 63.2
+     },
+     {
+      "onset": "2012-03-13T18:15:00",
+      "entered_before_peak": false,
+      "lead_vs_2xB_min": null,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 0.0
      },
      {
       "onset": "2012-05-17T02:30:00",
@@ -75,42 +93,11 @@
     ]
    },
    "lowe": {
-    "entries": 5,
-    "false_entries": 2,
-    "false_per_100d": 1.71,
-    "entries_per_100d": 4.26,
-    "shelter_h_per_100d": 159.7,
-    "missed": 0,
-    "events": [
-     {
-      "onset": "2012-01-27T19:00:00",
-      "entered_before_peak": true,
-      "lead_vs_2xB_min": 0,
-      "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 74.7
-     },
-     {
-      "onset": "2012-03-07T08:30:00",
-      "entered_before_peak": true,
-      "lead_vs_2xB_min": 225,
-      "lead_vs_10xB_min": 1260,
-      "dose_avoided_pct": 75.0
-     },
-     {
-      "onset": "2012-05-17T02:30:00",
-      "entered_before_peak": true,
-      "lead_vs_2xB_min": -15,
-      "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 74.0
-     }
-    ]
-   },
-   "lowe2": {
-    "entries": 4,
-    "false_entries": 1,
-    "false_per_100d": 0.85,
-    "entries_per_100d": 3.41,
-    "shelter_h_per_100d": 196.2,
+    "entries": 7,
+    "false_entries": 3,
+    "false_per_100d": 2.57,
+    "entries_per_100d": 6.01,
+    "shelter_h_per_100d": 212.4,
     "missed": 0,
     "events": [
      {
@@ -128,6 +115,51 @@
       "dose_avoided_pct": 75.0
      },
      {
+      "onset": "2012-03-13T18:15:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 0,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 75.0
+     },
+     {
+      "onset": "2012-05-17T02:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": -15,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.0
+     }
+    ]
+   },
+   "lowe2": {
+    "entries": 5,
+    "false_entries": 1,
+    "false_per_100d": 0.86,
+    "entries_per_100d": 4.29,
+    "shelter_h_per_100d": 297.6,
+    "missed": 0,
+    "events": [
+     {
+      "onset": "2012-01-27T19:00:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 0,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 74.9
+     },
+     {
+      "onset": "2012-03-07T08:30:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 225,
+      "lead_vs_10xB_min": 1260,
+      "dose_avoided_pct": 75.0
+     },
+     {
+      "onset": "2012-03-13T18:15:00",
+      "entered_before_peak": true,
+      "lead_vs_2xB_min": 0,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 75.0
+     },
+     {
       "onset": "2012-05-17T02:30:00",
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
@@ -137,19 +169,19 @@
     ]
    },
    "layered2": {
-    "entries": 3,
+    "entries": 4,
     "false_entries": 0,
     "false_per_100d": 0.0,
-    "entries_per_100d": 2.56,
-    "shelter_h_per_100d": 133.1,
-    "missed": 0,
+    "entries_per_100d": 3.43,
+    "shelter_h_per_100d": 174.9,
+    "missed": 1,
     "events": [
      {
       "onset": "2012-01-27T19:00:00",
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 71.5
+      "dose_avoided_pct": 74.6
      },
      {
       "onset": "2012-03-07T08:30:00",
@@ -159,11 +191,18 @@
       "dose_avoided_pct": 75.0
      },
      {
+      "onset": "2012-03-13T18:15:00",
+      "entered_before_peak": false,
+      "lead_vs_2xB_min": null,
+      "lead_vs_10xB_min": null,
+      "dose_avoided_pct": 34.0
+     },
+     {
       "onset": "2012-05-17T02:30:00",
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 73.7
+      "dose_avoided_pct": 73.2
      }
     ]
    }
@@ -171,36 +210,47 @@
   "idea_c": [
    {
     "onset": "2012-01-27T19:00:00",
-    "peak_ratio": 9.1,
-    "-4h": 45.3,
-    "-1h": 45.3,
-    "+0h": 45.4,
-    "+0.5h": 46.2,
-    "+1h": 47.7,
-    "+2h": 52.5,
-    "+4h": 64.6
+    "peak_ratio": 9.04,
+    "-4h": 36.4,
+    "-1h": 36.4,
+    "+0h": 36.5,
+    "+0.5h": 37.3,
+    "+1h": 38.7,
+    "+2h": 43.5,
+    "+4h": 55.4
    },
    {
     "onset": "2012-03-07T08:30:00",
     "peak_ratio": 35.76,
-    "-4h": 29.7,
-    "-1h": 29.7,
-    "+0h": 29.7,
-    "+0.5h": 29.8,
-    "+1h": 29.9,
-    "+2h": 30.2,
-    "+4h": 31.1
+    "-4h": 26.0,
+    "-1h": 26.0,
+    "+0h": 26.0,
+    "+0.5h": 26.1,
+    "+1h": 26.2,
+    "+2h": 26.5,
+    "+4h": 27.5
+   },
+   {
+    "onset": "2012-03-13T18:15:00",
+    "peak_ratio": 2.51,
+    "-4h": 92.1,
+    "-1h": 92.1,
+    "+0h": 92.1,
+    "+0.5h": 93.7,
+    "+1h": 95.1,
+    "+2h": 97.7,
+    "+4h": 100.0
    },
    {
     "onset": "2012-05-17T02:30:00",
-    "peak_ratio": 9.26,
-    "-4h": 50.7,
-    "-1h": 50.7,
-    "+0h": 50.7,
-    "+0.5h": 53.7,
-    "+1h": 58.7,
-    "+2h": 69.5,
-    "+4h": 85.1
+    "peak_ratio": 9.27,
+    "-4h": 31.8,
+    "-1h": 31.8,
+    "+0h": 31.8,
+    "+0.5h": 34.7,
+    "+1h": 39.7,
+    "+2h": 50.4,
+    "+4h": 65.8
    }
   ]
  },
@@ -208,21 +258,21 @@
   "split": "tune",
   "phase": "surface",
   "start": "2017-07-08T00:00:00",
-  "days_with_data": 120.1,
-  "days_scored": 117.0,
-  "gcr_E_uGy_day_median": 271.5,
-  "gcr_B_uGy_day_median": 256.1,
+  "days_with_data": 119.1,
+  "days_scored": 116.0,
+  "gcr_E_uGy_day_median": 271.7,
+  "gcr_B_uGy_day_median": 256.3,
   "events": [
    {
     "onset_utc": "2017-09-10T19:30:00",
     "cross2_utc": "2017-09-10T21:30:00",
     "peak_utc": "2017-09-10T23:45:00",
-    "peak_ratio": 2.14,
+    "peak_ratio": 2.13,
     "peak_uGy_h": 24.2,
     "rise_h": 4.25,
-    "duration_h": 29.5,
-    "event_excess_uGy": 245.0,
-    "decay_efold_h": 16.2
+    "duration_h": 29.25,
+    "event_excess_uGy": 242.1,
+    "decay_efold_h": 16.1
    }
   ],
   "policies": {
@@ -244,11 +294,11 @@
     ]
    },
    "lowe": {
-    "entries": 5,
-    "false_entries": 4,
-    "false_per_100d": 3.42,
-    "entries_per_100d": 4.27,
-    "shelter_h_per_100d": 35.3,
+    "entries": 4,
+    "false_entries": 3,
+    "false_per_100d": 2.59,
+    "entries_per_100d": 3.45,
+    "shelter_h_per_100d": 37.7,
     "missed": 0,
     "events": [
      {
@@ -263,9 +313,9 @@
    "lowe2": {
     "entries": 3,
     "false_entries": 2,
-    "false_per_100d": 1.71,
-    "entries_per_100d": 2.56,
-    "shelter_h_per_100d": 34.2,
+    "false_per_100d": 1.72,
+    "entries_per_100d": 2.59,
+    "shelter_h_per_100d": 34.5,
     "missed": 0,
     "events": [
      {
@@ -281,7 +331,7 @@
     "entries": 1,
     "false_entries": 0,
     "false_per_100d": 0.0,
-    "entries_per_100d": 0.85,
+    "entries_per_100d": 0.86,
     "shelter_h_per_100d": 21.6,
     "missed": 0,
     "events": [
@@ -290,7 +340,7 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 66.9
+      "dose_avoided_pct": 66.8
      }
     ]
    }
@@ -298,14 +348,14 @@
   "idea_c": [
    {
     "onset": "2017-09-10T19:30:00",
-    "peak_ratio": 2.14,
-    "-4h": 64.9,
-    "-1h": 67.0,
-    "+0h": 69.9,
-    "+0.5h": 71.8,
-    "+1h": 73.6,
-    "+2h": 77.3,
-    "+4h": 85.1
+    "peak_ratio": 2.13,
+    "-4h": 64.7,
+    "-1h": 66.8,
+    "+0h": 69.7,
+    "+0.5h": 71.6,
+    "+1h": 73.5,
+    "+2h": 77.2,
+    "+4h": 85.0
    }
   ]
  },
@@ -313,32 +363,32 @@
   "split": "test",
   "phase": "surface",
   "start": "2023-09-16T00:00:00",
-  "days_with_data": 316.6,
-  "days_scored": 312.3,
-  "gcr_E_uGy_day_median": 167.1,
-  "gcr_B_uGy_day_median": 175.0,
+  "days_with_data": 312.5,
+  "days_scored": 308.3,
+  "gcr_E_uGy_day_median": 167.2,
+  "gcr_B_uGy_day_median": 175.1,
   "events": [
    {
     "onset_utc": "2024-05-20T05:15:00",
     "cross2_utc": "2024-05-20T05:30:00",
     "peak_utc": "2024-05-20T06:15:00",
-    "peak_ratio": 68.35,
+    "peak_ratio": 67.74,
     "peak_uGy_h": 349.7,
     "rise_h": 1.0,
     "duration_h": 66.75,
-    "event_excess_uGy": 1826.6,
-    "decay_efold_h": 15.1
+    "event_excess_uGy": 1825.4,
+    "decay_efold_h": 14.5
    },
    {
     "onset_utc": "2024-07-23T02:30:00",
-    "cross2_utc": "2024-07-23T02:30:00",
+    "cross2_utc": "2024-07-23T03:00:00",
     "peak_utc": "2024-07-23T03:15:00",
-    "peak_ratio": 2.14,
+    "peak_ratio": 2.13,
     "peak_uGy_h": 14.6,
     "rise_h": 0.75,
     "duration_h": 12.0,
-    "event_excess_uGy": 51.0,
-    "decay_efold_h": 7.3
+    "event_excess_uGy": 51.6,
+    "decay_efold_h": 6.8
    }
   ],
   "policies": {
@@ -347,7 +397,7 @@
     "false_entries": 0,
     "false_per_100d": 0.0,
     "entries_per_100d": 0.32,
-    "shelter_h_per_100d": 7.1,
+    "shelter_h_per_100d": 7.2,
     "missed": 1,
     "events": [
      {
@@ -355,7 +405,7 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": -15,
-      "dose_avoided_pct": 65.6
+      "dose_avoided_pct": 65.7
      },
      {
       "onset": "2024-07-23T02:30:00",
@@ -369,9 +419,9 @@
    "lowe": {
     "entries": 5,
     "false_entries": 3,
-    "false_per_100d": 0.96,
-    "entries_per_100d": 1.6,
-    "shelter_h_per_100d": 29.5,
+    "false_per_100d": 0.97,
+    "entries_per_100d": 1.62,
+    "shelter_h_per_100d": 29.9,
     "missed": 0,
     "events": [
      {
@@ -384,7 +434,7 @@
      {
       "onset": "2024-07-23T02:30:00",
       "entered_before_peak": true,
-      "lead_vs_2xB_min": 75,
+      "lead_vs_2xB_min": 105,
       "lead_vs_10xB_min": null,
       "dose_avoided_pct": 75.0
      }
@@ -393,9 +443,9 @@
    "lowe2": {
     "entries": 5,
     "false_entries": 3,
-    "false_per_100d": 0.96,
-    "entries_per_100d": 1.6,
-    "shelter_h_per_100d": 29.0,
+    "false_per_100d": 0.97,
+    "entries_per_100d": 1.62,
+    "shelter_h_per_100d": 29.4,
     "missed": 0,
     "events": [
      {
@@ -408,7 +458,7 @@
      {
       "onset": "2024-07-23T02:30:00",
       "entered_before_peak": true,
-      "lead_vs_2xB_min": 60,
+      "lead_vs_2xB_min": 90,
       "lead_vs_10xB_min": null,
       "dose_avoided_pct": 75.0
      }
@@ -418,8 +468,8 @@
     "entries": 2,
     "false_entries": 0,
     "false_per_100d": 0.0,
-    "entries_per_100d": 0.64,
-    "shelter_h_per_100d": 21.2,
+    "entries_per_100d": 0.65,
+    "shelter_h_per_100d": 20.9,
     "missed": 0,
     "events": [
      {
@@ -427,14 +477,14 @@
       "entered_before_peak": true,
       "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": -15,
-      "dose_avoided_pct": 73.5
+      "dose_avoided_pct": 73.4
      },
      {
       "onset": "2024-07-23T02:30:00",
       "entered_before_peak": true,
-      "lead_vs_2xB_min": -45,
+      "lead_vs_2xB_min": -15,
       "lead_vs_10xB_min": null,
-      "dose_avoided_pct": 53.8
+      "dose_avoided_pct": 54.3
      }
     ]
    }
@@ -442,24 +492,24 @@
   "idea_c": [
    {
     "onset": "2024-05-20T05:15:00",
-    "peak_ratio": 68.35,
-    "-4h": 29.6,
-    "-1h": 29.6,
-    "+0h": 29.7,
-    "+0.5h": 33.2,
-    "+1h": 40.2,
-    "+2h": 51.6,
-    "+4h": 64.7
+    "peak_ratio": 67.74,
+    "-4h": 29.0,
+    "-1h": 29.0,
+    "+0h": 29.0,
+    "+0.5h": 32.5,
+    "+1h": 39.6,
+    "+2h": 51.0,
+    "+4h": 64.1
    },
    {
     "onset": "2024-07-23T02:30:00",
-    "peak_ratio": 2.14,
-    "-4h": 75.8,
-    "-1h": 75.8,
-    "+0h": 75.8,
-    "+0.5h": 80.8,
-    "+1h": 86.4,
-    "+2h": 97.4,
+    "peak_ratio": 2.13,
+    "-4h": 76.2,
+    "-1h": 76.2,
+    "+0h": 81.1,
+    "+0.5h": 86.6,
+    "+1h": 92.1,
+    "+2h": 100.0,
     "+4h": 100.0
    }
   ]

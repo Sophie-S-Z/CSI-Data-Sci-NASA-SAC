@@ -1,6 +1,7 @@
 import radEvents from '../data/real/rad-events.json';
 import rad from '../data/real/rad-replay.json';
 import rules from '../data/rules.json';
+import { multipleOf } from './units';
 import type { Sample, World } from './world';
 
 /**
@@ -29,7 +30,7 @@ export interface ClearForecast {
   /** Earliest and latest clear time, in mission minutes. */
   earliest: number;
   latest: number;
-  /** Excess dose still to come at an unshielded point, in baseline-hours (multiply by B for mSv). */
+  /** Excess absorbed dose still to come at an unshielded point, in baseline-hours (multiply by B × SPE_PER_GCR for mSv). */
   excessLo: number;
   excessHi: number;
   analogs: string[];
@@ -133,7 +134,7 @@ export function eventSeries(history: Sample[], from: number): Point[] {
     .filter((h) => h.t >= from && (h.t - from) % BIN_MIN === 0)
     .map((h) => {
       const good = h.cabin.filter((v, i): v is number => v !== null && h.quality[i] === 'good');
-      return { t: h.t, r: (good.length ? Math.max(...good) : h.mean) / h.B };
+      return { t: h.t, r: multipleOf(good.length ? Math.max(...good) : h.mean, h.B) };
     });
 }
 

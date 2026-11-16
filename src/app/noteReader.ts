@@ -6,8 +6,8 @@
  * and the body rules read marked symptoms only.
  *
  * Negation: a cue word ("no", "not", "without", "n't") earlier in the same clause
- * cancels a match. A clause ends at . ; ! ? a new line, or "but". A missed symptom
- * is the safe error here, because the crew can still mark it by hand.
+ * cancels a match. A clause ends at . , ; ! ? a new line, "but", or "and". So in
+ * "Not sleeping well, headache all day" the "not" does not cancel the headache.
  */
 
 const TERMS = {
@@ -34,7 +34,7 @@ export type Symptom = keyof typeof TERMS;
 export const NOTE_SYMPTOMS = Object.keys(TERMS) as Symptom[];
 
 const NEGATION = /\b(no|not|none|never|without|nor)\b|n't\b/;
-const CLAUSE_END = /[.;!?\n]|\bbut\b/;
+const CLAUSE_END = /[.,;!?\n]|\b(?:but|and)\b/;
 
 /** The symptoms that a note names and does not negate, in chip order. */
 export function readNote(note: string): Symptom[] {

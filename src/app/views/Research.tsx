@@ -82,7 +82,7 @@ function Th({ children, first }: { children?: ReactNode; first?: boolean }) {
 
 function Table({ head, children, min = 760 }: { head: string[]; children: ReactNode; min?: number }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} role="region" aria-label="Table, scroll sideways">
       <table className="w-full text-sm" style={{ minWidth: min }}>
         <thead className="text-left text-xs text-muted-foreground"><tr className="border-b">{head.map((h, i) => <Th key={h} first={i === 0}>{h}</Th>)}</tr></thead>
         <tbody className="divide-y">{children}</tbody>

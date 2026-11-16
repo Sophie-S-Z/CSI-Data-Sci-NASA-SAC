@@ -4,7 +4,7 @@ import { World, replayWorld, LEVEL_RANK, type Action, type Level, type RecordedA
 import { at } from '../engine/time';
 
 // A new key per release, so a judge never opens an old replay state (beta report D-8).
-const KEY = 'storm-shelter.replay.v3';
+const KEY = 'vigil.replay.v4';
 export const DEMO_START = at(mission.replay.demoStart.day, mission.replay.demoStart.hhmm);
 export const REPLAY_END = at(mission.replay.endDay, '23:59');
 
@@ -23,9 +23,9 @@ export const BEATS: { label: string; t: number; level: Level; text: string }[] =
   { label: 'Solar flare', t: at(94, '00:24'), level: 'caution', text: 'An X5.4 flare and a fast CME erupt from the Sun. The dose rate at the ship is still normal, but the app gives a Caution: safe your task and stage the shelter.' },
   { label: 'Sensor spike', t: at(94, '03:11'), level: 'verify', text: 'One cabin sensor jumps. The other sensors do not agree, so the app asks you to check the sensor. It does not give a false Warning.' },
   { label: 'Dose rise', t: at(94, '06:30'), level: 'caution', text: 'Solar protons reach the ship. The cabin dose rate rises above 1.5 times the baseline on 2 or more sensors.' },
-  { label: 'Warning', t: at(94, '08:50'), level: 'warning', text: 'The dose rate stays above 2 times the baseline for 30 min. The screen turns red. Press "Start procedure SH-1" and go to the shelter.' },
+  { label: 'Warning', t: at(94, '08:45'), level: 'warning', text: 'The dose rate stays above 2 times the baseline for 30 min. The screen turns red. Press "Start procedure SH-1" and go to the shelter.' },
   { label: 'Peak', t: at(95, '17:00'), level: 'warning', text: 'The dose rate is about 35 times the baseline. Open Cabin radiation to see the dose that the shelter saves.' },
-  { label: 'All clear', t: at(97, '13:30'), level: 'caution', text: 'All sensors stay low for 1 h. The Warning drops to a Caution. You can leave the shelter.' },
+  { label: 'Leave shelter', t: at(98, '02:30'), level: 'caution', text: 'All sensors stay below 1.5 times the baseline for 1 h. The Warning drops to a Caution. You can leave the shelter.' },
 ];
 
 /** The last step at or before t. -1 before the first step. */

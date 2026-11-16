@@ -1,12 +1,12 @@
 import rules from '../data/rules.json';
 import mission from '../data/mission.json';
 import {
-  SENSORS, SHELTER_FACTOR, baselineMSvH, cabinReadingsMGy, personalReadingMGy, qualityOf, gcrDoseMSv,
+  SENSORS, SHELTER_FACTOR, baselineMSvH, cabinReadingsMSv, personalReadingMSv, qualityOf, gcrDoseMSv, radFilled,
   MISSION_END_MIN, phaseAt, type Quality,
 } from './doseModel';
 import { REPLAY, flareRank, type DonkiRecord } from './donki';
 import { at, dayOf, stamp, duration } from './time';
-import { toMSv, fmt } from './units';
+import { atMultiple, multipleOf, fmt } from './units';
 import { evaluateBody, simVitals, limitRange, BODY_RULE, type BodyFinding, type BodyInput } from './bodyRules';
 
 export type Level = 'advisory' | 'verify' | 'caution' | 'warning';
@@ -102,6 +102,8 @@ export interface Sample {
   personal: number; // mSv/h
   mean: number; // mean of good sensors, mSv/h
   B: number;
+  /** The RAD bin has no accepted value, so the replay fills it by a straight line. Alarm timers do not count it. */
+  filled: boolean;
 }
 
 const TH = rules.thresholds;
@@ -183,12 +185,12 @@ export class World {
 
   private sample(): Sample {
     const B = baselineMSvH(this.t);
-    const cabin = cabinReadingsMGy(this.t).map((v) => (v === null ? null : toMSv(v)));
+    const cabin = cabinReadingsMSv(this.t);
     const quality = qualityOf(cabin);
     const good = cabin.filter((v, i) => v !== null && quality[i] === 'good') as number[];
     const mean = good.length ? good.reduce((a, b) => a + b, 0) / good.length : B;
-    const personal = toMSv(personalReadingMGy(this.t, this.inShelter));
-    const s = { t: this.t, cabin, quality, personal, mean, B };
+    const personal = personalReadingMSv(this.t, this.inShelter);
+    const s = { t: this.t, cabin, quality, personal, mean, B, filled: radFilled(this.t) };
     this.history.push(s);
     return s;
   }
@@ -254,17 +256,19 @@ export class World {
     const { B, cabin, quality } = s;
     this.missionDoseMSv += s.personal / 60;
 
-    const x = (k: number) => k * B;
+    const x = (k: number) => atMultiple(k, B);
     const nW = cabin.filter((v) => v !== null && v >= x(TH.warningMultiple.x)).length;
     const nF = cabin.filter((v) => v !== null && v >= x(TH.floorMultiple.x)).length;
     const nC = cabin.filter((v) => v !== null && v >= x(TH.cautionMultiple.x)).length;
     const belowCaution = cabin.every((v) => v === null || v < x(TH.cautionMultiple.x));
     const belowAdvisory = cabin.every((v) => v === null || v < x(TH.advisoryMultiple.x));
 
-    this.warnRun = nW >= 2 ? this.warnRun + 1 : 0;
-    this.floorRun = nF >= 2 ? this.floorRun + 1 : 0;
-    this.cautRun = nC >= 2 ? this.cautRun + 1 : 0;
-    this.belowRun = belowCaution ? this.belowRun + 1 : 0;
+    // A filled RAD bin is not a measurement, so the rate timers hold (as in research/realdata/realbench.py).
+    const run = (n: number, cond: boolean) => (s.filled ? n : cond ? n + 1 : 0);
+    this.warnRun = run(this.warnRun, nW >= 2);
+    this.floorRun = run(this.floorRun, nF >= 2);
+    this.cautRun = run(this.cautRun, nC >= 2);
+    this.belowRun = run(this.belowRun, belowCaution);
     // R-V1: one sensor high, and its value is far from the others (quality "poor").
     const loneHigh = nC === 1 && cabin.some((v, i) => v !== null && v >= x(TH.verifyMultiple.x) && quality[i] === 'poor');
     this.singleRun = loneHigh ? this.singleRun + 1 : 0;
@@ -298,7 +302,7 @@ export class World {
         reason: warnBySensors && on('R-W1')
           ? `≥${fmt(x(TH.warningMultiple.x))} mSv/h on ${nW} of ${SENSORS.length} sensors for ${TM.warningSustainMin} min`
           : warnByProj && on('R-W1')
-            ? `Projected unsheltered dose ${fmt(proj)} mSv in 24 h`
+            ? `Projected extra unsheltered dose ${fmt(proj)} mSv in 24 h`
             : `≥${fmt(x(TH.floorMultiple.x))} mSv/h on ${nF} sensors for ${TM.floorSustainMin} min (floor, it cannot be inhibited)`,
       };
     } else if (open?.level === 'warning' && this.belowRun < TM.warningClearMin) {
@@ -335,7 +339,7 @@ export class World {
         // Estimate: what the same minute gives outside the shelter, minus what it gave inside.
         ev.savedMSv += (excess / SHELTER_FACTOR - excess) / 60;
       }
-      ev.measured = `${fmt(s.mean)} mSv/h cabin mean, ${fmt(s.mean / B)} × B`;
+      ev.measured = `${fmt(s.mean)} mSv/h cabin mean, ${fmt(multipleOf(s.mean, B))} × B`;
       ev.quality = worstQuality(quality);
     }
 
@@ -444,9 +448,9 @@ export class World {
       inputs: {
         'Cabin mean': `${fmt(s.mean)} mSv/h`,
         'Baseline B': `${fmt(s.B)} mSv/h`,
-        [`Sensors ≥ ${TH.floorMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= TH.floorMultiple.x * s.B).length,
-        [`Sensors ≥ ${TH.warningMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= TH.warningMultiple.x * s.B).length,
-        [`Sensors ≥ ${TH.cautionMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= TH.cautionMultiple.x * s.B).length,
+        [`Sensors ≥ ${TH.floorMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= atMultiple(TH.floorMultiple.x, s.B)).length,
+        [`Sensors ≥ ${TH.warningMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= atMultiple(TH.warningMultiple.x, s.B)).length,
+        [`Sensors ≥ ${TH.cautionMultiple.label}`]: s.cabin.filter((v) => v !== null && v >= atMultiple(TH.cautionMultiple.x, s.B)).length,
         '24 h projection': `${fmt(this.projection24h(s))} mSv`,
         'Data quality': s.quality.join(' '),
       },
@@ -662,7 +666,7 @@ export class World {
 /** The one action sentence for an alert. The decision panel and the assistant both use it. */
 export function actionSentence(a: Alert, w: World): string {
   if (a.level === 'warning') return w.inShelter ? 'Stay in the shelter.' : 'Go to the shelter now.';
-  if (a.level === 'caution') return w.inShelter ? 'You can leave the shelter. Stay ready to go back.' : 'Safe your task. Stage the shelter.';
+  if (a.level === 'caution') return w.inShelter || a.peak === 'warning' ? 'The Warning is over. You can leave the shelter. Stay ready to go back.' : 'Safe your task. Stage the shelter.';
   if (a.level === 'verify') return 'Check the sensor. Read your dosimeter.';
   return 'No action now. Read at the daily review.';
 }

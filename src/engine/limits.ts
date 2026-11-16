@@ -1,5 +1,6 @@
 import rules from '../data/rules.json';
 import { CABIN } from './cabin';
+import { atMultiple } from './units';
 
 /**
  * Safe and dangerous ranges for each environmental factor, by area.
@@ -35,7 +36,7 @@ export function doseInArea(area: AreaId, sensorRate: number): number {
 /** The sensor rate that gives you k × B in the area (the inverse of doseInArea). */
 function sensorRateFor(area: AreaId, k: number): number {
   const B = baselineOf(area);
-  return area === 'shelter' ? B + ((k - 1) * B) / SHELTER : k * B;
+  return atMultiple(area === 'shelter' ? 1 + (k - 1) / SHELTER : k, B);
 }
 
 const band = (lo: number, hi: number, inner: [number, number] | null, outer: [number, number], innerLevel: ZoneLevel, outerLevel: ZoneLevel): Zone[] => {

@@ -10,3 +10,5 @@ research/frontier/data/
 research/realdata/data/l1_*.csv
 research/realdata/data/goesr_p10_*.csv
 *.tsbuildinfo
+test-results
+playwright-report

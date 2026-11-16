@@ -75,13 +75,31 @@ def load(path: Path):
     med = lambda v: float(np.median(v)) if v else math.nan
     e = np.array([med(v) for v in buckets_e])
     b = np.array([med(v) for v in buckets_b])
-    return t0, e, b
+    return t0, despike(e), despike(b)
+
+
+def despike(x: np.ndarray, k: int = 3, nsig: float = 3.0, floor: float = 0.1) -> np.ndarray:
+    """Hampel filter. A bin more than nsig robust sigmas from the median of its
+    2k+1 neighbours becomes NaN, so fill_gaps treats it as a gap. The sigma has a
+    floor of floor x the median, so the small noise of quiet days stays in. It
+    removes the short RAD dropouts, for example 8 March 2012 11:00, when the
+    ratio goes 12.95 to 0.34 to 14.5."""
+    y = x.copy()
+    for i in np.nonzero(~np.isnan(x))[0]:
+        w = x[max(0, i - k):i + k + 1]
+        w = w[~np.isnan(w)]
+        if w.size < 3:
+            continue
+        m = float(np.median(w))
+        if m - x[i] > nsig * max(1.4826 * float(np.median(np.abs(w - m))), floor * m):
+            y[i] = math.nan
+    return y
 
 
 def fill_gaps(x: np.ndarray, max_bins: int = 8) -> np.ndarray:
-    """Linear fill over gaps of up to max_bins (2 h). Used only for dose sums:
-    RAD does not cover every 15 min bin, and a sum over measured bins alone
-    would undercount the event dose. Alarms use the measured bins only."""
+    """Linear fill over gaps of up to max_bins (2 h). Used for dose sums and
+    plots: RAD does not cover every 15 min bin, and a sum over measured bins
+    alone would undercount the event dose. Alarms use the measured bins only."""
     y = x.copy()
     ok = np.nonzero(~np.isnan(x))[0]
     for a, b in zip(ok, ok[1:]):
@@ -164,13 +182,17 @@ def policies(e, b, phase):
 
 
 def find_events(e, be, t0):
-    """Event = E rate >= 2 x background for >= 2 bins. It ends when the rate
-    stays below 1.25 x background for 4 h. Merges rises closer than 12 h."""
+    """Event = E rate >= 2 x background for >= 2 measured bins in a row (gaps
+    are skipped, as in state_machine). It ends when the rate stays below 1.25 x
+    background for 4 h. Merges rises closer than 12 h."""
     r = e / be
     hi = np.nan_to_num(r, nan=0) >= 2.0
+    measured = np.nonzero(~np.isnan(r))[0]
+    nxt = np.full(r.size, r.size)  # index of the next measured bin
+    nxt[measured[:-1]] = measured[1:]
     events, i, n = [], 0, r.size
     while i < n:
-        if hi[i] and i + 1 < n and hi[i + 1]:
+        if hi[i] and nxt[i] < n and hi[nxt[i]]:
             start = i
             while start > 0 and np.nan_to_num(r[start - 1], nan=0) > 1.25:
                 start -= 1

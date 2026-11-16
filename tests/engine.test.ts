@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { World, replayWorld, PROCEDURE_SH1 } from '../src/engine/world';
 import { at, hhmm, dayOf } from '../src/engine/time';
-import { toMSv, toMGy, MSV_PER_MGY } from '../src/engine/units';
+import { MSV_PER_MGY, SPE_PER_GCR, atMultiple, multipleOf } from '../src/engine/units';
 import { flareRank } from '../src/engine/donki';
 import rules from '../src/data/rules.json';
 import bodyRules from '../src/data/body-rules.json';
@@ -17,14 +17,21 @@ function runWeek(shelterAt?: string) {
     w.apply({ type: 'procStart', alertId: w.openAlert('radiation')?.id ?? null }, 0);
     for (const s of PROCEDURE_SH1.steps.slice(0, 3)) w.apply({ type: 'procStep', step: s.n }, 0);
   }
-  w.advanceTo(at(97, '23:59'));
+  w.advanceTo(at(98, '23:59'));
   return w;
 }
 
 describe('units (NFR-02)', () => {
-  it('uses one documented factor', () => {
+  it('uses the documented GCR and SPE factors', () => {
     expect(MSV_PER_MGY).toBe(rules.units.mSvPerMGy);
-    expect(toMGy(toMSv(1.234))).toBeCloseTo(1.234, 10);
+    expect(SPE_PER_GCR).toBeCloseTo(rules.units.speMSvPerMGy / rules.units.mSvPerMGy, 10);
+  });
+
+  it('counts the dose above B as solar protons, and multipleOf inverts atMultiple', () => {
+    const B = rules.baselines.cruise.mSvPerHour;
+    expect(atMultiple(1, B)).toBe(B);
+    expect(atMultiple(2, B)).toBeCloseTo(B * (1 + SPE_PER_GCR), 10);
+    for (const k of [0.5, 1, 1.5, 2, 10, 35]) expect(multipleOf(atMultiple(k, B), B)).toBeCloseTo(k, 10);
   });
 });
 
@@ -64,14 +71,14 @@ describe('demo story on the measured March 2012 event (MSL RAD)', () => {
 
   it('warns many hours before the rate passes 10 x B (the old Warning level)', () => {
     const wT = ev.history.find((h) => h.level === 'warning')!.t;
-    const old = w.history.find((h) => h.t > wT && h.mean >= 10 * h.B);
+    const old = w.history.find((h) => h.t > wT && h.mean >= atMultiple(10, h.B));
     expect(old).toBeTruthy();
     expect(old!.t - wT).toBeGreaterThan(6 * 60);
   });
 
-  it('drops the Warning to Caution on day 97, while the NOAA S1 event goes on, and estimates the dose saved', () => {
+  it('drops the Warning to Caution on day 98, while the NOAA S1 event goes on, and estimates the dose saved', () => {
     const down = ev.history.find((h, i) => i > 0 && ev.history[i - 1].level === 'warning' && h.level === 'caution')!;
-    expect(dayOf(down.t)).toBe(97);
+    expect(dayOf(down.t)).toBe(98);
     expect(ev.savedMSv).toBeGreaterThan(5);
   });
 

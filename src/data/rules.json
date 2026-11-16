@@ -2,10 +2,10 @@
  "version": "PRD Rev D (Phase 4 real-data test, November 2026)",
  "note": "Alert thresholds for a crewed Mars transit. The team set each value from the cited sources and from a test on measured MSL RAD data. They are not NASA flight rules. The mission team controls the radiation rules in src/data/rules.json. Each crew member can set stricter personal body limits on the Body systems page.",
  "units": {
-  "storedAs": "mGy (absorbed dose) from each sensor",
   "shownAs": "mSv (dose equivalent)",
   "mSvPerMGy": 3.83,
-  "factorBasis": "MSL RAD cruise: 1.84 mSv/d over 0.481 mGy/d. One factor for the whole demo. It overstates the SPE dose, because SPE protons have a lower quality factor than GCR.",
+  "speMSvPerMGy": 1.77,
+  "factorBasis": "GCR baseline: 3.83 mSv per mGy (MSL RAD cruise, 1.84 mSv/d over 0.481 mGy/d). SPE dose above the baseline: 1.77 mSv per mGy (team value for solar protons, from the November 2026 review; check it against Zeitlin 2013 before flight use). The alert rules count multiples of the absorbed dose rate.",
   "source": "zeitlin2013"
  },
  "baselines": {
@@ -74,7 +74,7 @@
   },
   "projection24hMSv": {
    "value": 50,
-   "label": "50 mSv in 24 h, unsheltered",
+   "label": "50 mSv extra in 24 h, unsheltered",
    "basis": "Team value. A fast rise to this level needs a Warning before the 30 min confirmation ends.",
    "source": "team"
   },
@@ -178,10 +178,10 @@
    "title": "Solar particle event",
    "triggers": [
     "2 or more sensors read at or above 2 × B (0.15 mSv/h) for 30 min.",
-    "The projected unsheltered dose for the next 24 h is 50 mSv or more."
+    "The projected extra unsheltered dose for the next 24 h is 50 mSv or more."
    ],
    "action": "Go to the shelter now. Start procedure SH-1.",
-   "basis": "Phase 4 test on 6 real events measured by MSL RAD (2012 cruise, 2017 and 2024 on Mars): this rule sheltered before the peak in 6 of 6 events with 0 false entries. The old rule (10 × B for 5 min) missed 4 of 6. Each hour of delay in a fast event costs 3 to 10 percentage points of the event dose. NASA asks for doses as low as reasonably achievable (ALARA).",
+   "basis": "Phase 4 test on 7 real events measured by MSL RAD (2012 cruise, 2017 and 2024 on Mars): this rule sheltered before the peak in 6 of 7 events with 0 false entries. In the 7th, a small 2.5 × event, it sheltered 30 min after the peak. The old rule (10 × B for 5 min) missed 5 of 7. Each hour of delay in a fast event costs 3 to 10 percentage points of the event dose. NASA asks for doses as low as reasonably achievable (ALARA).",
    "source": "phase4"
   }
  ]
