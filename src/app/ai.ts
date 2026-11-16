@@ -7,7 +7,8 @@ import { displayName, modelOf, type Profile } from './profile';
 /**
  * The language-model layer of Ask. The built-in assistant (assistant.ts) stays in front:
  * - It answers refusals (diagnosis, treatment, changes to alerts) itself. Those never reach a model.
- * - It gives the facts. The model only rewrites them in plain words, so it cannot add a number.
+ * - It gives the facts. The model only rewrites them in plain words.
+ * - newNumbers() checks the model text. An answer with a number that the facts do not hold is not shown.
  * A model never acts on the world: it gets text and returns text.
  */
 
@@ -37,6 +38,17 @@ export function facts(base: Answer, w: World, p: Profile): string[] {
     ...(base.kind === 'none' ? [] : base.lines),
     `Body effect at this level: ${LEVEL_EFFECT[level].text}`,
   ])];
+}
+
+/** Each number in a text, in one form: "1,200" and "1200" match, and so do "08" and "8". */
+function numbersIn(text: string): Set<string> {
+  return new Set((text.match(/\d+(?:,\d{3})*(?:\.\d+)?/g) ?? []).map((n) => String(Number(n.replace(/,/g, '')))));
+}
+
+/** The numbers in a model answer that the facts do not hold. An empty list means the answer adds no number. */
+export function newNumbers(text: string, lines: string[]): string[] {
+  const known = numbersIn(lines.join('\n'));
+  return [...numbersIn(text)].filter((n) => !known.has(n));
 }
 
 const prompt = (q: string, lines: string[]) => `FACTS:\n${lines.map((l) => `- ${l}`).join('\n')}\n\nQUESTION: ${q}`;

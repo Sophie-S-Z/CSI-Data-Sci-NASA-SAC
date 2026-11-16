@@ -17,11 +17,14 @@ describe('check-in note reader', () => {
     expect(readNote(note)).toEqual(want);
   });
 
-  it('skips a negated symptom, and the negation ends at "but" or a full stop', () => {
+  it('skips a negated symptom, and the negation ends at a comma, "and", "but", or a full stop', () => {
     expect(readNote('No nausea or vomiting today.')).toEqual([]);
     expect(readNote("I don't feel dizzy. Not tired.")).toEqual([]);
     expect(readNote('No nausea but a headache.')).toEqual(['Headache']);
     expect(readNote('Not dizzy. Headache.')).toEqual(['Headache']);
+    expect(readNote('Not sleeping well, headache all day')).toEqual(['Headache']);
+    expect(readNote('No fever and my back hurts')).toEqual(['Back pain']);
+    expect(readNote('No nausea, no vomiting')).toEqual([]);
     expect(readNote("Can't read the small text")).toEqual(['Blurred near vision']);
   });
 
