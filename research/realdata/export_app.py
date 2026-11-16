@@ -3,7 +3,9 @@
 rad-replay.json   MSL RAD cruise, 5-11 March 2012, 15 min bins. The ratio of the
                   E and B dose rates to their fitted background. The app applies
                   the ratio to its cruise baseline B, so the replay keeps the
-                  measured event shape and size.
+                  measured event shape and size. "filled" lists the bins with
+                  no accepted RAD value (a gap, or a Hampel outlier). The app
+                  draws them dashed, and its alarms do not count them.
 rad-events.json   The 6 real events of Phase 4 (Evidence view): E ratio over
                   time, and the shelter time of each policy.
 
@@ -51,6 +53,7 @@ def main():
     i0 = int((start - t0).total_seconds() // 900)
     n = 7 * rb.SPD
     ef, bf = rb.fill_gaps(e), rb.fill_gaps(b)
+    filled = (np.isnan(e) | np.isnan(b))[i0:i0 + n]
     replay = {
         "source": "MSL RAD RDR (PDS-PPI, MSL-M-RAD-3-RDR-V1.0), E and B detectors, cruise to Mars",
         "measured": True,
@@ -58,7 +61,8 @@ def main():
         "bin_min": rb.BIN_MIN,
         "background_E_uGy_h": r3(np.nanmedian(be[i0:i0 + n])),
         "background_B_uGy_h": r3(np.nanmedian(bb[i0:i0 + n])),
-        "note": "Ratio to the fitted background (Löwe 2025 method). Gaps up to 2 h are filled by a straight line. Null means no RAD data.",
+        "note": "Ratio to the fitted background (Löwe 2025 method). A Hampel filter removes short dropouts. Gaps up to 2 h are filled by a straight line and listed in filled. Null means no RAD data.",
+        "filled": [int(i) for i in np.nonzero(filled)[0]],
         "ratio_E": [r3(x) for x in (ef / be)[i0:i0 + n]],
         "ratio_B": [r3(x) for x in (bf / bb)[i0:i0 + n]],
         "uGy_h_E": [r3(x) for x in ef[i0:i0 + n]],
@@ -97,6 +101,7 @@ def main():
                 "event_dose_uGy": ev["event_excess_uGy"],
                 "start_utc": (t0 + dt.timedelta(minutes=15 * lo)).isoformat(),
                 "ratio": [r3(x) for x in (ef / be)[lo:hi]],
+                "filled": [int(i) for i in np.nonzero(np.isnan(e[lo:hi]))[0]],
                 "shelter": shelters, "scores": scores,
             })
     out = {"policies": POLICY_LABEL, "limits": POLICY_LIMITS, "bin_min": rb.BIN_MIN, "shelter_factor": rb.SHELTER_FACTOR,
@@ -107,6 +112,7 @@ def main():
            "events": events}
     (APP / "rad-events.json").write_text(json.dumps(out, separators=(",", ":")))
     print("wrote", APP / "rad-replay.json", APP / "rad-events.json")
+    print(f"replay: {filled.sum()} of {n} bins filled")
 
 
 if __name__ == "__main__":
